@@ -1,0 +1,15 @@
+{
+  "before": {
+    "transport": "wifi",
+    "validated": true,
+    "sim": "ABSENT,LOADED"
+  },
+  "after": {
+    "transport": "wifi",
+    "validated": true,
+    "sim": "ABSENT,LOADED"
+  },
+  "exit_code": 0,
+  "start": 1795587734.51499,
+  "end": 1795587736.4890082
+}

@@ -1,0 +1,362 @@
+[
+  {
+    "protocol": "h2",
+    "round": 1,
+    "pre_confirm_us": 375250,
+    "post_confirm_to_open_us": 137345,
+    "target_tls_us": 138935,
+    "response_us": 105989,
+    "first_byte_us": 757538
+  },
+  {
+    "protocol": "h3",
+    "round": 1,
+    "pre_confirm_us": 314857,
+    "post_confirm_to_open_us": 105403,
+    "target_tls_us": 218377,
+    "response_us": 134156,
+    "first_byte_us": 772823
+  },
+  {
+    "protocol": "h3",
+    "round": 2,
+    "pre_confirm_us": 855840,
+    "post_confirm_to_open_us": 169391,
+    "target_tls_us": 668219,
+    "response_us": 119279,
+    "first_byte_us": 1812746
+  },
+  {
+    "protocol": "h2",
+    "round": 2,
+    "pre_confirm_us": 458015,
+    "post_confirm_to_open_us": 110319,
+    "target_tls_us": 160187,
+    "response_us": 154795,
+    "first_byte_us": 883332
+  },
+  {
+    "protocol": "h2",
+    "round": 3,
+    "pre_confirm_us": 443835,
+    "post_confirm_to_open_us": 104747,
+    "target_tls_us": 154169,
+    "response_us": 109135,
+    "first_byte_us": 811903
+  },
+  {
+    "protocol": "h3",
+    "round": 3,
+    "pre_confirm_us": 347192,
+    "post_confirm_to_open_us": 105342,
+    "target_tls_us": 149295,
+    "response_us": 166160,
+    "first_byte_us": 768008
+  },
+  {
+    "protocol": "h3",
+    "round": 4,
+    "pre_confirm_us": 297919,
+    "post_confirm_to_open_us": 103610,
+    "target_tls_us": 146889,
+    "response_us": 152250,
+    "first_byte_us": 700687
+  },
+  {
+    "protocol": "h2",
+    "round": 4,
+    "pre_confirm_us": 409687,
+    "post_confirm_to_open_us": 109344,
+    "target_tls_us": 154676,
+    "response_us": 115433,
+    "first_byte_us": 789173
+  },
+  {
+    "protocol": "h2",
+    "round": 5,
+    "pre_confirm_us": 1767076,
+    "post_confirm_to_open_us": 115292,
+    "target_tls_us": 161467,
+    "response_us": 136921,
+    "first_byte_us": 2180776
+  },
+  {
+    "protocol": "h3",
+    "round": 5,
+    "pre_confirm_us": 343965,
+    "post_confirm_to_open_us": 100332,
+    "target_tls_us": 142916,
+    "response_us": 101239,
+    "first_byte_us": 688473
+  },
+  {
+    "protocol": "h3",
+    "round": 6,
+    "pre_confirm_us": 306989,
+    "post_confirm_to_open_us": 102270,
+    "target_tls_us": 146389,
+    "response_us": 136288,
+    "first_byte_us": 691954
+  },
+  {
+    "protocol": "h2",
+    "round": 6,
+    "pre_confirm_us": 503960,
+    "post_confirm_to_open_us": 108753,
+    "target_tls_us": 169758,
+    "response_us": 162922,
+    "first_byte_us": 945414
+  },
+  {
+    "protocol": "h2",
+    "round": 7,
+    "pre_confirm_us": 389907,
+    "post_confirm_to_open_us": 102299,
+    "target_tls_us": 173684,
+    "response_us": 106022,
+    "first_byte_us": 771942
+  },
+  {
+    "protocol": "h3",
+    "round": 7,
+    "pre_confirm_us": 740611,
+    "post_confirm_to_open_us": 103281,
+    "target_tls_us": 155933,
+    "response_us": 464395,
+    "first_byte_us": 1464250
+  },
+  {
+    "protocol": "h3",
+    "round": 8,
+    "pre_confirm_us": 804806,
+    "post_confirm_to_open_us": 104020,
+    "target_tls_us": 149964,
+    "response_us": 107172,
+    "first_byte_us": 1165980
+  },
+  {
+    "protocol": "h2",
+    "round": 8,
+    "pre_confirm_us": 405069,
+    "post_confirm_to_open_us": 106599,
+    "target_tls_us": 157489,
+    "response_us": 161240,
+    "first_byte_us": 830420
+  },
+  {
+    "protocol": "h2",
+    "round": 9,
+    "pre_confirm_us": 406505,
+    "post_confirm_to_open_us": 103772,
+    "target_tls_us": 156847,
+    "response_us": 140501,
+    "first_byte_us": 807646
+  },
+  {
+    "protocol": "h3",
+    "round": 9,
+    "pre_confirm_us": 3265465,
+    "post_confirm_to_open_us": 106385,
+    "target_tls_us": 544179,
+    "response_us": 305216,
+    "first_byte_us": 4221268
+  },
+  {
+    "protocol": "h3",
+    "round": 10,
+    "pre_confirm_us": 308164,
+    "post_confirm_to_open_us": 109630,
+    "target_tls_us": 200582,
+    "response_us": 112012,
+    "first_byte_us": 730407
+  },
+  {
+    "protocol": "h2",
+    "round": 10,
+    "pre_confirm_us": 480815,
+    "post_confirm_to_open_us": 105471,
+    "target_tls_us": 155018,
+    "response_us": 107670,
+    "first_byte_us": 848996
+  },
+  {
+    "protocol": "h2",
+    "round": 11,
+    "pre_confirm_us": 443891,
+    "post_confirm_to_open_us": 103389,
+    "target_tls_us": 162544,
+    "response_us": 161748,
+    "first_byte_us": 871600
+  },
+  {
+    "protocol": "h3",
+    "round": 11,
+    "pre_confirm_us": 372776,
+    "post_confirm_to_open_us": 109073,
+    "target_tls_us": 477489,
+    "response_us": 116154,
+    "first_byte_us": 1075511
+  },
+  {
+    "protocol": "h3",
+    "round": 12,
+    "pre_confirm_us": 599499,
+    "post_confirm_to_open_us": 105887,
+    "target_tls_us": 150155,
+    "response_us": 159105,
+    "first_byte_us": 1014666
+  },
+  {
+    "protocol": "h2",
+    "round": 12,
+    "pre_confirm_us": 2202250,
+    "post_confirm_to_open_us": 108157,
+    "target_tls_us": 659595,
+    "response_us": 235866,
+    "first_byte_us": 3205888
+  },
+  {
+    "protocol": "h2",
+    "round": 13,
+    "pre_confirm_us": 406260,
+    "post_confirm_to_open_us": 103530,
+    "target_tls_us": 1007304,
+    "response_us": 224910,
+    "first_byte_us": 1742026
+  },
+  {
+    "protocol": "h3",
+    "round": 13,
+    "pre_confirm_us": 396876,
+    "post_confirm_to_open_us": 101342,
+    "target_tls_us": 455107,
+    "response_us": 294565,
+    "first_byte_us": 1247915
+  },
+  {
+    "protocol": "h3",
+    "round": 14,
+    "pre_confirm_us": 448450,
+    "post_confirm_to_open_us": 101007,
+    "target_tls_us": 436272,
+    "response_us": 106117,
+    "first_byte_us": 1091865
+  },
+  {
+    "protocol": "h2",
+    "round": 14,
+    "pre_confirm_us": 1621648,
+    "post_confirm_to_open_us": 110247,
+    "target_tls_us": 158768,
+    "response_us": 115674,
+    "first_byte_us": 2006359
+  },
+  {
+    "protocol": "h2",
+    "round": 15,
+    "pre_confirm_us": 1779544,
+    "post_confirm_to_open_us": 104079,
+    "target_tls_us": 1821647,
+    "response_us": 116283,
+    "first_byte_us": 3821573
+  },
+  {
+    "protocol": "h3",
+    "round": 15,
+    "pre_confirm_us": 932936,
+    "post_confirm_to_open_us": 541124,
+    "target_tls_us": 340356,
+    "response_us": 112842,
+    "first_byte_us": 1927277
+  },
+  {
+    "protocol": "h3",
+    "round": 16,
+    "pre_confirm_us": 319118,
+    "post_confirm_to_open_us": 107682,
+    "target_tls_us": 595875,
+    "response_us": 570791,
+    "first_byte_us": 1593485
+  },
+  {
+    "protocol": "h2",
+    "round": 16,
+    "pre_confirm_us": 2224825,
+    "post_confirm_to_open_us": 150200,
+    "target_tls_us": 281479,
+    "response_us": 104943,
+    "first_byte_us": 2761482
+  },
+  {
+    "protocol": "h2",
+    "round": 17,
+    "pre_confirm_us": 3683300,
+    "post_confirm_to_open_us": 102267,
+    "target_tls_us": 284565,
+    "response_us": 128294,
+    "first_byte_us": 4198446
+  },
+  {
+    "protocol": "h3",
+    "round": 17,
+    "pre_confirm_us": 607170,
+    "post_confirm_to_open_us": 107002,
+    "target_tls_us": 151916,
+    "response_us": 109960,
+    "first_byte_us": 976075
+  },
+  {
+    "protocol": "h3",
+    "round": 18,
+    "pre_confirm_us": 345139,
+    "post_confirm_to_open_us": 101753,
+    "target_tls_us": 1019820,
+    "response_us": 100923,
+    "first_byte_us": 1567660
+  },
+  {
+    "protocol": "h2",
+    "round": 18,
+    "pre_confirm_us": 427110,
+    "post_confirm_to_open_us": 163575,
+    "target_tls_us": 157355,
+    "response_us": 107437,
+    "first_byte_us": 855501
+  },
+  {
+    "protocol": "h2",
+    "round": 19,
+    "pre_confirm_us": 389422,
+    "post_confirm_to_open_us": 107012,
+    "target_tls_us": 157864,
+    "response_us": 108332,
+    "first_byte_us": 762665
+  },
+  {
+    "protocol": "h3",
+    "round": 19,
+    "pre_confirm_us": 289877,
+    "post_confirm_to_open_us": 134725,
+    "target_tls_us": 146098,
+    "response_us": 103969,
+    "first_byte_us": 674689
+  },
+  {
+    "protocol": "h3",
+    "round": 20,
+    "pre_confirm_us": 1299797,
+    "post_confirm_to_open_us": 109248,
+    "target_tls_us": 5212730,
+    "response_us": 105145,
+    "first_byte_us": 6726940
+  },
+  {
+    "protocol": "h2",
+    "round": 20,
+    "pre_confirm_us": 391716,
+    "post_confirm_to_open_us": 103329,
+    "target_tls_us": 846471,
+    "response_us": 234478,
+    "first_byte_us": 1576020
+  }
+]

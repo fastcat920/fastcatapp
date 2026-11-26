@@ -1,0 +1,12 @@
+{
+  "formal_short_requests": 1002,
+  "raw_short_requests": 1056,
+  "next_download_complete": 5,
+  "next_download_total": 6,
+  "sameport_downloads": 6,
+  "throughput_groups": 36,
+  "valid_throughput_groups": 36,
+  "large_download_attempts": 6,
+  "large_download_complete": 5,
+  "production_replacement_accepted": false
+}

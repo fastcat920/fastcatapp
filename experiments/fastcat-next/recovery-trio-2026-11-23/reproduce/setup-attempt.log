@@ -1,0 +1,25 @@
+Running as unit: fc-opt-backend-1795406377.service; invocation ID: d2f05adf54b04961930a4be1cb261483
+Running as unit: fc-opt-next-1795406377.service; invocation ID: b4ef09edeed748fe92339fbdcdb25a27
+/tmp/fc-recovery-trio/compare: 1 file pushed, 0 skipped. 29.4 MB/s (38896345 bytes in 1.261s)
+/tmp/fc-recovery-trio/client-1795406377.json: 1 file pushed, 0 skipped. 3.5 MB/s (432 bytes in 0.000s)
+/etc/ssl/cert.pem: 1 file pushed, 0 skipped. 153.5 MB/s (333483 bytes in 0.002s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+Running as unit: fc-opt-tuic-1795406377.service; invocation ID: 303f183abca74e6195435514f9ffb85d
+Failed to start fc-opt-next-1795406377.service: Unit fc-opt-next-1795406377.service not found.
+Failed to start fc-opt-tuic-1795406377.service: Unit fc-opt-tuic-1795406377.service not found.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+VPN restored: True
+Failed to stop fc-opt-next-1795406377.service: Unit fc-opt-next-1795406377.service not loaded.
+Failed to stop fc-opt-tuic-1795406377.service: Unit fc-opt-tuic-1795406377.service not loaded.
+Traceback (most recent call last):
+  File "/tmp/fc-recovery-trio/run.py", line 22, in <module>
+    name=f'pilot-ports{b+1}';ports=setup(b,name);x.phase(name,['-samples','1','-pools','1','-batches','1','-workers','4']+fixed,','.join(V),timeout=180)
+  File "/tmp/fc-recovery-trio/run.py", line 15, in setup
+    x.ssh('python3 -c '+shlex.quote(code));x.ssh('systemctl start '+x.nextunit+' '+tuic);time.sleep(5)
+  File "/tmp/fc-next-primary/lab.py", line 8, in ssh
+    def ssh(self,c):return sp.check_output(['ssh','-S',self.sock,'-o','ConnectTimeout=10',self.host,c],text=True,timeout=60)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py", line 424, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py", line 528, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['ssh', '-S', '/Users/pizihu/.ssh/fastcat-next-adaptive.sock', '-o', 'ConnectTimeout=10', 'root@zlhk.fastcat.ink', 'systemctl start fc-opt-next-1795406377 fc-opt-tuic-1795406377']' returned non-zero exit status 5.

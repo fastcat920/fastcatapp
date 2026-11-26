@@ -1,0 +1,117 @@
+5bcd7db3bb45be0a57de33218254404a5cc01a61
+ M ../android/app/src/main/kotlin/com/fastcat/app/plugins/VpnPlugin.kt
+ M ../android/core/src/main/jniLibs/arm64-v8a/libclash.h
+ M ../android/core/src/main/jniLibs/arm64-v8a/libclash.so
+ D ../android/core/src/main/jniLibs/armeabi-v7a/libclash.h
+ D ../android/core/src/main/jniLibs/armeabi-v7a/libclash.so
+ D ../android/core/src/main/jniLibs/x86_64/libclash.h
+ D ../android/core/src/main/jniLibs/x86_64/libclash.so
+ M Clash.Meta/adapter/parser.go
+ M Clash.Meta/constant/adapters.go
+ M Clash.Meta/dns/doh.go
+ M Clash.Meta/tunnel/tunnel.go
+ M apple_probe.go
+ M apple_upstream_ios.go
+ M common.go
+ M hub.go
+ M lib_android.go
+ M lib_ios.go
+ M streaming_probe.go
+ M ../device_gateway/main.go
+ M ../docs/fastcat-encrypted-subscription.md
+ M ../ios/Flutter/Debug.xcconfig
+ M ../ios/Flutter/Release.xcconfig
+ M ../ios/Frameworks/libclash.xcframework/ios-arm64-simulator/Headers/PacketTunnel-Bridging-Header.h
+ M ../ios/Frameworks/libclash.xcframework/ios-arm64-simulator/libclash.a
+ M ../ios/Frameworks/libclash.xcframework/ios-arm64-simulator/libclash.h
+ M ../ios/Frameworks/libclash.xcframework/ios-arm64/libclash.a
+ M ../ios/Frameworks/libclash.xcframework/ios-arm64/libclash.h
+ M ../ios/Runner.xcodeproj/project.pbxproj
+ M ../lib/clash/core.dart
+ M ../lib/clash/interface.dart
+ M ../lib/common/link.dart
+ M ../lib/common/preferences.dart
+ M ../lib/controller.dart
+ M ../lib/main.dart
+ M ../lib/models/generated/profile.freezed.dart
+ M ../lib/models/generated/profile.g.dart
+ M ../lib/models/profile.dart
+ M ../lib/plugins/service.dart
+ M ../lib/plugins/vpn.dart
+ M ../lib/security/profile_retention.dart
+ M ../lib/security/profile_vault.dart
+ M ../lib/services/app_profile_controller.dart
+ M ../lib/state.dart
+ M ../lib/xboard/features/about/pages/fastcat_about_page.dart
+ M ../lib/xboard/features/auth/pages/login_page.dart
+ M ../lib/xboard/features/auth/providers/xboard_user_provider.dart
+ M ../lib/xboard/features/logs/pages/fastcat_logs_page.dart
+ M ../lib/xboard/features/profile/providers/profile_import_provider.dart
+ M ../lib/xboard/features/profile/services/profile_import_service.dart
+ M ../lib/xboard/features/settings/pages/fastcat_settings_page.dart
+ M ../lib/xboard/features/subscription/utils/subscription_url_helper.dart
+ M ../lib/xboard/router/routes.dart
+ M ../lib/xboard/router/shell_layout.dart
+ M ../libclash/android/arm64-v8a/libclash.h
+ M ../libclash/android/arm64-v8a/libclash.so
+ M ../libclash/android/armeabi-v7a/libclash.h
+ M ../libclash/android/armeabi-v7a/libclash.so
+ M ../test/security/profile_retention_test.dart
+ M ../test/tvos/runtime_protocol_test.swift
+ M ../test/xboard/features/auth/automatic_subscription_retry_test.dart
+ M ../test/xboard/features/subscription/fastcat_subscription_url_test.dart
+ M ../tvos/FastCatTV/TVToolsView.swift
+ M ../tvos/Frameworks/libclash.xcframework/tvos-arm64/Headers/PacketTunnel-Bridging-Header.h
+?? Clash.Meta/adapter/fastcat_auto_test.go
+?? Clash.Meta/adapter/fastcat_h2_test.go
+?? Clash.Meta/adapter/fastcat_https_test.go
+?? Clash.Meta/adapter/outbound/fastcat_auto.go
+?? Clash.Meta/adapter/outbound/fastcat_auto_test.go
+?? Clash.Meta/adapter/outbound/fastcat_ech_compare_test.go
+?? Clash.Meta/adapter/outbound/fastcat_ech_test.go
+?? Clash.Meta/adapter/outbound/fastcat_h2.go
+?? Clash.Meta/adapter/outbound/fastcat_h3.go
+?? Clash.Meta/adapter/outbound/fastcat_https.go
+?? Clash.Meta/adapter/outbound/fastcat_https_test.go
+?? Clash.Meta/adapter/outbound/fastcat_packets.go
+?? Clash.Meta/adapter/outbound/fastcat_routes.go
+?? Clash.Meta/adapter/outbound/fastcat_routes_test.go
+?? Clash.Meta/adapter/outbound/fastcat_status.go
+?? Clash.Meta/adapter/outbound/fastcat_v2_real_test.go
+?? Clash.Meta/adapter/outbound/fastcat_warm_path_test.go
+?? Clash.Meta/component/fastcatentry/
+?? Clash.Meta/component/fastcatprobe/
+?? Clash.Meta/component/fastcattls/
+?? Clash.Meta/dns/doh_pool_test.go
+?? Clash.Meta/dns/fastcat_entry.go
+?? Clash.Meta/transport/fastcath2/
+?? Clash.Meta/transport/fastcath3/
+?? fastcat_h2_test.go
+?? fastcat_https_test.go
+?? fastcat_warm.go
+?? fastcat_warm_test.go
+?? fastcatnext/
+?? fastcatv3/
+?? tools/
+?? ../device_gateway/device_grant.go
+?? ../device_gateway/device_grant_test.go
+?? ../docs/android-vless-fastcat-v2-comparison.md
+?? ../docs/fastcat-auto-android.md
+?? ../docs/fastcat-auto-linux.md
+?? ../docs/fastcat-v2-direct-test.md
+?? ../docs/fastcat-v2-linux.md
+?? ../docs/fastcat-v2-parallel-install.md
+?? ../docs/fastcat-v2.md
+?? ../docs/protocols/
+?? ../experiments/
+?? ../lib/security/local_auto_profile.dart
+?? ../lib/security/local_test_profile_scope.dart
+?? ../lib/xboard/features/settings/models/
+?? ../lib/xboard/features/settings/pages/fastcat_device_probe.dart
+?? ../lib/xboard/features/settings/pages/fastcat_direct_page.dart
+?? ../lib/xboard/features/settings/pages/fastcat_test_node_page.dart
+?? ../lib/xboard/features/settings/pages/fastcat_v2_status_page.dart
+?? ../scripts/deploy_fastcat_v2_node.sh
+?? ../scripts/import_fastcat_v2_direct_android.sh
+?? ../test/security/local_test_profile_scope_test.dart
+?? ../test/xboard/settings/

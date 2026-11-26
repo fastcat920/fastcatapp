@@ -1,0 +1,74 @@
+{
+  "date": "2026-11-20",
+  "scope": "standalone prototype; Android Honor A3GMVB2110006859, live public H2/H3; not integrated into the FastCat VPN app",
+  "android": {
+    "h2": {
+      "public_initial": {
+        "carrier": "h2",
+        "handshake_us": 1465354,
+        "target_first_byte_us": [
+          827836,
+          965954,
+          1196585
+        ],
+        "concurrent_requests": 4,
+        "udp_echo_verified": true,
+        "key_update_verified": true
+      },
+      "public_final": {
+        "carrier": "h2",
+        "handshake_us": 4004031,
+        "target_first_byte_us": [
+          2406063
+        ],
+        "concurrent_requests": 4,
+        "udp_echo_verified": false,
+        "key_update_verified": true
+      },
+      "negative_cases_rejected": [
+        "wrong_credential",
+        "wrong_service_key",
+        "mismatched_TLS_hostname"
+      ]
+    },
+    "h3": {
+      "public_initial": {
+        "carrier": "h3",
+        "handshake_us": 1809085,
+        "target_first_byte_us": [
+          984216,
+          1110518,
+          1443249
+        ],
+        "concurrent_requests": 4,
+        "udp_echo_verified": true,
+        "key_update_verified": true
+      },
+      "public_final": {
+        "carrier": "h3",
+        "handshake_us": 1771704,
+        "target_first_byte_us": [
+          1428231
+        ],
+        "concurrent_requests": 4,
+        "udp_echo_verified": false,
+        "key_update_verified": true
+      },
+      "negative_cases_rejected": [
+        "wrong_credential",
+        "wrong_service_key",
+        "mismatched_TLS_hostname"
+      ]
+    }
+  },
+  "local_connect_proxy_HTTP_statuses": [
+    "200",
+    "200",
+    "200"
+  ],
+  "verification": {
+    "android_protocol_tests": true,
+    "mac_race_tests": true,
+    "go_vet": true
+  }
+}

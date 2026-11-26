@@ -1,0 +1,1 @@
+{"body_ms":49399,"checksum_ok":true,"complete":true,"connect_ms":220,"deadline_seconds":90,"download_mbps":5.4339881628733755,"end_to_end_mbps":5.335948766721712,"expected_bytes":33554432,"first_byte_ms":759,"phase":"download","protocol":"quic","received_bytes":33554432,"round":1,"target_tls_ms":390,"total_ms":50306,"version":"tuic"}

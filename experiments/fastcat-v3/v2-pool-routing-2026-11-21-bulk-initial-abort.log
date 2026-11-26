@@ -1,0 +1,6 @@
+{"aggregate_mbps":1.339292030722798,"alloc_bytes":1009352,"bytes_each_way_per_stream":4194304,"elapsed_ms":50107,"errors":["read pipe: i/o timeout"],"goroutines":7,"heap_live_bytes":3065616,"phase":"bulk","protocol":"h2","round":1,"success":0,"version":"v2","workers":1}
+{"aggregate_mbps":6.084459980055662,"alloc_bytes":1008592,"bytes_each_way_per_stream":4194304,"elapsed_ms":11029,"errors":[],"goroutines":5,"heap_live_bytes":2703448,"phase":"bulk","protocol":"h2","round":2,"success":1,"version":"v2","workers":1}
+{"aggregate_mbps":14.411909806320157,"alloc_bytes":1207536,"bytes_each_way_per_stream":4194304,"elapsed_ms":4656,"errors":[],"goroutines":3,"heap_live_bytes":4104168,"phase":"bulk","protocol":"h2","round":3,"success":1,"version":"v2","workers":1}
+{"aggregate_mbps":1.3391796704569818,"alloc_bytes":274976,"bytes_each_way_per_stream":4194304,"elapsed_ms":50111,"errors":["http2: response body closed"],"goroutines":7,"heap_live_bytes":3360720,"phase":"bulk","protocol":"h2","round":1,"success":0,"version":"v3-light-fast","workers":1}
+{"aggregate_mbps":8.043084291370835,"alloc_bytes":840080,"bytes_each_way_per_stream":4194304,"elapsed_ms":8343,"errors":[],"goroutines":6,"heap_live_bytes":4432264,"phase":"bulk","protocol":"h2","round":2,"success":1,"version":"v3-light-fast","workers":1}
+context canceled

@@ -1,0 +1,3 @@
+/artifacts/
+*.private.json
+*.pcap

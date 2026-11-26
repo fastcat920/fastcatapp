@@ -1,0 +1,41 @@
+# -*- coding: utf-8 -*-
+from pathlib import Path
+import json,math,html,collections,shutil,hashlib,zipfile
+import matplotlib
+matplotlib.use('Agg')
+import matplotlib.pyplot as plt
+from matplotlib.font_manager import FontProperties
+ROOT=Path('/Users/pizihu/Projects/FastCatAPP'); O=ROOT/'experiments/fastcat-next/reply-2026-11-23'; W=ROOT/'experiments/fastcat-next/wire-2026-11-22'
+font=FontProperties(fname='/System/Library/Fonts/STHeiti Light.ttc');plt.rcParams.update({'font.family':font.get_name(),'axes.unicode_minus':False,'font.size':11})
+def read(p):
+ out=[]
+ for l in p.read_text().splitlines():
+  try:r=json.loads(l)
+  except:continue
+  if isinstance(r,dict):out.append(r)
+ return out
+def pct(a,q):return sorted(a)[math.ceil(len(a)*q)-1] if a else None
+perf=json.loads((O/'performance/summary.json').read_text());s=perf['summary'];b,c=s['baseline'],s['coalesce5']
+fig,axs=plt.subplots(1,3,figsize=(14,4.3),layout='constrained');colors=['#5476aa','#e39b35']
+for ax,labels,bv,cv,unit in [(axs[0],['冷启动 P95','连续请求 P95','负载下前台 P95'],[b['cold']['p95'],b['warm']['p95'],b['loaded_p95']],[c['cold']['p95'],c['warm']['p95'],c['loaded_p95']],'毫秒，越低越好'),(axs[1],['四路下载','滚动下载'],[b['parallel']['aggregate_mbps'],b['rolling']['aggregate_mbps']],[c['parallel']['aggregate_mbps'],c['rolling']['aggregate_mbps']],'Mbps，越高越好')]:
+ x=list(range(len(labels)))
+ for offset,vals,color,label in [(-.18,bv,colors[0],'原方案'),(.18,cv,colors[1],'合并成功标记 5ms')]:
+  bars=ax.bar([i+offset for i in x],vals,.34,label=label,color=color);ax.bar_label(bars,fmt='%.1f',fontsize=9,padding=3)
+ ax.set_xticks(x,labels);ax.set_ylabel(unit);ax.set_ylim(0,max(bv+cv)*1.22);ax.spines[['top','right']].set_visible(False)
+axs[0].legend(fontsize=9);axs[2].axis('off');axs[2].text(.03,.93,'验收：未通过',fontsize=22,color='#b43b32');axs[2].text(.03,.75,'负载 P95：+38.0%\n连续请求 P95：+27.2%\n四路吞吐：+59.9%\n滚动吞吐：+14.7%\n背景下载完成：12/12 → 11/12\n\n默认配置保持原方案。',linespacing=1.7,va='top');fig.savefig(O/'comparison.png',dpi=170);plt.close(fig)
+def table(headers,rows):return '<table><thead><tr>'+''.join('<th>'+html.escape(str(x))+'</th>' for x in headers)+'</tr></thead><tbody>'+''.join('<tr>'+''.join('<td>'+html.escape(str(x))+'</td>' for x in row)+'</tr>' for row in rows)+'</tbody></table>'
+rows=[['冷启动首字节 P50 / P95',f"{b['cold']['p50']:.1f} / {b['cold']['p95']:.1f} ms",f"{c['cold']['p50']:.1f} / {c['cold']['p95']:.1f} ms",'各36次'],['连续请求 P50 / P95',f"{b['warm']['p50']:.1f} / {b['warm']['p95']:.1f} ms",f"{c['warm']['p50']:.1f} / {c['warm']['p95']:.1f} ms",'各36次'],['负载下前台 P50 / P95',f"{b['loaded_p50']:.1f} / {b['loaded_p95']:.1f} ms",f"{c['loaded_p50']:.1f} / {c['loaded_p95']:.1f} ms",'各72次'],['前台 / 背景下载成功','72/72；12/12','72/72；11/12','背景2×16MiB，前台12次，每组6轮'],['四路下载有效吞吐',f"{b['parallel']['aggregate_mbps']:.2f} Mbps",f"{c['parallel']['aggregate_mbps']:.2f} Mbps",'各6轮，4×4MiB，24/24完成'],['滚动下载有效吞吐',f"{b['rolling']['aggregate_mbps']:.2f} Mbps",f"{c['rolling']['aggregate_mbps']:.2f} Mbps",'各6轮，12×4MiB / 4并发，72/72完成'],['并发小请求 P50 / P95',f"{b['batch']['p50']:.1f} / {b['batch']['p95']:.1f} ms",f"{c['batch']['p50']:.1f} / {c['batch']['p95']:.1f} ms",'各36次，4并发']]
+wire=json.loads((W/'summary.json').read_text());wr=[]
+for k,v in wire.items():wr.append([k,v['warm_success'],round(v['p50_ms'],1),round(v['p95_ms'],1),round(v['status_p95_ms'],1)])
+ecn=json.loads((O/'ecn-device/summary.json').read_text());er=[[k,v['success'],round(v['p50_ms'],1),round(v['p95_ms'],1)] for k,v in ecn.items()]
+cross=[]
+for f in (O/'cross-network').glob('*.jsonl'):
+ a=[r for r in read(f) if r.get('phase')=='warm'];g=[r['first_byte_us']/1000 for r in a if not r.get('error') and r.get('first_byte_us',0)>0]
+ if a:cross.append([f.stem,f'{len(g)}/{len(a)}',round(pct(g,.5),1) if g else '—',round(pct(g,.95),1) if g else '—'])
+fixed='尚未完成；不据此改变默认配置。'
+fp=O/'ecn-fixed/summary.json'
+if fp.exists():
+ fs=json.loads(fp.read_text());fixed=table(['固定源端口复核','成功','P50 ms','P95 ms','观察到的对端标记数'],[[k,v['success'],round(v['p50_ms'],1),round(v['p95_ms'],1),len(v.get('peer_tags',[]))] for k,v in fs.items()])+'<p>对端标记使用本轮私有随机盐进行不可逆摘要；仅用于核对公网 NAT 映射是否保持一致。两组均72/72成功，6对中5对的P95改善。相同公网映射减少了路径变量，但不证明每个包的中间路由完全一致。结果仍属于带诊断跟踪的短请求实验，不是负载验收。</p>'
+page='''<!doctype html><html lang="zh"><meta charset="utf-8"><title>Next 尾延迟定位与优化复测</title><style>body{font:16px/1.75 system-ui;max-width:1140px;margin:35px auto;padding:0 22px;color:#203046}h1,h2{line-height:1.3}h2{margin-top:38px}table{border-collapse:collapse;width:100%;font-size:14px}th,td{border-bottom:1px solid #dbe1e8;padding:10px;text-align:left}th{background:#eef3f8}img{width:100%}.note{background:#fff0d9;border-left:5px solid #d58a20;padding:18px}a{color:#245a9a}code{background:#eef3f8;padding:2px 5px}</style><h1>Next QUIC：尾延迟定位、针对性优化与复测</h1><p>2026-11-22 至 2026-11-23 · 连接的安卓真机运行原生核心独立对照程序，使用公网隔离入口；不是正式 App 的全链路发布验收。Mac 和蜂窝仅用于补充诊断。</p><div class="note"><b>结论：已证明成功标记缺口能阻塞后续数据；合并发送消除了本轮独立 1 字节首帧，但未通过整体性能验收，保持默认关闭。</b>合并发送提高了部分吞吐，但负载下前台尾延迟和连续请求退化；关闭服务端 ECN 的独立性能轮也未通过验收。两种候选均不作为已完成的延迟修复发布。</div><img src="comparison.png"><h2>1. 确定了什么，哪些仍未确定</h2><p>原来的阶段统计把等待入口成功标记计入了“目标 TLS”。Next Dial 返回只表示 OPEN 已排队，不能据此判断入口耗时低于 1ms。已补充 status 读起止、首段业务数据和逐包偏移记录；原报告的端到端首字节与吞吐值仍有效，阶段归因已更正。</p><p>已关联到同一请求：服务器发送流偏移 0 的成功字节，原包在客户端未观察到，后续偏移的 TLS 数据先到，但有序流必须等偏移 0 的恢复。代表请求中，后续 TLS 数据早到约 108ms；成功标记到达后约 14µs 就交付了首段数据。该证据确定了阻塞机制，尚不能确定包是在安卓、路由器、运营商、虚拟化网络还是途中其他位置延迟或丢失。未将其归因于 GFW。</p><p>代表逐包证据见 <a href="evidence/selected-proof.json">包号与偏移证据 JSON</a>，各轮原始记录也在本包内。<a href="../cause-2026-11-22/REPORT.html">上一轮完整报告（仓库相邻目录）</a>保留更早的时间线。元数据包含包号与偏移，不包含业务负载、令牌、私钥或真实 QUIC CID。</p><h2>2. 已实现的优化及兼容性</h2><p>服务端新增可选的 <code>ReplyCoalesceMillis=5</code>：把成功字节与第一段目标数据放进一次写入，减少独立小首帧。若目标暂不发送数据，5ms 定时器触发单独写出成功标记，兼容需要先收到成功标记再发送数据的旧客户端；目标立即 EOF 时也刷新。计费只计算业务字节，不把状态字节重复计入。线上字节顺序、认证、加密、BBR、路由策略均不改变。默认值 0，保留原行为。</p><p>机制验证开启诊断：每版本 3 轮，各 36 次冷启动、36 次连续请求。候选版 78/78 个流合并发送，独立偏移 0 / 长度 1 的发送帧为 0；原方案为 107 次（含重传）。单元与集成验证覆盖定时器竞争、旧客户端等待 ACK、server-first、EOF、认证失败、目标失败与流量计数；race 与 vet 均通过。目标位于同一 VPS，因此更容易在 5ms 窗口内获得数据；真实远端目标若更慢，会触发定时器而无法合并，不能把 78/78 合并率推广到所有网站。进一步按包号与偏移关联：原方案 72 个冷/热请求中，13 个在流头恢复时解除状态等待；合并方案仍有 15/72 个，元数据截断计数均为 0。合并减少了独立小首帧，但不能消除合并后首段本身未及时到达造成的有序等待。它不是所有尾延迟的修复。计数属于机制样本，不用于宣称差异显著。详情见 mechanism/recovery-summary.json 和 proofs.json。机制改善不等于端到端性能改善。</p><h2>3. 关闭逐包诊断的性能验收</h2>'''+table(['指标','原方案','合并成功标记 5ms','样本 / 负载'],rows)+'''<p>两版本在相邻轮次交替先后，使用原 next-opt 调度、默认 GSO / PMTU、同一目标与大小。目标为该 VPS 上的固定 TLS 1.3 HTTPS 测试服务，减少第三方网站波动；这些是隧道对照数据，不代表所有网站的实际体验。冷启动为新建入口连接；连续请求复用入口连接，但每次仍新建目标 TLS 连接并发起 HEAD。性能轮关闭逐包诊断；两边保留相同的轻量选路记录。吞吐为校验通过的字节总量 ÷ 各轮总耗时，未删去失败轮的时间。P95 使用最近秩法；成功率另列，不能只看成功请求的分位数。各轮样本有限，尾部分位数容易受少数请求影响，未宣称这些差异达到统计显著或适用于全部网络。</p><p><b>预设门槛：</b>负载 P95 至少降低 20%；连续请求 P95 不恶化超过 10%；两类吞吐不低于原方案 90%；完成率不降低；各至少 48 个负载请求。实际未通过负载 P95、连续请求 P95、背景完成率三项，因此不启用候选版。冷启动改善和吞吐改善不足以抵消此次退化。</p><h2>4. GSO / 包长排查</h2>'''+table(['服务端条件','连续成功数 /48','P50 ms','P95 ms','状态等待 P95 ms'],wr)+'''<p>4 条件采用 4×4 交错顺序；每条件 48 次冷启动与 48 次连续请求，带诊断，仅用于定位。实际 GSO 功能开关和固定 1200 上限均已从记录核实。GSO 可用不代表短请求里每次都实际合并了多个 UDP 包；该实验不能排除大流负载下的发送批处理差异。抓包仅保留时间、方向、UDP 长度，共 11334 个包，抓取内核丢弃 0；最大观察 UDP 负载 1441B。首轮日志提取超时发生在测试及清理完成后，已用压缩方式完整补回日志。</p><p>缺口也涉及明显小于 1200B 的包。关闭 GSO 或固定包长单项没有稳定改善，不能认定为 GSO 故障或 MTU 黑洞。QUIC PacketSent 不是网卡实际发出的证明；“发送端有记录、接收端没观察到”不是物理丢包率，还可能包含延迟包、关闭后冗余重传。服务器 UDP 全局错误计数没有对应增量也不能排除其他环节。</p><h2>5. 跨网络短请求复核</h2>'''+table(['条件','连续成功 / 总数','P50 ms','P95 ms'],sorted(cross))+'''<p>蜂窝仅做小请求，不做大文件下载。Wi‑Fi 前后与蜂窝的合并方案表现方向不一致，不把这些组混成一个排名。</p><h2>6. ECN 与设备差异</h2>'''+table(['设备 / 服务端 ECN 条件','连续成功 /48','P50 ms','P95 ms'],er)+'''<p>每个条件 48 次连续请求，4×4 交错顺序；所有条件均关闭成功标记合并，GSO / PMTU 保持默认。noecn 仅在隔离服务端进程关闭 ECN，没有修改系统全局网络参数。安卓首轮关闭 ECN 后 P95 改善，但 Mac 方向相反，不能就此认定 ECN 是原因。默认组实际观察到 ECT(0) 和 ECN capable，并不能单独证明 ECN 造成延迟。日志中的 key_unavailable 均属于旧 Initial/Handshake 包，未观察到对应的 1-RTT 业务解密失败。</p>'''+fixed+'''<h2>7. 当前处理与后续边界</h2><p>保留原来的默认发送、GSO、PMTU 与 ECN 策略。合并发送作为默认关闭的实验选项留存。未安装新的正式 App，未改生产 443 / 18447 服务。本轮已完成关闭诊断的 ECN 独立复测：吞吐有所提高，但连续请求 P95 退化，未达到延迟目标。两种候选都保持默认关闭；GSO / PMTU 实验也没有找到可发布的稳定修复。</p><p>剩余关键问题是未及时交付包的具体位置，以及合并发送后尾部为何仍退化。当前证据不足以把所有慢请求归为同一原因；继续改拥塞或并发参数前，应保留前后端同包关联和网络对照。</p><p><a href="performance/summary.json">性能汇总 JSON</a> · <a href="performance/plan.json">事先验收门槛</a> · <a href="ecn-device/summary.json">ECN 初轮汇总</a> · <a href="validation.txt">构建、自检与清理记录</a></p></html>'''
+(O/'REPORT.html').write_text(page)
+print(O/'REPORT.html')

@@ -1,0 +1,2 @@
+{"sample":1,"tcp_ms":100.946,"tls_ms":181.740,"open_ms":105.649,"first_response_headers_ms":490.832,"full_request_ms":1937.312,"bytes":32768,"end_to_end_mbps":0.135}
+{"bytes_each":32768,"failed":0,"p50_ms":1937.312,"p95_ms":1937.312,"scope":"fresh TCP + TLS + authenticated tunnel + complete verified HTTP response; speed includes setup and verification","success":1}

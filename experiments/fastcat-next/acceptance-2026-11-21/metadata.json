@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-21",
+  "device": "A3GMVB2110006859",
+  "server": "191.223.214.8",
+  "profiles": [
+    "v2-reno/h3",
+    "v2-bbr/h3",
+    "next/h2",
+    "next/quic",
+    "v3-light-fast/h2",
+    "v3-light-fast/h3"
+  ],
+  "production_modified": false,
+  "client": "independent Android CLI, VPN disabled, same native core",
+  "sha256": {
+    "compare": "91f0f05c350b0e817243608ca211f7ff827dbf8cd52a81d4a05b3460fa059d58",
+    "v2": "5adfa5bd5b38281c81700a5d6c2020612e5a1918e546e36957e44e4dad0a2df8",
+    "next": "d6dd75f4ac9e48e1c2ffcd005cdb739049deaa61c7871fdd9feea1de5a43ea80"
+  },
+  "light_sha256": "2d8c68cc035fb883eb67458f78255c7f18ee65b30e992b75babf52d38e573f10"
+}

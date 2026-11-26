@@ -1,0 +1,3 @@
+isolated ports closed; only private lab captures retained
+  catnode-native-93.service loaded active running CatNode native node 93
+  catnode-native-94.service loaded active running CatNode native node 94

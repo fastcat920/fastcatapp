@@ -1,0 +1,86 @@
+[
+  {
+    "name": "cold-baseline-b1-p1",
+    "variant": "baseline",
+    "block": 1,
+    "start": 1795404693.111019,
+    "end": 1795404700.500911
+  },
+  {
+    "name": "cold-recovery-b1-p2",
+    "variant": "recovery",
+    "block": 1,
+    "start": 1795404700.598908,
+    "end": 1795404707.8590689
+  },
+  {
+    "name": "cold-recovery-b2-p1",
+    "variant": "recovery",
+    "block": 2,
+    "start": 1795404707.95952,
+    "end": 1795404715.437488
+  },
+  {
+    "name": "cold-baseline-b2-p2",
+    "variant": "baseline",
+    "block": 2,
+    "start": 1795404715.5335538,
+    "end": 1795404723.011978
+  },
+  {
+    "name": "cold-baseline-b3-p1",
+    "variant": "baseline",
+    "block": 3,
+    "start": 1795404723.115666,
+    "end": 1795404730.654649
+  },
+  {
+    "name": "cold-recovery-b3-p2",
+    "variant": "recovery",
+    "block": 3,
+    "start": 1795404730.743637,
+    "end": 1795404738.32635
+  },
+  {
+    "name": "cold-recovery-b4-p1",
+    "variant": "recovery",
+    "block": 4,
+    "start": 1795404738.445652,
+    "end": 1795404745.687888
+  },
+  {
+    "name": "cold-baseline-b4-p2",
+    "variant": "baseline",
+    "block": 4,
+    "start": 1795404745.785721,
+    "end": 1795404753.056587
+  },
+  {
+    "name": "cold-baseline-b5-p1",
+    "variant": "baseline",
+    "block": 5,
+    "start": 1795404753.149216,
+    "end": 1795404760.6528552
+  },
+  {
+    "name": "cold-recovery-b5-p2",
+    "variant": "recovery",
+    "block": 5,
+    "start": 1795404760.729402,
+    "end": 1795404767.964528
+  },
+  {
+    "name": "cold-recovery-b6-p1",
+    "variant": "recovery",
+    "block": 6,
+    "start": 1795404768.053528,
+    "end": 1795404775.316361
+  },
+  {
+    "name": "cold-baseline-b6-p2",
+    "variant": "baseline",
+    "block": 6,
+    "start": 1795404775.4089448,
+    "end": 1795404782.878571
+  }
+]

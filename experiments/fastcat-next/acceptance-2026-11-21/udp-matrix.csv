@@ -1,0 +1,121 @@
+﻿elapsed_us,mode,ok,payload_bytes,round,error
+104458,direct-udp,True,32,1,
+1001283,fcn-quic,False,32,1,read fcn-datagram: deadline exceeded
+115044,direct-udp,True,1100,1,
+138763,fcn-quic,True,1100,1,
+102269,fcn-quic,True,32,2,
+1000682,direct-udp,False,32,2,read udp 192.168.31.15:34353->191.223.214.8:19456: i/o timeout
+132880,fcn-quic,True,1100,2,
+1000395,direct-udp,False,1100,2,read udp 192.168.31.15:34353->191.223.214.8:19456: i/o timeout
+127843,direct-udp,True,32,3,
+1001310,fcn-quic,False,32,3,read fcn-datagram: deadline exceeded
+133134,direct-udp,True,1100,3,
+1001328,fcn-quic,False,1100,3,read fcn-datagram: deadline exceeded
+129141,fcn-quic,True,32,4,
+1000299,direct-udp,False,32,4,read udp 192.168.31.15:34353->191.223.214.8:19456: i/o timeout
+130721,fcn-quic,True,1100,4,
+106697,direct-udp,True,1100,4,
+104900,direct-udp,True,32,5,
+104539,fcn-quic,True,32,5,
+1000875,direct-udp,False,1100,5,read udp 192.168.31.15:34353->191.223.214.8:19456: i/o timeout
+129737,fcn-quic,True,1100,5,
+103925,fcn-quic,True,32,6,
+104846,direct-udp,True,32,6,
+103509,fcn-quic,True,1100,6,
+105524,direct-udp,True,1100,6,
+113124,direct-udp,True,32,7,
+103235,fcn-quic,True,32,7,
+143766,direct-udp,True,1100,7,
+103674,fcn-quic,True,1100,7,
+103009,fcn-quic,True,32,8,
+105172,direct-udp,True,32,8,
+103092,fcn-quic,True,1100,8,
+1000211,direct-udp,False,1100,8,read udp 192.168.31.15:34353->191.223.214.8:19456: i/o timeout
+125322,direct-udp,True,32,9,
+158610,fcn-quic,True,32,9,
+104967,direct-udp,True,1100,9,
+103745,fcn-quic,True,1100,9,
+103233,fcn-quic,True,32,10,
+108235,direct-udp,True,32,10,
+104159,fcn-quic,True,1100,10,
+1000812,direct-udp,False,1100,10,read udp 192.168.31.15:34353->191.223.214.8:19456: i/o timeout
+1000914,direct-udp,False,32,11,read udp 192.168.31.15:34353->191.223.214.8:19456: i/o timeout
+103033,fcn-quic,True,32,11,
+107940,direct-udp,True,1100,11,
+103430,fcn-quic,True,1100,11,
+103958,fcn-quic,True,32,12,
+150184,direct-udp,True,32,12,
+1000388,fcn-quic,False,1100,12,read fcn-datagram: deadline exceeded
+125803,direct-udp,True,1100,12,
+105336,direct-udp,True,32,13,
+102802,fcn-quic,True,32,13,
+105582,direct-udp,True,1100,13,
+1001020,fcn-quic,False,1100,13,read fcn-datagram: deadline exceeded
+128524,fcn-quic,True,32,14,
+104996,direct-udp,True,32,14,
+103537,fcn-quic,True,1100,14,
+105816,direct-udp,True,1100,14,
+114622,direct-udp,True,32,15,
+102598,fcn-quic,True,32,15,
+1000521,direct-udp,False,1100,15,read udp 192.168.31.15:34353->191.223.214.8:19456: i/o timeout
+193846,fcn-quic,True,1100,15,
+101926,fcn-quic,True,32,16,
+104650,direct-udp,True,32,16,
+104288,fcn-quic,True,1100,16,
+106526,direct-udp,True,1100,16,
+106825,direct-udp,True,32,17,
+102813,fcn-quic,True,32,17,
+1001233,direct-udp,False,1100,17,read udp 192.168.31.15:34353->191.223.214.8:19456: i/o timeout
+1000813,fcn-quic,False,1100,17,read fcn-datagram: deadline exceeded
+129600,fcn-quic,True,32,18,
+1000392,direct-udp,False,32,18,read udp 192.168.31.15:34353->191.223.214.8:19456: i/o timeout
+129757,fcn-quic,True,1100,18,
+105134,direct-udp,True,1100,18,
+104215,direct-udp,True,32,19,
+102368,fcn-quic,True,32,19,
+105339,direct-udp,True,1100,19,
+110507,fcn-quic,True,1100,19,
+102764,fcn-quic,True,32,20,
+1001279,direct-udp,False,32,20,read udp 192.168.31.15:34353->191.223.214.8:19456: i/o timeout
+129275,fcn-quic,True,1100,20,
+1001029,direct-udp,False,1100,20,read udp 192.168.31.15:34353->191.223.214.8:19456: i/o timeout
+121616,direct-udp,True,32,21,
+102410,fcn-quic,True,32,21,
+105344,direct-udp,True,1100,21,
+1001214,fcn-quic,False,1100,21,read fcn-datagram: deadline exceeded
+102781,fcn-quic,True,32,22,
+104713,direct-udp,True,32,22,
+131525,fcn-quic,True,1100,22,
+105070,direct-udp,True,1100,22,
+104281,direct-udp,True,32,23,
+103295,fcn-quic,True,32,23,
+105152,direct-udp,True,1100,23,
+1000335,fcn-quic,False,1100,23,read fcn-datagram: deadline exceeded
+102727,fcn-quic,True,32,24,
+104537,direct-udp,True,32,24,
+1001123,fcn-quic,False,1100,24,read fcn-datagram: deadline exceeded
+130894,direct-udp,True,1100,24,
+104763,direct-udp,True,32,25,
+105516,fcn-quic,True,32,25,
+1001027,direct-udp,False,1100,25,read udp 192.168.31.15:34353->191.223.214.8:19456: i/o timeout
+201250,fcn-quic,True,1100,25,
+102687,fcn-quic,True,32,26,
+1000754,direct-udp,False,32,26,read udp 192.168.31.15:34353->191.223.214.8:19456: i/o timeout
+104854,fcn-quic,True,1100,26,
+105183,direct-udp,True,1100,26,
+104904,direct-udp,True,32,27,
+103493,fcn-quic,True,32,27,
+104780,direct-udp,True,1100,27,
+177796,fcn-quic,True,1100,27,
+107051,fcn-quic,True,32,28,
+105539,direct-udp,True,32,28,
+104162,fcn-quic,True,1100,28,
+1000301,direct-udp,False,1100,28,read udp 192.168.31.15:34353->191.223.214.8:19456: i/o timeout
+110630,direct-udp,True,32,29,
+180201,fcn-quic,True,32,29,
+1001151,direct-udp,False,1100,29,read udp 192.168.31.15:34353->191.223.214.8:19456: i/o timeout
+119453,fcn-quic,True,1100,29,
+103268,fcn-quic,True,32,30,
+154905,direct-udp,True,32,30,
+103241,fcn-quic,True,1100,30,
+1000444,direct-udp,False,1100,30,read udp 192.168.31.15:34353->191.223.214.8:19456: i/o timeout

@@ -1,0 +1,60 @@
+{
+  "conditions": [
+    [
+      "android-default",
+      "android",
+      false
+    ],
+    [
+      "android-noecn",
+      "android",
+      true
+    ],
+    [
+      "mac-default",
+      "mac",
+      false
+    ],
+    [
+      "mac-noecn",
+      "mac",
+      true
+    ]
+  ],
+  "orders": [
+    [
+      0,
+      1,
+      3,
+      2
+    ],
+    [
+      1,
+      2,
+      0,
+      3
+    ],
+    [
+      2,
+      3,
+      1,
+      0
+    ],
+    [
+      3,
+      0,
+      2,
+      1
+    ]
+  ],
+  "samples": 12,
+  "reply_coalescing": 0,
+  "GSO": "default",
+  "PMTU": "default",
+  "only_short_requests": true,
+  "sha256": {
+    "compare": "cc9d896094b837660f03e141604c564a99125d052acef54d62812858d16cba51",
+    "compare-mac": "fda66329f8df1da9890fae12f965eb1d5dbea0a8533249d6b635b2751694337b",
+    "next-diagnostic": "f6ff24df517d249e4c7fd750b7753e4f7f9e77eea30ca9f16c0350f99b0c38c2"
+  }
+}

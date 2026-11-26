@@ -1,0 +1,81 @@
+{
+  "versions": [
+    "v2",
+    "v3-light-fast",
+    "vless-vision",
+    "trojan",
+    "hysteria2",
+    "tuic",
+    "anytls"
+  ],
+  "pools": 3,
+  "samples": 20,
+  "batches": 5,
+  "workers": 4,
+  "bulk_seconds": 8,
+  "bulk_rounds": 3,
+  "client_go": "1.26.2",
+  "server_go": "1.27.3",
+  "device": "A3GMVB2110006859",
+  "xray_module": "github.com/xtls/xray-core v1.261031.0 => github.com/wyx2685/xray-core v0.0.0-20261105071511-0061c59f331a",
+  "server_uses": "CatNode V2Core.Start/AddNode/AddUsers and custom dispatcher/limiter; synthetic unrestricted users; no panel",
+  "sha256": {
+    "v2": "c6d471e58d4fb162b54af40d56cfd8a88a803be22b33ffda05bbf212cb676668",
+    "v3": "2d8c68cc035fb883eb67458f78255c7f18ee65b30e992b75babf52d38e573f10",
+    "xray-lab": "97ceb7e53aef37522948f3ff5e43deb903d1211eb6e853aa75cd0796be10e1f0",
+    "compare": "0f57a6080db2e9b696e54c2cddfcbc5fede19266933de6f4eff02e2a814cdf30"
+  },
+  "phase_order": [
+    "controlled",
+    "singlepool",
+    "internet",
+    "concurrent8",
+    "idle35",
+    "downloads",
+    "throughput",
+    "idle70"
+  ],
+  "overview": {
+    "total_latency_rows": 1548,
+    "formal_latency_attempts": 1458,
+    "prime_rows": 90,
+    "pilot_rows": 36,
+    "throughput_groups": 54,
+    "throughput_requested_streams": 135,
+    "download_attempts": 18
+  },
+  "certificate_verification": true,
+  "bulk_inner_tls": "TLS1.3 verified; zlhk.fastcat.ink",
+  "xray_runtime_version": "26.10.31",
+  "default_network": 171,
+  "vpn_restored": true,
+  "stayon_restored": 0,
+  "temporary_ports_removed": [
+    19442,
+    19444,
+    19445,
+    19446,
+    19448,
+    19450,
+    19451,
+    19452,
+    19454
+  ],
+  "throughput_units": "verified receive payload Mbps; 4-stream values are aggregate",
+  "source_sha256": {
+    "core/tools/fastcat-v3-compare/bulk_timed.go": "5464cec2f09bd9f99fdff59414745f3a4f63f16e5c7b9139b5052940832d8fa2",
+    "core/tools/fastcat-v3-compare/idle.go": "dfa356ee7682fd6f2976dff7e034613915ead616f66b2fc93147992b62413455",
+    "core/tools/fastcat-v3-compare/download_test.go": "4d5064465aec5947641175e4f713432c9e30b5719240d4762b40b3be51b68ceb",
+    "core/tools/fastcat-v3-compare/bulk_timed_test.go": "be1b1ab8ade3b113c59b6761ab01055259a3784987fefb009413846d49d61622",
+    "core/tools/fastcat-v3-compare/download.go": "0346cb3260bbf59311e3a550f1b806c9ee1823bd21a9f0707c555270b878ffa3",
+    "core/tools/fastcat-v3-compare/bulk.go": "c6e595add22ca250e7b7a881f5c10ac117277912438b405e25434fe449ac08f4",
+    "core/tools/fastcat-v3-compare/tracked.go": "975b4becab5a1e0be7f357a6582a597fa4db82b8eaa6a9b19650c7479ba3394f",
+    "core/tools/fastcat-v3-compare/main.go": "5c33efb1bfebb42e3b5d7dafbf4a79ee94c9d6ee95f44a2205dfbb3ab8de0207"
+  },
+  "module_hashes": {
+    "/Users/pizihu/Projects/FastCatAPP/core/go.mod": "c2a94e9d16656fbfd529a4f5ccb1d6f30e07df418cc545e91f174b648df46369",
+    "/Users/pizihu/Projects/FastCatAPP/core/go.sum": "5bfc909f179936611034388f243c2cdaba088b9f30de98a756fce06dd52e4747",
+    "/Users/pizihu/Projects/CatNode/go.mod": "411892df6ab3c1c23e0d99dcb70c66738f56d1589072456b1cc3ac2bef38bea6",
+    "/Users/pizihu/Projects/CatNode/go.sum": "99a56f88f781225c75bdb03c1b5aa4f4c28337194f55356c215cd66c9403b688"
+  }
+}

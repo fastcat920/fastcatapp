@@ -1,0 +1,17 @@
+Running as unit: fc-opt-backend-1795365649.service; invocation ID: be194d1a5c9341fc87f5e9c62ae06489
+Running as unit: fc-opt-next-1795365649.service; invocation ID: 6393bfe09da04f458df87b2b102bd1e8
+/tmp/fc-next-reply/compare: 1 file pushed, 0 skipped. 39.9 MB/s (38888558 bytes in 0.931s)
+/tmp/fc-next-reply/client-1795365649.json: 1 file pushed, 0 skipped. 3.8 MB/s (432 bytes in 0.000s)
+/etc/ssl/cert.pem: 1 file pushed, 0 skipped. 137.1 MB/s (333483 bytes in 0.002s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+/tmp/fc-next-reply/cross-client-1795365649.json: 1 file pushed, 0 skipped. 4.6 MB/s (609 bytes in 0.000s)
+COMPLETE wifi-before-baseline
+COMPLETE wifi-before-coalesce5
+COMPLETE cellular-baseline-pilot
+COMPLETE cellular-coalesce5
+COMPLETE cellular-baseline
+COMPLETE wifi-after-coalesce5
+COMPLETE wifi-after-baseline
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+VPN restored: True
+CROSS COMPLETE

@@ -1,0 +1,49 @@
+{
+  "phase": "udp",
+  "round": 1,
+  "position": 2,
+  "arm": "adaptive",
+  "args": [
+    "./compare",
+    "-config",
+    "adaptive.json",
+    "-protocol",
+    "fcnv3",
+    "-udp-diagnostic",
+    "-count",
+    "28",
+    "-timeout",
+    "55s",
+    "-udp-wire-rx"
+  ],
+  "host_timeout_s": 70,
+  "entry_port": 18534,
+  "before": {
+    "default_net_id": 359,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795597269519,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "after": {
+    "default_net_id": 359,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795597276376,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "network_stable": true,
+  "status": "exited",
+  "exit_code": 1,
+  "start_unix_ms": 1795597269519,
+  "end_unix_ms": 1795597276300,
+  "elapsed_ms": 6780.591584
+}

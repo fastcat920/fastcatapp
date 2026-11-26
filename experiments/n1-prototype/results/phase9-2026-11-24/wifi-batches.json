@@ -1,0 +1,26 @@
+[
+  {
+    "index": 0,
+    "process_exit_code": 0,
+    "server_begin_unix": 1795532882.3187494,
+    "rows": 8
+  },
+  {
+    "index": 1,
+    "process_exit_code": 1,
+    "server_begin_unix": 1795532907.290086,
+    "rows": 2
+  },
+  {
+    "index": 2,
+    "process_exit_code": 0,
+    "server_begin_unix": 1795532942.9426157,
+    "rows": 8
+  },
+  {
+    "index": 3,
+    "process_exit_code": 0,
+    "server_begin_unix": 1795532961.5471358,
+    "rows": 2
+  }
+]

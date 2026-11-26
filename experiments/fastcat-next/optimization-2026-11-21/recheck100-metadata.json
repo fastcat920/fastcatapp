@@ -1,0 +1,12 @@
+{
+  "start": 1795273940.696734,
+  "end": 1795274227.080425,
+  "profiles": [
+    "next-quic/quic",
+    "tuic/quic"
+  ],
+  "reason": "adjacent late-stage repeat after TUIC completed 100MiB while earlier Next and v2 BBR timed out; preserve earlier failures",
+  "attempts_each": 1,
+  "bytes": 104857600,
+  "deadline_seconds": 240
+}

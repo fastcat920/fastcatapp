@@ -1,0 +1,66 @@
+[
+  {
+    "name": "web1-baseline-b1-p1",
+    "variant": "baseline",
+    "target": "example.com:443",
+    "block": 1,
+    "start": 1795404481.7010298,
+    "end": 1795404488.698682
+  },
+  {
+    "name": "web1-selected-b1-p2",
+    "variant": "selected",
+    "target": "example.com:443",
+    "block": 1,
+    "start": 1795404494.3783932,
+    "end": 1795404498.595905
+  },
+  {
+    "name": "web1-selected-b2-p1",
+    "variant": "selected",
+    "target": "example.com:443",
+    "block": 2,
+    "start": 1795404504.274791,
+    "end": 1795404512.121444
+  },
+  {
+    "name": "web1-baseline-b2-p2",
+    "variant": "baseline",
+    "target": "example.com:443",
+    "block": 2,
+    "start": 1795404517.884531,
+    "end": 1795404522.3121128
+  },
+  {
+    "name": "web2-baseline-b1-p1",
+    "variant": "baseline",
+    "target": "www.google.com:443",
+    "block": 1,
+    "start": 1795404527.988469,
+    "end": 1795404532.536087
+  },
+  {
+    "name": "web2-selected-b1-p2",
+    "variant": "selected",
+    "target": "www.google.com:443",
+    "block": 1,
+    "start": 1795404538.18788,
+    "end": 1795404543.011507
+  },
+  {
+    "name": "web2-selected-b2-p1",
+    "variant": "selected",
+    "target": "www.google.com:443",
+    "block": 2,
+    "start": 1795404548.686274,
+    "end": 1795404553.718415
+  },
+  {
+    "name": "web2-baseline-b2-p2",
+    "variant": "baseline",
+    "target": "www.google.com:443",
+    "block": 2,
+    "start": 1795404559.384665,
+    "end": 1795404566.2643719
+  }
+]

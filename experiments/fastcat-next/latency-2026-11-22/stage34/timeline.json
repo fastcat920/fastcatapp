@@ -1,0 +1,569 @@
+[
+  {
+    "name": "mixed-b1-p1-next-opt",
+    "metric": "mixed",
+    "block": 1,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795341397.5500019,
+    "end": 1795341415.172321
+  },
+  {
+    "name": "mixed-b1-p2-next-latency",
+    "metric": "mixed",
+    "block": 1,
+    "position": 2,
+    "version": "next-latency",
+    "start": 1795341420.472233,
+    "end": 1795341430.391148
+  },
+  {
+    "name": "mixed-b1-p3-next-reserve",
+    "metric": "mixed",
+    "block": 1,
+    "position": 3,
+    "version": "next-reserve",
+    "start": 1795341437.09957,
+    "end": 1795341469.855179
+  },
+  {
+    "name": "mixed-b2-p1-next-opt",
+    "metric": "mixed",
+    "block": 2,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795341475.150683,
+    "end": 1795341494.661341
+  },
+  {
+    "name": "mixed-b2-p2-next-reserve",
+    "metric": "mixed",
+    "block": 2,
+    "position": 2,
+    "version": "next-reserve",
+    "start": 1795341499.9596858,
+    "end": 1795341509.9370081
+  },
+  {
+    "name": "mixed-b2-p3-next-latency",
+    "metric": "mixed",
+    "block": 2,
+    "position": 3,
+    "version": "next-latency",
+    "start": 1795341515.346237,
+    "end": 1795341531.346414
+  },
+  {
+    "name": "mixed-b3-p1-next-latency",
+    "metric": "mixed",
+    "block": 3,
+    "position": 1,
+    "version": "next-latency",
+    "start": 1795341537.32395,
+    "end": 1795341561.949918
+  },
+  {
+    "name": "mixed-b3-p2-next-opt",
+    "metric": "mixed",
+    "block": 3,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795341567.659691,
+    "end": 1795341576.2293692
+  },
+  {
+    "name": "mixed-b3-p3-next-reserve",
+    "metric": "mixed",
+    "block": 3,
+    "position": 3,
+    "version": "next-reserve",
+    "start": 1795341581.516639,
+    "end": 1795341599.341462
+  },
+  {
+    "name": "mixed-b4-p1-next-latency",
+    "metric": "mixed",
+    "block": 4,
+    "position": 1,
+    "version": "next-latency",
+    "start": 1795341604.96419,
+    "end": 1795341616.490013
+  },
+  {
+    "name": "mixed-b4-p2-next-reserve",
+    "metric": "mixed",
+    "block": 4,
+    "position": 2,
+    "version": "next-reserve",
+    "start": 1795341622.124844,
+    "end": 1795341648.748912
+  },
+  {
+    "name": "mixed-b4-p3-next-opt",
+    "metric": "mixed",
+    "block": 4,
+    "position": 3,
+    "version": "next-opt",
+    "start": 1795341654.049311,
+    "end": 1795341679.411173
+  },
+  {
+    "name": "mixed-b5-p1-next-reserve",
+    "metric": "mixed",
+    "block": 5,
+    "position": 1,
+    "version": "next-reserve",
+    "start": 1795341684.719851,
+    "end": 1795341696.214297
+  },
+  {
+    "name": "mixed-b5-p2-next-opt",
+    "metric": "mixed",
+    "block": 5,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795341701.510392,
+    "end": 1795341711.036315
+  },
+  {
+    "name": "mixed-b5-p3-next-latency",
+    "metric": "mixed",
+    "block": 5,
+    "position": 3,
+    "version": "next-latency",
+    "start": 1795341716.9566789,
+    "end": 1795341745.969332
+  },
+  {
+    "name": "mixed-b6-p1-next-reserve",
+    "metric": "mixed",
+    "block": 6,
+    "position": 1,
+    "version": "next-reserve",
+    "start": 1795341751.567644,
+    "end": 1795341771.473176
+  },
+  {
+    "name": "mixed-b6-p2-next-latency",
+    "metric": "mixed",
+    "block": 6,
+    "position": 2,
+    "version": "next-latency",
+    "start": 1795341776.783812,
+    "end": 1795341785.430401
+  },
+  {
+    "name": "mixed-b6-p3-next-opt",
+    "metric": "mixed",
+    "block": 6,
+    "position": 3,
+    "version": "next-opt",
+    "start": 1795341791.273088,
+    "end": 1795341809.550625
+  },
+  {
+    "name": "parallel-b1-p1-next-opt",
+    "metric": "parallel",
+    "block": 1,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795341815.213063,
+    "end": 1795341827.755434
+  },
+  {
+    "name": "parallel-b1-p2-next-latency",
+    "metric": "parallel",
+    "block": 1,
+    "position": 2,
+    "version": "next-latency",
+    "start": 1795341833.765687,
+    "end": 1795341840.313579
+  },
+  {
+    "name": "parallel-b1-p3-next-reserve",
+    "metric": "parallel",
+    "block": 1,
+    "position": 3,
+    "version": "next-reserve",
+    "start": 1795341845.6097128,
+    "end": 1795341851.490001
+  },
+  {
+    "name": "parallel-b2-p1-next-opt",
+    "metric": "parallel",
+    "block": 2,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795341856.789184,
+    "end": 1795341869.7332711
+  },
+  {
+    "name": "parallel-b2-p2-next-reserve",
+    "metric": "parallel",
+    "block": 2,
+    "position": 2,
+    "version": "next-reserve",
+    "start": 1795341875.13296,
+    "end": 1795341881.808655
+  },
+  {
+    "name": "parallel-b2-p3-next-latency",
+    "metric": "parallel",
+    "block": 2,
+    "position": 3,
+    "version": "next-latency",
+    "start": 1795341887.417001,
+    "end": 1795341904.9618251
+  },
+  {
+    "name": "parallel-b3-p1-next-latency",
+    "metric": "parallel",
+    "block": 3,
+    "position": 1,
+    "version": "next-latency",
+    "start": 1795341910.924416,
+    "end": 1795341918.8622751
+  },
+  {
+    "name": "parallel-b3-p2-next-opt",
+    "metric": "parallel",
+    "block": 3,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795341924.1585789,
+    "end": 1795341937.719786
+  },
+  {
+    "name": "parallel-b3-p3-next-reserve",
+    "metric": "parallel",
+    "block": 3,
+    "position": 3,
+    "version": "next-reserve",
+    "start": 1795341943.027694,
+    "end": 1795341955.744519
+  },
+  {
+    "name": "parallel-b4-p1-next-latency",
+    "metric": "parallel",
+    "block": 4,
+    "position": 1,
+    "version": "next-latency",
+    "start": 1795341961.032416,
+    "end": 1795341966.608159
+  },
+  {
+    "name": "parallel-b4-p2-next-reserve",
+    "metric": "parallel",
+    "block": 4,
+    "position": 2,
+    "version": "next-reserve",
+    "start": 1795341972.211041,
+    "end": 1795341989.8244429
+  },
+  {
+    "name": "parallel-b4-p3-next-opt",
+    "metric": "parallel",
+    "block": 4,
+    "position": 3,
+    "version": "next-opt",
+    "start": 1795341995.466497,
+    "end": 1795342007.680325
+  },
+  {
+    "name": "parallel-b5-p1-next-reserve",
+    "metric": "parallel",
+    "block": 5,
+    "position": 1,
+    "version": "next-reserve",
+    "start": 1795342012.985445,
+    "end": 1795342026.28525
+  },
+  {
+    "name": "parallel-b5-p2-next-opt",
+    "metric": "parallel",
+    "block": 5,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795342031.583803,
+    "end": 1795342036.376161
+  },
+  {
+    "name": "parallel-b5-p3-next-latency",
+    "metric": "parallel",
+    "block": 5,
+    "position": 3,
+    "version": "next-latency",
+    "start": 1795342041.661715,
+    "end": 1795342049.045084
+  },
+  {
+    "name": "parallel-b6-p1-next-reserve",
+    "metric": "parallel",
+    "block": 6,
+    "position": 1,
+    "version": "next-reserve",
+    "start": 1795342054.6481469,
+    "end": 1795342067.254476
+  },
+  {
+    "name": "parallel-b6-p2-next-latency",
+    "metric": "parallel",
+    "block": 6,
+    "position": 2,
+    "version": "next-latency",
+    "start": 1795342073.229695,
+    "end": 1795342092.1804311
+  },
+  {
+    "name": "parallel-b6-p3-next-opt",
+    "metric": "parallel",
+    "block": 6,
+    "position": 3,
+    "version": "next-opt",
+    "start": 1795342097.588436,
+    "end": 1795342108.901599
+  },
+  {
+    "name": "rolling-b1-p1-next-opt",
+    "metric": "rolling",
+    "block": 1,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795342114.628783,
+    "end": 1795342127.328575
+  },
+  {
+    "name": "rolling-b1-p2-next-latency",
+    "metric": "rolling",
+    "block": 1,
+    "position": 2,
+    "version": "next-latency",
+    "start": 1795342133.029282,
+    "end": 1795342151.478189
+  },
+  {
+    "name": "rolling-b1-p3-next-reserve",
+    "metric": "rolling",
+    "block": 1,
+    "position": 3,
+    "version": "next-reserve",
+    "start": 1795342156.768907,
+    "end": 1795342187.45744
+  },
+  {
+    "name": "rolling-b2-p1-next-opt",
+    "metric": "rolling",
+    "block": 2,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795342192.755409,
+    "end": 1795342207.493471
+  },
+  {
+    "name": "rolling-b2-p2-next-reserve",
+    "metric": "rolling",
+    "block": 2,
+    "position": 2,
+    "version": "next-reserve",
+    "start": 1795342212.779426,
+    "end": 1795342225.622627
+  },
+  {
+    "name": "rolling-b2-p3-next-latency",
+    "metric": "rolling",
+    "block": 2,
+    "position": 3,
+    "version": "next-latency",
+    "start": 1795342231.270092,
+    "end": 1795342245.251032
+  },
+  {
+    "name": "rolling-b3-p1-next-latency",
+    "metric": "rolling",
+    "block": 3,
+    "position": 1,
+    "version": "next-latency",
+    "start": 1795342251.195521,
+    "end": 1795342270.9865658
+  },
+  {
+    "name": "rolling-b3-p2-next-opt",
+    "metric": "rolling",
+    "block": 3,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795342276.6542249,
+    "end": 1795342289.9052212
+  },
+  {
+    "name": "rolling-b3-p3-next-reserve",
+    "metric": "rolling",
+    "block": 3,
+    "position": 3,
+    "version": "next-reserve",
+    "start": 1795342295.178474,
+    "end": 1795342318.7454588
+  },
+  {
+    "name": "rolling-b4-p1-next-latency",
+    "metric": "rolling",
+    "block": 4,
+    "position": 1,
+    "version": "next-latency",
+    "start": 1795342324.685458,
+    "end": 1795342338.981935
+  },
+  {
+    "name": "rolling-b4-p2-next-reserve",
+    "metric": "rolling",
+    "block": 4,
+    "position": 2,
+    "version": "next-reserve",
+    "start": 1795342344.2815979,
+    "end": 1795342379.0420852
+  },
+  {
+    "name": "rolling-b4-p3-next-opt",
+    "metric": "rolling",
+    "block": 4,
+    "position": 3,
+    "version": "next-opt",
+    "start": 1795342384.35183,
+    "end": 1795342417.3325498
+  },
+  {
+    "name": "rolling-b5-p1-next-reserve",
+    "metric": "rolling",
+    "block": 5,
+    "position": 1,
+    "version": "next-reserve",
+    "start": 1795342423.052404,
+    "end": 1795342451.657413
+  },
+  {
+    "name": "rolling-b5-p2-next-opt",
+    "metric": "rolling",
+    "block": 5,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795342457.061662,
+    "end": 1795342472.5402648
+  },
+  {
+    "name": "rolling-b5-p3-next-latency",
+    "metric": "rolling",
+    "block": 5,
+    "position": 3,
+    "version": "next-latency",
+    "start": 1795342477.8418381,
+    "end": 1795342493.141859
+  },
+  {
+    "name": "rolling-b6-p1-next-reserve",
+    "metric": "rolling",
+    "block": 6,
+    "position": 1,
+    "version": "next-reserve",
+    "start": 1795342498.539225,
+    "end": 1795342513.6607842
+  },
+  {
+    "name": "rolling-b6-p2-next-latency",
+    "metric": "rolling",
+    "block": 6,
+    "position": 2,
+    "version": "next-latency",
+    "start": 1795342519.307853,
+    "end": 1795342540.759468
+  },
+  {
+    "name": "rolling-b6-p3-next-opt",
+    "metric": "rolling",
+    "block": 6,
+    "position": 3,
+    "version": "next-opt",
+    "start": 1795342546.395982,
+    "end": 1795342577.5830982
+  },
+  {
+    "name": "latency-b1-p1-next-opt",
+    "metric": "latency",
+    "block": 1,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795342582.883758,
+    "end": 1795342599.334136
+  },
+  {
+    "name": "latency-b1-p2-next-latency",
+    "metric": "latency",
+    "block": 1,
+    "position": 2,
+    "version": "next-latency",
+    "start": 1795342604.675541,
+    "end": 1795342623.074059
+  },
+  {
+    "name": "latency-b1-p3-next-reserve",
+    "metric": "latency",
+    "block": 1,
+    "position": 3,
+    "version": "next-reserve",
+    "start": 1795342629.101988,
+    "end": 1795342652.822145
+  },
+  {
+    "name": "latency-b2-p1-next-latency",
+    "metric": "latency",
+    "block": 2,
+    "position": 1,
+    "version": "next-latency",
+    "start": 1795342658.109749,
+    "end": 1795342679.083342
+  },
+  {
+    "name": "latency-b2-p2-next-reserve",
+    "metric": "latency",
+    "block": 2,
+    "position": 2,
+    "version": "next-reserve",
+    "start": 1795342684.396974,
+    "end": 1795342708.547675
+  },
+  {
+    "name": "latency-b2-p3-next-opt",
+    "metric": "latency",
+    "block": 2,
+    "position": 3,
+    "version": "next-opt",
+    "start": 1795342713.8350458,
+    "end": 1795342733.355722
+  },
+  {
+    "name": "latency-b3-p1-next-reserve",
+    "metric": "latency",
+    "block": 3,
+    "position": 1,
+    "version": "next-reserve",
+    "start": 1795342738.6526132,
+    "end": 1795342761.599529
+  },
+  {
+    "name": "latency-b3-p2-next-opt",
+    "metric": "latency",
+    "block": 3,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795342767.237726,
+    "end": 1795342791.5881112
+  },
+  {
+    "name": "latency-b3-p3-next-latency",
+    "metric": "latency",
+    "block": 3,
+    "position": 3,
+    "version": "next-latency",
+    "start": 1795342797.360048,
+    "end": 1795342818.075573
+  }
+]

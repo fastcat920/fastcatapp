@@ -1,0 +1,684 @@
+[
+  {
+    "case": "initial_wifi",
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED",
+      "network_handle": "357"
+    },
+    "interface_ready_ms": 234.19,
+    "completed_unix": 1795591575.7673259,
+    "result": {
+      "changed": false,
+      "elapsed_ms": 13210.466154,
+      "event": "network-probe",
+      "first_tcp_ms": 736.025538,
+      "first_udp_ms": 1464.829615,
+      "iteration": 1,
+      "tcp_attempts": 3,
+      "tcp_failures": null,
+      "tcp_success": 3,
+      "udp_attempts": 28,
+      "udp_oversize_rejected": true,
+      "udp_quota": {
+        "accepted": 8,
+        "capacity_reused": true,
+        "ninth_rejected": true
+      },
+      "udp_rows": [
+        {
+          "bytes": 64,
+          "elapsed_ms": 123.819769,
+          "sent": true,
+          "sequence": 0,
+          "success": true
+        },
+        {
+          "bytes": 256,
+          "elapsed_ms": 98.528846,
+          "sent": true,
+          "sequence": 1,
+          "success": true
+        },
+        {
+          "bytes": 512,
+          "elapsed_ms": 96.400923,
+          "sent": true,
+          "sequence": 2,
+          "success": true
+        },
+        {
+          "bytes": 900,
+          "elapsed_ms": 1501.552923,
+          "error": "timeout",
+          "sent": true,
+          "sequence": 3,
+          "success": false
+        },
+        {
+          "bytes": 1000,
+          "elapsed_ms": 105.824923,
+          "sent": true,
+          "sequence": 4,
+          "success": true
+        },
+        {
+          "bytes": 1100,
+          "elapsed_ms": 99.514461,
+          "sent": true,
+          "sequence": 5,
+          "success": true
+        },
+        {
+          "bytes": 1150,
+          "elapsed_ms": 1500.67877,
+          "error": "timeout",
+          "sent": true,
+          "sequence": 6,
+          "success": false
+        },
+        {
+          "bytes": 64,
+          "elapsed_ms": 124.002154,
+          "sent": true,
+          "sequence": 7,
+          "success": true
+        },
+        {
+          "bytes": 256,
+          "elapsed_ms": 95.981,
+          "sent": true,
+          "sequence": 8,
+          "success": true
+        },
+        {
+          "bytes": 512,
+          "elapsed_ms": 1501.240923,
+          "error": "timeout",
+          "sent": true,
+          "sequence": 9,
+          "success": false
+        },
+        {
+          "bytes": 900,
+          "elapsed_ms": 122.950462,
+          "sent": true,
+          "sequence": 10,
+          "success": true
+        },
+        {
+          "bytes": 1000,
+          "elapsed_ms": 177.145538,
+          "sent": true,
+          "sequence": 11,
+          "success": true
+        },
+        {
+          "bytes": 1100,
+          "elapsed_ms": 95.283077,
+          "sent": true,
+          "sequence": 12,
+          "success": true
+        },
+        {
+          "bytes": 1150,
+          "elapsed_ms": 95.852846,
+          "sent": true,
+          "sequence": 13,
+          "success": true
+        },
+        {
+          "bytes": 64,
+          "elapsed_ms": 95.871153,
+          "sent": true,
+          "sequence": 14,
+          "success": true
+        },
+        {
+          "bytes": 256,
+          "elapsed_ms": 95.572846,
+          "sent": true,
+          "sequence": 15,
+          "success": true
+        },
+        {
+          "bytes": 512,
+          "elapsed_ms": 98.61423,
+          "sent": true,
+          "sequence": 16,
+          "success": true
+        },
+        {
+          "bytes": 900,
+          "elapsed_ms": 111.815,
+          "sent": true,
+          "sequence": 17,
+          "success": true
+        },
+        {
+          "bytes": 1000,
+          "elapsed_ms": 109.383692,
+          "sent": true,
+          "sequence": 18,
+          "success": true
+        },
+        {
+          "bytes": 1100,
+          "elapsed_ms": 100.073,
+          "sent": true,
+          "sequence": 19,
+          "success": true
+        },
+        {
+          "bytes": 1150,
+          "elapsed_ms": 96.930077,
+          "sent": true,
+          "sequence": 20,
+          "success": true
+        },
+        {
+          "bytes": 64,
+          "elapsed_ms": 94.757615,
+          "sent": true,
+          "sequence": 21,
+          "success": true
+        },
+        {
+          "bytes": 256,
+          "elapsed_ms": 1500.872538,
+          "error": "timeout",
+          "sent": true,
+          "sequence": 22,
+          "success": false
+        },
+        {
+          "bytes": 512,
+          "elapsed_ms": 126.524077,
+          "sent": true,
+          "sequence": 23,
+          "success": true
+        },
+        {
+          "bytes": 900,
+          "elapsed_ms": 1500.580384,
+          "error": "timeout",
+          "sent": true,
+          "sequence": 24,
+          "success": false
+        },
+        {
+          "bytes": 1000,
+          "elapsed_ms": 151.693923,
+          "sent": true,
+          "sequence": 25,
+          "success": true
+        },
+        {
+          "bytes": 1100,
+          "elapsed_ms": 107.849538,
+          "sent": true,
+          "sequence": 26,
+          "success": true
+        },
+        {
+          "bytes": 1150,
+          "elapsed_ms": 95.444308,
+          "sent": true,
+          "sequence": 27,
+          "success": true
+        }
+      ],
+      "udp_success": 23
+    }
+  },
+  {
+    "case": "wifi_to_cellular",
+    "network": {
+      "transport": "cellular",
+      "validated": true,
+      "sim": "ABSENT,LOADED",
+      "network_handle": "358"
+    },
+    "interface_ready_ms": 1429.49,
+    "completed_unix": 1795591582.113822,
+    "result": {
+      "changed": true,
+      "elapsed_ms": 4790.304539,
+      "event": "network-probe",
+      "first_tcp_ms": 1422.490692,
+      "first_udp_ms": 1860.353769,
+      "iteration": 2,
+      "old_udp_closed": true,
+      "tcp_attempts": 3,
+      "tcp_failures": null,
+      "tcp_success": 3,
+      "udp_attempts": 28,
+      "udp_oversize_rejected": true,
+      "udp_rows": [
+        {
+          "bytes": 64,
+          "elapsed_ms": 104.901846,
+          "sent": true,
+          "sequence": 0,
+          "success": true
+        },
+        {
+          "bytes": 256,
+          "elapsed_ms": 105.263077,
+          "sent": true,
+          "sequence": 1,
+          "success": true
+        },
+        {
+          "bytes": 512,
+          "elapsed_ms": 109.490154,
+          "sent": true,
+          "sequence": 2,
+          "success": true
+        },
+        {
+          "bytes": 900,
+          "elapsed_ms": 110.038077,
+          "sent": true,
+          "sequence": 3,
+          "success": true
+        },
+        {
+          "bytes": 1000,
+          "elapsed_ms": 115.315615,
+          "sent": true,
+          "sequence": 4,
+          "success": true
+        },
+        {
+          "bytes": 1100,
+          "elapsed_ms": 109.561847,
+          "sent": true,
+          "sequence": 5,
+          "success": true
+        },
+        {
+          "bytes": 1150,
+          "elapsed_ms": 110.797231,
+          "sent": true,
+          "sequence": 6,
+          "success": true
+        },
+        {
+          "bytes": 64,
+          "elapsed_ms": 104.556693,
+          "sent": true,
+          "sequence": 7,
+          "success": true
+        },
+        {
+          "bytes": 256,
+          "elapsed_ms": 109.305308,
+          "sent": true,
+          "sequence": 8,
+          "success": true
+        },
+        {
+          "bytes": 512,
+          "elapsed_ms": 105.639384,
+          "sent": true,
+          "sequence": 9,
+          "success": true
+        },
+        {
+          "bytes": 900,
+          "elapsed_ms": 104.750769,
+          "sent": true,
+          "sequence": 10,
+          "success": true
+        },
+        {
+          "bytes": 1000,
+          "elapsed_ms": 105.341231,
+          "sent": true,
+          "sequence": 11,
+          "success": true
+        },
+        {
+          "bytes": 1100,
+          "elapsed_ms": 117.748616,
+          "sent": true,
+          "sequence": 12,
+          "success": true
+        },
+        {
+          "bytes": 1150,
+          "elapsed_ms": 107.304846,
+          "sent": true,
+          "sequence": 13,
+          "success": true
+        },
+        {
+          "bytes": 64,
+          "elapsed_ms": 99.041923,
+          "sent": true,
+          "sequence": 14,
+          "success": true
+        },
+        {
+          "bytes": 256,
+          "elapsed_ms": 100.646077,
+          "sent": true,
+          "sequence": 15,
+          "success": true
+        },
+        {
+          "bytes": 512,
+          "elapsed_ms": 105.195692,
+          "sent": true,
+          "sequence": 16,
+          "success": true
+        },
+        {
+          "bytes": 900,
+          "elapsed_ms": 109.287308,
+          "sent": true,
+          "sequence": 17,
+          "success": true
+        },
+        {
+          "bytes": 1000,
+          "elapsed_ms": 110.348616,
+          "sent": true,
+          "sequence": 18,
+          "success": true
+        },
+        {
+          "bytes": 1100,
+          "elapsed_ms": 109.294231,
+          "sent": true,
+          "sequence": 19,
+          "success": true
+        },
+        {
+          "bytes": 1150,
+          "elapsed_ms": 110.321846,
+          "sent": true,
+          "sequence": 20,
+          "success": true
+        },
+        {
+          "bytes": 64,
+          "elapsed_ms": 102.781231,
+          "sent": true,
+          "sequence": 21,
+          "success": true
+        },
+        {
+          "bytes": 256,
+          "elapsed_ms": 107.541154,
+          "sent": true,
+          "sequence": 22,
+          "success": true
+        },
+        {
+          "bytes": 512,
+          "elapsed_ms": 109.707923,
+          "sent": true,
+          "sequence": 23,
+          "success": true
+        },
+        {
+          "bytes": 900,
+          "elapsed_ms": 109.971154,
+          "sent": true,
+          "sequence": 24,
+          "success": true
+        },
+        {
+          "bytes": 1000,
+          "elapsed_ms": 114.745231,
+          "sent": true,
+          "sequence": 25,
+          "success": true
+        },
+        {
+          "bytes": 1100,
+          "elapsed_ms": 110.054384,
+          "sent": true,
+          "sequence": 26,
+          "success": true
+        },
+        {
+          "bytes": 1150,
+          "elapsed_ms": 114.675154,
+          "sent": true,
+          "sequence": 27,
+          "success": true
+        }
+      ],
+      "udp_success": 28
+    }
+  },
+  {
+    "case": "cellular_to_wifi",
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED",
+      "network_handle": "359"
+    },
+    "interface_ready_ms": 7408.62,
+    "completed_unix": 1795591595.478302,
+    "result": {
+      "changed": true,
+      "elapsed_ms": 5816.806462,
+      "event": "network-probe",
+      "first_tcp_ms": 1063.279923,
+      "first_udp_ms": 1653.014154,
+      "iteration": 3,
+      "old_udp_closed": true,
+      "tcp_attempts": 3,
+      "tcp_failures": null,
+      "tcp_success": 3,
+      "udp_attempts": 28,
+      "udp_oversize_rejected": true,
+      "udp_rows": [
+        {
+          "bytes": 64,
+          "elapsed_ms": 102.259077,
+          "sent": true,
+          "sequence": 0,
+          "success": true
+        },
+        {
+          "bytes": 256,
+          "elapsed_ms": 163.415769,
+          "sent": true,
+          "sequence": 1,
+          "success": true
+        },
+        {
+          "bytes": 512,
+          "elapsed_ms": 97.945539,
+          "sent": true,
+          "sequence": 2,
+          "success": true
+        },
+        {
+          "bytes": 900,
+          "elapsed_ms": 98.459384,
+          "sent": true,
+          "sequence": 3,
+          "success": true
+        },
+        {
+          "bytes": 1000,
+          "elapsed_ms": 98.683692,
+          "sent": true,
+          "sequence": 4,
+          "success": true
+        },
+        {
+          "bytes": 1100,
+          "elapsed_ms": 99.310692,
+          "sent": true,
+          "sequence": 5,
+          "success": true
+        },
+        {
+          "bytes": 1150,
+          "elapsed_ms": 98.946385,
+          "sent": true,
+          "sequence": 6,
+          "success": true
+        },
+        {
+          "bytes": 64,
+          "elapsed_ms": 106.121616,
+          "sent": true,
+          "sequence": 7,
+          "success": true
+        },
+        {
+          "bytes": 256,
+          "elapsed_ms": 99.452539,
+          "sent": true,
+          "sequence": 8,
+          "success": true
+        },
+        {
+          "bytes": 512,
+          "elapsed_ms": 100.252,
+          "sent": true,
+          "sequence": 9,
+          "success": true
+        },
+        {
+          "bytes": 900,
+          "elapsed_ms": 115.021461,
+          "sent": true,
+          "sequence": 10,
+          "success": true
+        },
+        {
+          "bytes": 1000,
+          "elapsed_ms": 98.840616,
+          "sent": true,
+          "sequence": 11,
+          "success": true
+        },
+        {
+          "bytes": 1100,
+          "elapsed_ms": 98.521615,
+          "sent": true,
+          "sequence": 12,
+          "success": true
+        },
+        {
+          "bytes": 1150,
+          "elapsed_ms": 1500.835077,
+          "error": "timeout",
+          "sent": true,
+          "sequence": 13,
+          "success": false
+        },
+        {
+          "bytes": 64,
+          "elapsed_ms": 103.046153,
+          "sent": true,
+          "sequence": 14,
+          "success": true
+        },
+        {
+          "bytes": 256,
+          "elapsed_ms": 97.076,
+          "sent": true,
+          "sequence": 15,
+          "success": true
+        },
+        {
+          "bytes": 512,
+          "elapsed_ms": 97.873538,
+          "sent": true,
+          "sequence": 16,
+          "success": true
+        },
+        {
+          "bytes": 900,
+          "elapsed_ms": 99.603462,
+          "sent": true,
+          "sequence": 17,
+          "success": true
+        },
+        {
+          "bytes": 1000,
+          "elapsed_ms": 99.858461,
+          "sent": true,
+          "sequence": 18,
+          "success": true
+        },
+        {
+          "bytes": 1100,
+          "elapsed_ms": 98.581154,
+          "sent": true,
+          "sequence": 19,
+          "success": true
+        },
+        {
+          "bytes": 1150,
+          "elapsed_ms": 98.381,
+          "sent": true,
+          "sequence": 20,
+          "success": true
+        },
+        {
+          "bytes": 64,
+          "elapsed_ms": 97.966231,
+          "sent": true,
+          "sequence": 21,
+          "success": true
+        },
+        {
+          "bytes": 256,
+          "elapsed_ms": 97.371461,
+          "sent": true,
+          "sequence": 22,
+          "success": true
+        },
+        {
+          "bytes": 512,
+          "elapsed_ms": 97.965539,
+          "sent": true,
+          "sequence": 23,
+          "success": true
+        },
+        {
+          "bytes": 900,
+          "elapsed_ms": 101.104615,
+          "sent": true,
+          "sequence": 24,
+          "success": true
+        },
+        {
+          "bytes": 1000,
+          "elapsed_ms": 100.415308,
+          "sent": true,
+          "sequence": 25,
+          "success": true
+        },
+        {
+          "bytes": 1100,
+          "elapsed_ms": 98.030461,
+          "sent": true,
+          "sequence": 26,
+          "success": true
+        },
+        {
+          "bytes": 1150,
+          "elapsed_ms": 99.752615,
+          "sent": true,
+          "sequence": 27,
+          "success": true
+        }
+      ],
+      "udp_success": 27
+    }
+  }
+]

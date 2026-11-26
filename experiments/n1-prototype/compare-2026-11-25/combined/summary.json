@@ -1,0 +1,2010 @@
+{
+  "n1": {
+    "completed": 102,
+    "success": 101,
+    "failures": [
+      {
+        "bytes": 4194304,
+        "cleanup_ms": 716.16,
+        "entry_ms": 11124.177,
+        "error_category": "truncated",
+        "error_stage": "headers",
+        "headers_ms": 13479.065,
+        "n1_trace": null,
+        "phase": "download",
+        "protocol": "n1",
+        "sample": 1,
+        "start_unix_ms": 1795539055838,
+        "success": false,
+        "total_ms": 13479.079,
+        "block": 3,
+        "position": 1,
+        "workers": 1,
+        "phase_index": 3,
+        "batch": 34,
+        "network_valid": true,
+        "first_in_batch": true,
+        "source": "compare-2026-11-25",
+        "source_batch": 34
+      }
+    ],
+    "cleanup_errors": [],
+    "network_valid": true,
+    "cold": {
+      "success": 18,
+      "total": 18,
+      "first_byte_ms": {
+        "n": 18,
+        "p50": 1261.31,
+        "p95": 5669.607,
+        "mean": 2048.265,
+        "min": 504.01,
+        "max": 8078.543
+      },
+      "total_ms": {
+        "n": 18,
+        "p50": 1663.095,
+        "p95": 6573.557,
+        "mean": 2588.766,
+        "min": 617.732,
+        "max": 8389.457
+      },
+      "entry_ms": {
+        "n": 18,
+        "p50": 1010.075,
+        "p95": 4290.144,
+        "mean": 1525.229,
+        "min": 372.913,
+        "max": 4356.071
+      },
+      "e2e_mbps": {
+        "n": 18,
+        "p50": 0.158,
+        "p95": 0.414,
+        "mean": 0.174,
+        "min": 0.031246816918410938,
+        "max": 0.4243618238829793
+      },
+      "cleanup_ms": {
+        "n": 18,
+        "p50": 102.134,
+        "p95": 935.996,
+        "mean": 215.946,
+        "min": 94.774,
+        "max": 1021.763
+      },
+      "per_block": [
+        {
+          "payload_makespan_ms": 15717.27490234375,
+          "payload_aggregate_mbps": 0.10007230959391411,
+          "block": 1,
+          "success": 6,
+          "total": 6,
+          "elapsed_ms": 15820.344,
+          "aggregate_verified_mbps": 0.09942034130231303,
+          "first_byte_p50_ms": 1257.424
+        },
+        {
+          "payload_makespan_ms": 12015.58203125,
+          "payload_aggregate_mbps": 0.1309020233817481,
+          "block": 2,
+          "success": 6,
+          "total": 6,
+          "elapsed_ms": 12113.684,
+          "aggregate_verified_mbps": 0.12984192092182692,
+          "first_byte_p50_ms": 1433.536
+        },
+        {
+          "payload_makespan_ms": 22462.501953125,
+          "payload_aggregate_mbps": 0.07002176352760126,
+          "block": 3,
+          "success": 6,
+          "total": 6,
+          "elapsed_ms": 22564.601,
+          "aggregate_verified_mbps": 0.06970493296114565,
+          "first_byte_p50_ms": 1653.562
+        }
+      ],
+      "payload_aggregate_mbps": {
+        "n": 3,
+        "p50": 0.1,
+        "p95": 0.128,
+        "mean": 0.1,
+        "min": 0.07002176352760126,
+        "max": 0.1309020233817481
+      },
+      "batch_aggregate_mbps": {
+        "n": 3,
+        "p50": 0.099,
+        "p95": 0.127,
+        "mean": 0.1,
+        "min": 0.06970493296114565,
+        "max": 0.12984192092182692
+      }
+    },
+    "warm": {
+      "success": 24,
+      "total": 24,
+      "first_byte_ms": {
+        "n": 21,
+        "p50": 1210.03,
+        "p95": 4465.654,
+        "mean": 1829.249,
+        "min": 460.932,
+        "max": 9319.849
+      },
+      "total_ms": {
+        "n": 21,
+        "p50": 1546.854,
+        "p95": 5139.839,
+        "mean": 2426.159,
+        "min": 658.969,
+        "max": 11080.626
+      },
+      "entry_ms": {
+        "n": 21,
+        "p50": 621.69,
+        "p95": 3810.48,
+        "mean": 1445.666,
+        "min": 359.228,
+        "max": 8668.282
+      },
+      "e2e_mbps": {
+        "n": 24,
+        "p50": 0.166,
+        "p95": 0.375,
+        "mean": 0.181,
+        "min": 0.02271959984619428,
+        "max": 0.397806519157827
+      },
+      "cleanup_ms": {
+        "n": 24,
+        "p50": 101.509,
+        "p95": 1152.66,
+        "mean": 335.027,
+        "min": 98.007,
+        "max": 3069.894
+      },
+      "per_block": [
+        {
+          "payload_makespan_ms": 25053.6259765625,
+          "payload_aggregate_mbps": 0.08370652623144736,
+          "block": 1,
+          "success": 8,
+          "total": 8,
+          "elapsed_ms": 25157.952,
+          "aggregate_verified_mbps": 0.08335940858778966,
+          "first_byte_p50_ms": 1210.03
+        },
+        {
+          "payload_makespan_ms": 14852.280029296875,
+          "payload_aggregate_mbps": 0.14120067732787567,
+          "block": 2,
+          "success": 8,
+          "total": 8,
+          "elapsed_ms": 14967.954,
+          "aggregate_verified_mbps": 0.14010946319049353,
+          "first_byte_p50_ms": 659.691
+        },
+        {
+          "payload_makespan_ms": 34250.39208984375,
+          "payload_aggregate_mbps": 0.06123001437469288,
+          "block": 3,
+          "success": 8,
+          "total": 8,
+          "elapsed_ms": 34351.708,
+          "aggregate_verified_mbps": 0.061049424383789005,
+          "first_byte_p50_ms": 2049.736
+        }
+      ],
+      "first_sample_first_byte_ms": [
+        841.448,
+        1212.719,
+        693.242
+      ],
+      "payload_aggregate_mbps": {
+        "n": 3,
+        "p50": 0.084,
+        "p95": 0.135,
+        "mean": 0.095,
+        "min": 0.06123001437469288,
+        "max": 0.14120067732787567
+      },
+      "batch_aggregate_mbps": {
+        "n": 3,
+        "p50": 0.083,
+        "p95": 0.134,
+        "mean": 0.095,
+        "min": 0.061049424383789005,
+        "max": 0.14010946319049353
+      }
+    },
+    "concurrent": {
+      "success": 24,
+      "total": 24,
+      "first_byte_ms": {
+        "n": 24,
+        "p50": 1006.063,
+        "p95": 2461.031,
+        "mean": 1146.401,
+        "min": 450.383,
+        "max": 2862.79
+      },
+      "total_ms": {
+        "n": 24,
+        "p50": 1470.108,
+        "p95": 3766.58,
+        "mean": 2011.08,
+        "min": 848.889,
+        "max": 5217.19
+      },
+      "entry_ms": {
+        "n": 24,
+        "p50": 735.764,
+        "p95": 2035.763,
+        "mean": 876.382,
+        "min": 354.716,
+        "max": 2546.864
+      },
+      "e2e_mbps": {
+        "n": 24,
+        "p50": 0.716,
+        "p95": 1.122,
+        "mean": 0.68,
+        "min": 0.20098461388177433,
+        "max": 1.2352270775587268
+      },
+      "cleanup_ms": {
+        "n": 24,
+        "p50": 100.883,
+        "p95": 116.034,
+        "mean": 128.361,
+        "min": 94.308,
+        "max": 739.352
+      },
+      "per_block": [
+        {
+          "payload_makespan_ms": 6873.18994140625,
+          "payload_aggregate_mbps": 1.2204824937929324,
+          "block": 1,
+          "success": 8,
+          "total": 8,
+          "elapsed_ms": 6988.975,
+          "aggregate_verified_mbps": 1.2002629856309401,
+          "first_byte_p50_ms": 1073.785
+        },
+        {
+          "payload_makespan_ms": 5590.95703125,
+          "payload_aggregate_mbps": 1.500388565519795,
+          "block": 2,
+          "success": 8,
+          "total": 8,
+          "elapsed_ms": 5692.753,
+          "aggregate_verified_mbps": 1.473559102248069,
+          "first_byte_p50_ms": 1052.974
+        },
+        {
+          "payload_makespan_ms": 4896.985107421875,
+          "payload_aggregate_mbps": 1.713014807271155,
+          "block": 3,
+          "success": 8,
+          "total": 8,
+          "elapsed_ms": 5637.36,
+          "aggregate_verified_mbps": 1.4880383725715585,
+          "first_byte_p50_ms": 659.979
+        }
+      ],
+      "payload_aggregate_mbps": {
+        "n": 3,
+        "p50": 1.5,
+        "p95": 1.692,
+        "mean": 1.478,
+        "min": 1.2204824937929324,
+        "max": 1.713014807271155
+      },
+      "batch_aggregate_mbps": {
+        "n": 3,
+        "p50": 1.474,
+        "p95": 1.487,
+        "mean": 1.387,
+        "min": 1.2002629856309401,
+        "max": 1.4880383725715585
+      }
+    },
+    "download_single": {
+      "success": 5,
+      "total": 6,
+      "first_byte_ms": {
+        "n": 5,
+        "p50": 1256.654,
+        "p95": 2613.52,
+        "mean": 1566.967,
+        "min": 1064.63,
+        "max": 2879.317
+      },
+      "total_ms": {
+        "n": 5,
+        "p50": 3608.707,
+        "p95": 7571.624,
+        "mean": 4472.423,
+        "min": 3261.78,
+        "max": 8546.014
+      },
+      "entry_ms": {
+        "n": 5,
+        "p50": 990.964,
+        "p95": 2179.86,
+        "mean": 1314.68,
+        "min": 893.478,
+        "max": 2390.117
+      },
+      "e2e_mbps": {
+        "n": 5,
+        "p50": 9.298,
+        "p95": 10.281,
+        "mean": 8.58,
+        "min": 3.9263232629580203,
+        "max": 10.287140781820671
+      },
+      "cleanup_ms": {
+        "n": 5,
+        "p50": 105.043,
+        "p95": 473.678,
+        "mean": 238.535,
+        "min": 101.373,
+        "max": 494.726
+      },
+      "per_block": [
+        {
+          "payload_makespan_ms": 8546.013916015625,
+          "payload_aggregate_mbps": 3.9263254576636535,
+          "block": 1,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 8648.893,
+          "aggregate_verified_mbps": 3.879621588566306,
+          "first_byte_p50_ms": 2879.317
+        },
+        {
+          "payload_makespan_ms": 3608.70703125,
+          "payload_aggregate_mbps": 9.298186776990114,
+          "block": 2,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 3714.717,
+          "aggregate_verified_mbps": 9.03283668715544,
+          "first_byte_p50_ms": 1550.332
+        },
+        {
+          "payload_makespan_ms": 13479.0791015625,
+          "payload_aggregate_mbps": 0.0,
+          "block": 3,
+          "success": 0,
+          "total": 1,
+          "elapsed_ms": 14196.36,
+          "aggregate_verified_mbps": 0.0,
+          "first_byte_p50_ms": null
+        },
+        {
+          "payload_makespan_ms": 3261.780029296875,
+          "payload_aggregate_mbps": 10.287153547639187,
+          "block": 4,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 3652.291,
+          "aggregate_verified_mbps": 9.187228509447905,
+          "first_byte_p50_ms": 1256.654
+        },
+        {
+          "payload_makespan_ms": 3674.06396484375,
+          "payload_aggregate_mbps": 9.132783838570704,
+          "block": 5,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 4169.915,
+          "aggregate_verified_mbps": 8.046790402202443,
+          "first_byte_p50_ms": 1083.902
+        },
+        {
+          "payload_makespan_ms": 3271.548095703125,
+          "payload_aggregate_mbps": 10.256438547876044,
+          "block": 6,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 3373.985,
+          "aggregate_verified_mbps": 9.945044806067603,
+          "first_byte_p50_ms": 1064.63
+        }
+      ],
+      "payload_aggregate_mbps": {
+        "n": 6,
+        "p50": 9.215,
+        "p95": 10.279,
+        "mean": 7.15,
+        "min": 0.0,
+        "max": 10.287153547639187
+      },
+      "batch_aggregate_mbps": {
+        "n": 6,
+        "p50": 8.54,
+        "p95": 9.756,
+        "mean": 6.682,
+        "min": 0.0,
+        "max": 9.945044806067603
+      }
+    },
+    "download_4": {
+      "success": 24,
+      "total": 24,
+      "first_byte_ms": {
+        "n": 24,
+        "p50": 1086.187,
+        "p95": 4146.745,
+        "mean": 1617.525,
+        "min": 559.721,
+        "max": 5027.27
+      },
+      "total_ms": {
+        "n": 24,
+        "p50": 2528.543,
+        "p95": 15541.549,
+        "mean": 4519.932,
+        "min": 1594.15,
+        "max": 18593.78
+      },
+      "entry_ms": {
+        "n": 24,
+        "p50": 926.123,
+        "p95": 3811.211,
+        "mean": 1359.955,
+        "min": 454.356,
+        "max": 4570.032
+      },
+      "e2e_mbps": {
+        "n": 24,
+        "p50": 3.323,
+        "p95": 4.887,
+        "mean": 3.095,
+        "min": 0.4511511794847761,
+        "max": 5.262101090425856
+      },
+      "cleanup_ms": {
+        "n": 24,
+        "p50": 102.26,
+        "p95": 218.165,
+        "mean": 163.443,
+        "min": 95.544,
+        "max": 1427.118
+      },
+      "per_block": [
+        {
+          "payload_makespan_ms": 7451.136962890625,
+          "payload_aggregate_mbps": 4.503263349890531,
+          "block": 1,
+          "success": 4,
+          "total": 4,
+          "elapsed_ms": 7554.497,
+          "aggregate_verified_mbps": 4.441650052941976,
+          "first_byte_p50_ms": 2837.219
+        },
+        {
+          "payload_makespan_ms": 18594.780029296875,
+          "payload_aggregate_mbps": 1.8045081440669666,
+          "block": 2,
+          "success": 4,
+          "total": 4,
+          "elapsed_ms": 20022.926,
+          "aggregate_verified_mbps": 1.6758006297381314,
+          "first_byte_p50_ms": 1900.026
+        },
+        {
+          "payload_makespan_ms": 11034.56591796875,
+          "payload_aggregate_mbps": 3.040847483212708,
+          "block": 3,
+          "success": 4,
+          "total": 4,
+          "elapsed_ms": 11133.341,
+          "aggregate_verified_mbps": 3.0138690623057354,
+          "first_byte_p50_ms": 876.698
+        },
+        {
+          "payload_makespan_ms": 4030.51904296875,
+          "payload_aggregate_mbps": 8.325089558511277,
+          "block": 4,
+          "success": 4,
+          "total": 4,
+          "elapsed_ms": 4133.852,
+          "aggregate_verified_mbps": 8.11698919071123,
+          "first_byte_p50_ms": 859.265
+        },
+        {
+          "payload_makespan_ms": 2649.2919921875,
+          "payload_aggregate_mbps": 12.665433670183846,
+          "block": 5,
+          "success": 4,
+          "total": 4,
+          "elapsed_ms": 2750.284,
+          "aggregate_verified_mbps": 12.200351672772701,
+          "first_byte_p50_ms": 984.154
+        },
+        {
+          "payload_makespan_ms": 4026.797119140625,
+          "payload_aggregate_mbps": 8.332784346274932,
+          "block": 6,
+          "success": 4,
+          "total": 4,
+          "elapsed_ms": 4139.504,
+          "aggregate_verified_mbps": 8.105906408110732,
+          "first_byte_p50_ms": 1268.609
+        }
+      ],
+      "payload_aggregate_mbps": {
+        "n": 6,
+        "p50": 6.414,
+        "p95": 11.582,
+        "mean": 6.445,
+        "min": 1.8045081440669666,
+        "max": 12.665433670183846
+      },
+      "batch_aggregate_mbps": {
+        "n": 6,
+        "p50": 6.274,
+        "p95": 11.18,
+        "mean": 6.259,
+        "min": 1.6758006297381314,
+        "max": 12.200351672772701
+      }
+    },
+    "upload": {
+      "success": 6,
+      "total": 6,
+      "first_byte_ms": {
+        "n": 6,
+        "p50": 4965.416,
+        "p95": 16381.134,
+        "mean": 7503.972,
+        "min": 2221.682,
+        "max": 17714.838
+      },
+      "total_ms": {
+        "n": 6,
+        "p50": 4965.45,
+        "p95": 16381.17,
+        "mean": 7504.007,
+        "min": 2221.717,
+        "max": 17714.874
+      },
+      "entry_ms": {
+        "n": 6,
+        "p50": 1168.838,
+        "p95": 2496.067,
+        "mean": 1349.557,
+        "min": 437.258,
+        "max": 2753.231
+      },
+      "e2e_mbps": {
+        "n": 6,
+        "p50": 1.721,
+        "p95": 3.587,
+        "mean": 1.898,
+        "min": 0.47353463928312706,
+        "max": 3.7757262599901837
+      },
+      "cleanup_ms": {
+        "n": 6,
+        "p50": 101.105,
+        "p95": 450.93,
+        "mean": 209.421,
+        "min": 92.822,
+        "max": 471.098
+      },
+      "per_block": [
+        {
+          "payload_makespan_ms": 4292.7880859375,
+          "payload_aggregate_mbps": 1.9541164930735255,
+          "block": 1,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 4394.387,
+          "aggregate_verified_mbps": 1.908937014423172,
+          "first_byte_p50_ms": 4292.752
+        },
+        {
+          "payload_makespan_ms": 12380.056884765625,
+          "payload_aggregate_mbps": 0.6775904245094921,
+          "block": 2,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 12481.105,
+          "aggregate_verified_mbps": 0.6721045933032372,
+          "first_byte_p50_ms": 12380.022
+        },
+        {
+          "payload_makespan_ms": 2776.493896484375,
+          "payload_aggregate_mbps": 3.021295314432977,
+          "block": 3,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 3167.792,
+          "aggregate_verified_mbps": 2.648093056614828,
+          "first_byte_p50_ms": 2776.459
+        },
+        {
+          "payload_makespan_ms": 2221.717041015625,
+          "payload_aggregate_mbps": 3.7757319429684313,
+          "block": 4,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 2324.29,
+          "aggregate_verified_mbps": 3.609105576326534,
+          "first_byte_p50_ms": 2221.682
+        },
+        {
+          "payload_makespan_ms": 17714.8740234375,
+          "payload_aggregate_mbps": 0.4735347250509109,
+          "block": 5,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 18186.956,
+          "aggregate_verified_mbps": 0.46124310192425827,
+          "first_byte_p50_ms": 17714.838
+        },
+        {
+          "payload_makespan_ms": 5638.112060546875,
+          "payload_aggregate_mbps": 1.4878398850388117,
+          "block": 6,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 5732.151,
+          "aggregate_verified_mbps": 1.463431092446797,
+          "first_byte_p50_ms": 5638.08
+        }
+      ],
+      "payload_aggregate_mbps": {
+        "n": 6,
+        "p50": 1.721,
+        "p95": 3.587,
+        "mean": 1.898,
+        "min": 0.4735347250509109,
+        "max": 3.7757319429684313
+      },
+      "batch_aggregate_mbps": {
+        "n": 6,
+        "p50": 1.686,
+        "p95": 3.369,
+        "mean": 1.794,
+        "min": 0.46124310192425827,
+        "max": 3.609105576326534
+      }
+    },
+    "client_resources": {
+      "sample_rows": 292,
+      "peak_rss_mib": 22.52,
+      "peak_heap_mib": 6.92,
+      "peak_fds": 11,
+      "peak_goroutines": 8
+    }
+  },
+  "hysteria2": {
+    "completed": 102,
+    "success": 102,
+    "failures": [],
+    "cleanup_errors": [],
+    "network_valid": true,
+    "cold": {
+      "success": 18,
+      "total": 18,
+      "first_byte_ms": {
+        "n": 18,
+        "p50": 755.35,
+        "p95": 2019.348,
+        "mean": 1070.872,
+        "min": 364.869,
+        "max": 3222.585
+      },
+      "total_ms": {
+        "n": 18,
+        "p50": 983.019,
+        "p95": 3265.499,
+        "mean": 1448.005,
+        "min": 467.28,
+        "max": 4091.848
+      },
+      "entry_ms": {
+        "n": 18,
+        "p50": 568.418,
+        "p95": 1834.122,
+        "mean": 863.833,
+        "min": 265.349,
+        "max": 3024.391
+      },
+      "e2e_mbps": {
+        "n": 18,
+        "p50": 0.267,
+        "p95": 0.523,
+        "mean": 0.263,
+        "min": 0.06406486013403012,
+        "max": 0.5609949341372485
+      },
+      "cleanup_ms": {
+        "n": 18,
+        "p50": 0.113,
+        "p95": 0.173,
+        "mean": 0.12,
+        "min": 0.061,
+        "max": 0.264
+      },
+      "per_block": [
+        {
+          "payload_makespan_ms": 4752.462890625,
+          "payload_aggregate_mbps": 0.33095766052223746,
+          "block": 1,
+          "success": 6,
+          "total": 6,
+          "elapsed_ms": 4753.278,
+          "aggregate_verified_mbps": 0.33090090670059696,
+          "first_byte_p50_ms": 588.394
+        },
+        {
+          "payload_makespan_ms": 11803.673095703125,
+          "payload_aggregate_mbps": 0.13325208070804395,
+          "block": 2,
+          "success": 6,
+          "total": 6,
+          "elapsed_ms": 11806.157,
+          "aggregate_verified_mbps": 0.1332240457246164,
+          "first_byte_p50_ms": 1081.032
+        },
+        {
+          "payload_makespan_ms": 9534.7470703125,
+          "payload_aggregate_mbps": 0.16496127148430478,
+          "block": 3,
+          "success": 6,
+          "total": 6,
+          "elapsed_ms": 9536.359,
+          "aggregate_verified_mbps": 0.16493338809916866,
+          "first_byte_p50_ms": 1402.938
+        }
+      ],
+      "payload_aggregate_mbps": {
+        "n": 3,
+        "p50": 0.165,
+        "p95": 0.314,
+        "mean": 0.21,
+        "min": 0.13325208070804395,
+        "max": 0.33095766052223746
+      },
+      "batch_aggregate_mbps": {
+        "n": 3,
+        "p50": 0.165,
+        "p95": 0.314,
+        "mean": 0.21,
+        "min": 0.1332240457246164,
+        "max": 0.33090090670059696
+      }
+    },
+    "warm": {
+      "success": 24,
+      "total": 24,
+      "first_byte_ms": {
+        "n": 21,
+        "p50": 105.007,
+        "p95": 234.531,
+        "mean": 133.272,
+        "min": 97.574,
+        "max": 307.91
+      },
+      "total_ms": {
+        "n": 21,
+        "p50": 253.633,
+        "p95": 1277.949,
+        "mean": 456.44,
+        "min": 133.939,
+        "max": 1740.72
+      },
+      "entry_ms": {
+        "n": 21,
+        "p50": 0.402,
+        "p95": 0.484,
+        "mean": 0.37,
+        "min": 0.172,
+        "max": 0.537
+      },
+      "e2e_mbps": {
+        "n": 24,
+        "p50": 0.892,
+        "p95": 1.871,
+        "mean": 0.865,
+        "min": 0.15059473012439886,
+        "max": 1.9570928096451685
+      },
+      "cleanup_ms": {
+        "n": 24,
+        "p50": 0.112,
+        "p95": 0.215,
+        "mean": 0.123,
+        "min": 0.102,
+        "max": 0.247
+      },
+      "per_block": [
+        {
+          "payload_makespan_ms": 2954.93896484375,
+          "payload_aggregate_mbps": 0.7097107672783666,
+          "block": 1,
+          "success": 8,
+          "total": 8,
+          "elapsed_ms": 2956.421,
+          "aggregate_verified_mbps": 0.709354993757655,
+          "first_byte_p50_ms": 107.184
+        },
+        {
+          "payload_makespan_ms": 7656.49609375,
+          "payload_aggregate_mbps": 0.2739049265253209,
+          "block": 2,
+          "success": 8,
+          "total": 8,
+          "elapsed_ms": 7657.073,
+          "aggregate_verified_mbps": 0.2738842897279417,
+          "first_byte_p50_ms": 111.252
+        },
+        {
+          "payload_makespan_ms": 2405.35009765625,
+          "payload_aggregate_mbps": 0.8718697548616497,
+          "block": 3,
+          "success": 8,
+          "total": 8,
+          "elapsed_ms": 2406.956,
+          "aggregate_verified_mbps": 0.8712880501346929,
+          "first_byte_p50_ms": 98.931
+        }
+      ],
+      "first_sample_first_byte_ms": [
+        1231.2,
+        652.283,
+        643.654
+      ],
+      "payload_aggregate_mbps": {
+        "n": 3,
+        "p50": 0.71,
+        "p95": 0.856,
+        "mean": 0.618,
+        "min": 0.2739049265253209,
+        "max": 0.8718697548616497
+      },
+      "batch_aggregate_mbps": {
+        "n": 3,
+        "p50": 0.709,
+        "p95": 0.855,
+        "mean": 0.618,
+        "min": 0.2738842897279417,
+        "max": 0.8712880501346929
+      }
+    },
+    "concurrent": {
+      "success": 24,
+      "total": 24,
+      "first_byte_ms": {
+        "n": 24,
+        "p50": 368.982,
+        "p95": 2234.678,
+        "mean": 663.917,
+        "min": 100.223,
+        "max": 2253.16
+      },
+      "total_ms": {
+        "n": 24,
+        "p50": 1247.129,
+        "p95": 3885.997,
+        "mean": 1677.428,
+        "min": 219.455,
+        "max": 3906.22
+      },
+      "entry_ms": {
+        "n": 24,
+        "p50": 197.988,
+        "p95": 1931.551,
+        "mean": 484.915,
+        "min": 0.193,
+        "max": 1931.786
+      },
+      "e2e_mbps": {
+        "n": 24,
+        "p50": 0.841,
+        "p95": 4.644,
+        "mean": 1.286,
+        "min": 0.2684371528320455,
+        "max": 4.777975614615468
+      },
+      "cleanup_ms": {
+        "n": 24,
+        "p50": 0.108,
+        "p95": 0.202,
+        "mean": 0.114,
+        "min": 0.048,
+        "max": 0.225
+      },
+      "per_block": [
+        {
+          "payload_makespan_ms": 6279.277099609375,
+          "payload_aggregate_mbps": 1.335919384816103,
+          "block": 1,
+          "success": 8,
+          "total": 8,
+          "elapsed_ms": 6280.364,
+          "aggregate_verified_mbps": 1.335688186226149,
+          "first_byte_p50_ms": 1190.136
+        },
+        {
+          "payload_makespan_ms": 1447.455078125,
+          "payload_aggregate_mbps": 5.795418543051719,
+          "block": 2,
+          "success": 8,
+          "total": 8,
+          "elapsed_ms": 1448.515,
+          "aggregate_verified_mbps": 5.791177861465017,
+          "first_byte_p50_ms": 306.801
+        },
+        {
+          "payload_makespan_ms": 3150.76904296875,
+          "payload_aggregate_mbps": 2.6624001586914154,
+          "block": 3,
+          "success": 8,
+          "total": 8,
+          "elapsed_ms": 3150.653,
+          "aggregate_verified_mbps": 2.662498218623251,
+          "first_byte_p50_ms": 507.255
+        }
+      ],
+      "payload_aggregate_mbps": {
+        "n": 3,
+        "p50": 2.662,
+        "p95": 5.482,
+        "mean": 3.265,
+        "min": 1.335919384816103,
+        "max": 5.795418543051719
+      },
+      "batch_aggregate_mbps": {
+        "n": 3,
+        "p50": 2.662,
+        "p95": 5.478,
+        "mean": 3.263,
+        "min": 1.335688186226149,
+        "max": 5.791177861465017
+      }
+    },
+    "download_single": {
+      "success": 6,
+      "total": 6,
+      "first_byte_ms": {
+        "n": 6,
+        "p50": 564.239,
+        "p95": 1037.428,
+        "mean": 618.234,
+        "min": 349.342,
+        "max": 1141.504
+      },
+      "total_ms": {
+        "n": 6,
+        "p50": 2290.581,
+        "p95": 7185.565,
+        "mean": 3387.485,
+        "min": 1620.303,
+        "max": 8202.656
+      },
+      "entry_ms": {
+        "n": 6,
+        "p50": 364.358,
+        "p95": 933.116,
+        "mean": 482.711,
+        "min": 247.621,
+        "max": 1036.773
+      },
+      "e2e_mbps": {
+        "n": 6,
+        "p50": 14.783,
+        "p95": 20.227,
+        "mean": 13.544,
+        "min": 4.0906770798543235,
+        "max": 20.708671204319963
+      },
+      "cleanup_ms": {
+        "n": 6,
+        "p50": 0.126,
+        "p95": 0.312,
+        "mean": 0.168,
+        "min": 0.118,
+        "max": 0.368
+      },
+      "per_block": [
+        {
+          "payload_makespan_ms": 2508.60400390625,
+          "payload_aggregate_mbps": 13.375738836321325,
+          "block": 1,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 2510.112,
+          "aggregate_verified_mbps": 13.367703114442703,
+          "first_byte_p50_ms": 1141.504
+        },
+        {
+          "payload_makespan_ms": 8202.656005859375,
+          "payload_aggregate_mbps": 4.090678918636985,
+          "block": 2,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 8203.785,
+          "aggregate_verified_mbps": 4.090115964765045,
+          "first_byte_p50_ms": 414.463
+        },
+        {
+          "payload_makespan_ms": 2072.556884765625,
+          "payload_aggregate_mbps": 16.189872638306138,
+          "block": 3,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 2073.674,
+          "aggregate_verified_mbps": 16.181150942722915,
+          "first_byte_p50_ms": 725.2
+        },
+        {
+          "payload_makespan_ms": 1786.5009765625,
+          "payload_aggregate_mbps": 18.782207477190322,
+          "block": 4,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 1787.796,
+          "aggregate_verified_mbps": 18.76860223425939,
+          "first_byte_p50_ms": 364.882
+        },
+        {
+          "payload_makespan_ms": 1620.302978515625,
+          "payload_aggregate_mbps": 20.70873931907447,
+          "block": 5,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 1621.689,
+          "aggregate_verified_mbps": 20.691040020620473,
+          "first_byte_p50_ms": 349.342
+        },
+        {
+          "payload_makespan_ms": 4134.291015625,
+          "payload_aggregate_mbps": 8.11612725693124,
+          "block": 6,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 4135.441,
+          "aggregate_verified_mbps": 8.113870322415433,
+          "first_byte_p50_ms": 714.015
+        }
+      ],
+      "payload_aggregate_mbps": {
+        "n": 6,
+        "p50": 14.783,
+        "p95": 20.227,
+        "mean": 13.544,
+        "min": 4.090678918636985,
+        "max": 20.70873931907447
+      },
+      "batch_aggregate_mbps": {
+        "n": 6,
+        "p50": 14.774,
+        "p95": 20.21,
+        "mean": 13.535,
+        "min": 4.090115964765045,
+        "max": 20.691040020620473
+      }
+    },
+    "download_4": {
+      "success": 24,
+      "total": 24,
+      "first_byte_ms": {
+        "n": 24,
+        "p50": 1319.917,
+        "p95": 3433.503,
+        "mean": 1517.166,
+        "min": 408.712,
+        "max": 3454.785
+      },
+      "total_ms": {
+        "n": 24,
+        "p50": 6755.865,
+        "p95": 16433.95,
+        "mean": 7490.178,
+        "min": 1655.465,
+        "max": 16435.206
+      },
+      "entry_ms": {
+        "n": 24,
+        "p50": 1131.615,
+        "p95": 3223.455,
+        "mean": 1338.606,
+        "min": 298.903,
+        "max": 3224.01
+      },
+      "e2e_mbps": {
+        "n": 24,
+        "p50": 1.242,
+        "p95": 4.922,
+        "mean": 2.14,
+        "min": 0.5104046499550915,
+        "max": 5.067205113427625
+      },
+      "cleanup_ms": {
+        "n": 24,
+        "p50": 0.119,
+        "p95": 0.224,
+        "mean": 0.125,
+        "min": 0.031,
+        "max": 0.243
+      },
+      "per_block": [
+        {
+          "payload_makespan_ms": 2055.221923828125,
+          "payload_aggregate_mbps": 16.326427628555262,
+          "block": 1,
+          "success": 4,
+          "total": 4,
+          "elapsed_ms": 2056.094,
+          "aggregate_verified_mbps": 16.319502902104674,
+          "first_byte_p50_ms": 779.317
+        },
+        {
+          "payload_makespan_ms": 11624.10302734375,
+          "payload_aggregate_mbps": 2.886625481645236,
+          "block": 2,
+          "success": 4,
+          "total": 4,
+          "elapsed_ms": 11625.704,
+          "aggregate_verified_mbps": 2.886227965205376,
+          "first_byte_p50_ms": 1714.062
+        },
+        {
+          "payload_makespan_ms": 1718.531005859375,
+          "payload_aggregate_mbps": 19.525066400079666,
+          "block": 3,
+          "success": 4,
+          "total": 4,
+          "elapsed_ms": 1720.047,
+          "aggregate_verified_mbps": 19.50785763412279,
+          "first_byte_p50_ms": 415.295
+        },
+        {
+          "payload_makespan_ms": 7081.85595703125,
+          "payload_aggregate_mbps": 4.738084508296916,
+          "block": 4,
+          "success": 4,
+          "total": 4,
+          "elapsed_ms": 7082.733,
+          "aggregate_verified_mbps": 4.737497799225243,
+          "first_byte_p50_ms": 2055.631
+        },
+        {
+          "payload_makespan_ms": 6737.9599609375,
+          "payload_aggregate_mbps": 4.979909675113495,
+          "block": 5,
+          "success": 4,
+          "total": 4,
+          "elapsed_ms": 6739.523,
+          "aggregate_verified_mbps": 4.978754727893947,
+          "first_byte_p50_ms": 665.544
+        },
+        {
+          "payload_makespan_ms": 16436.2060546875,
+          "payload_aggregate_mbps": 2.0414949708196493,
+          "block": 6,
+          "success": 4,
+          "total": 4,
+          "elapsed_ms": 16436.248,
+          "aggregate_verified_mbps": 2.041489760923539,
+          "first_byte_p50_ms": 3394.062
+        }
+      ],
+      "payload_aggregate_mbps": {
+        "n": 6,
+        "p50": 4.859,
+        "p95": 18.725,
+        "mean": 8.416,
+        "min": 2.0414949708196493,
+        "max": 19.525066400079666
+      },
+      "batch_aggregate_mbps": {
+        "n": 6,
+        "p50": 4.858,
+        "p95": 18.711,
+        "mean": 8.412,
+        "min": 2.041489760923539,
+        "max": 19.50785763412279
+      }
+    },
+    "upload": {
+      "success": 6,
+      "total": 6,
+      "first_byte_ms": {
+        "n": 6,
+        "p50": 1483.882,
+        "p95": 1761.47,
+        "mean": 1399.86,
+        "min": 900.542,
+        "max": 1831.843
+      },
+      "total_ms": {
+        "n": 6,
+        "p50": 1483.951,
+        "p95": 1761.54,
+        "mean": 1399.92,
+        "min": 900.596,
+        "max": 1831.915
+      },
+      "entry_ms": {
+        "n": 6,
+        "p50": 586.845,
+        "p95": 945.324,
+        "mean": 603.899,
+        "min": 255.058,
+        "max": 1013.685
+      },
+      "e2e_mbps": {
+        "n": 6,
+        "p50": 5.663,
+        "p95": 8.812,
+        "mean": 6.322,
+        "min": 4.579136957158511,
+        "max": 9.314466707987938
+      },
+      "cleanup_ms": {
+        "n": 6,
+        "p50": 0.118,
+        "p95": 0.13,
+        "mean": 0.111,
+        "min": 0.061,
+        "max": 0.132
+      },
+      "per_block": [
+        {
+          "payload_makespan_ms": 1547.469970703125,
+          "payload_aggregate_mbps": 5.4208534955857415,
+          "block": 1,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 1548.399,
+          "aggregate_verified_mbps": 5.417601018858835,
+          "first_byte_p50_ms": 1547.399
+        },
+        {
+          "payload_makespan_ms": 900.595947265625,
+          "payload_aggregate_mbps": 9.314507827255227,
+          "block": 2,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 901.693,
+          "aggregate_verified_mbps": 9.303175249225625,
+          "first_byte_p50_ms": 900.542
+        },
+        {
+          "payload_makespan_ms": 1148.695068359375,
+          "payload_aggregate_mbps": 7.302728314121727,
+          "block": 3,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 1149.699,
+          "aggregate_verified_mbps": 7.29635147982211,
+          "first_byte_p50_ms": 1148.662
+        },
+        {
+          "payload_makespan_ms": 1420.431884765625,
+          "payload_aggregate_mbps": 5.905674245959455,
+          "block": 4,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 1421.526,
+          "aggregate_verified_mbps": 5.901128786951487,
+          "first_byte_p50_ms": 1420.366
+        },
+        {
+          "payload_makespan_ms": 1550.4140625,
+          "payload_aggregate_mbps": 5.410559800053413,
+          "block": 5,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 1551.207,
+          "aggregate_verified_mbps": 5.407794059722526,
+          "first_byte_p50_ms": 1550.35
+        },
+        {
+          "payload_makespan_ms": 1831.9150390625,
+          "payload_aggregate_mbps": 4.579146860595102,
+          "block": 6,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 1833.419,
+          "aggregate_verified_mbps": 4.575390568113454,
+          "first_byte_p50_ms": 1831.843
+        }
+      ],
+      "payload_aggregate_mbps": {
+        "n": 6,
+        "p50": 5.663,
+        "p95": 8.812,
+        "mean": 6.322,
+        "min": 4.579146860595102,
+        "max": 9.314507827255227
+      },
+      "batch_aggregate_mbps": {
+        "n": 6,
+        "p50": 5.659,
+        "p95": 8.801,
+        "mean": 6.317,
+        "min": 4.575390568113454,
+        "max": 9.303175249225625
+      }
+    },
+    "client_resources": {
+      "sample_rows": 138,
+      "peak_rss_mib": 23.54,
+      "peak_heap_mib": 6.31,
+      "peak_fds": 8,
+      "peak_goroutines": 16
+    }
+  },
+  "tuic": {
+    "completed": 102,
+    "success": 102,
+    "failures": [],
+    "cleanup_errors": [],
+    "network_valid": true,
+    "cold": {
+      "success": 18,
+      "total": 18,
+      "first_byte_ms": {
+        "n": 18,
+        "p50": 554.439,
+        "p95": 1845.583,
+        "mean": 823.698,
+        "min": 274.864,
+        "max": 4664.561
+      },
+      "total_ms": {
+        "n": 18,
+        "p50": 779.85,
+        "p95": 2073.658,
+        "mean": 1080.058,
+        "min": 311.163,
+        "max": 5586.886
+      },
+      "entry_ms": {
+        "n": 18,
+        "p50": 362.147,
+        "p95": 1613.228,
+        "mean": 638.353,
+        "min": 171.994,
+        "max": 4301.295
+      },
+      "e2e_mbps": {
+        "n": 18,
+        "p50": 0.337,
+        "p95": 0.672,
+        "mean": 0.389,
+        "min": 0.0469212649350283,
+        "max": 0.8424524998565724
+      },
+      "cleanup_ms": {
+        "n": 18,
+        "p50": 0.149,
+        "p95": 0.25,
+        "mean": 0.163,
+        "min": 0.084,
+        "max": 0.282
+      },
+      "per_block": [
+        {
+          "payload_makespan_ms": 5639.47998046875,
+          "payload_aggregate_mbps": 0.2789023111079941,
+          "block": 1,
+          "success": 6,
+          "total": 6,
+          "elapsed_ms": 5640.596,
+          "aggregate_verified_mbps": 0.2788471289204191,
+          "first_byte_p50_ms": 465.866
+        },
+        {
+          "payload_makespan_ms": 4273.2509765625,
+          "payload_aggregate_mbps": 0.368071992173333,
+          "block": 2,
+          "success": 6,
+          "total": 6,
+          "elapsed_ms": 4275.091,
+          "aggregate_verified_mbps": 0.3679135718982356,
+          "first_byte_p50_ms": 546.839
+        },
+        {
+          "payload_makespan_ms": 9551.93603515625,
+          "payload_aggregate_mbps": 0.1646644192560562,
+          "block": 3,
+          "success": 6,
+          "total": 6,
+          "elapsed_ms": 9553.465,
+          "aggregate_verified_mbps": 0.16463806587452823,
+          "first_byte_p50_ms": 699.717
+        }
+      ],
+      "payload_aggregate_mbps": {
+        "n": 3,
+        "p50": 0.279,
+        "p95": 0.359,
+        "mean": 0.271,
+        "min": 0.1646644192560562,
+        "max": 0.368071992173333
+      },
+      "batch_aggregate_mbps": {
+        "n": 3,
+        "p50": 0.279,
+        "p95": 0.359,
+        "mean": 0.27,
+        "min": 0.16463806587452823,
+        "max": 0.3679135718982356
+      }
+    },
+    "warm": {
+      "success": 24,
+      "total": 24,
+      "first_byte_ms": {
+        "n": 21,
+        "p50": 99.385,
+        "p95": 109.37,
+        "mean": 105.112,
+        "min": 97.664,
+        "max": 207.496
+      },
+      "total_ms": {
+        "n": 21,
+        "p50": 230.936,
+        "p95": 340.2,
+        "mean": 245.546,
+        "min": 170.962,
+        "max": 400.507
+      },
+      "entry_ms": {
+        "n": 21,
+        "p50": 0.526,
+        "p95": 0.744,
+        "mean": 0.532,
+        "min": 0.291,
+        "max": 0.906
+      },
+      "e2e_mbps": {
+        "n": 24,
+        "p50": 1.115,
+        "p95": 1.43,
+        "mean": 1.041,
+        "min": 0.47006408383382353,
+        "max": 1.53329898602603
+      },
+      "cleanup_ms": {
+        "n": 24,
+        "p50": 0.133,
+        "p95": 0.207,
+        "mean": 0.145,
+        "min": 0.121,
+        "max": 0.303
+      },
+      "per_block": [
+        {
+          "payload_makespan_ms": 2212.251953125,
+          "payload_aggregate_mbps": 0.947971589328959,
+          "block": 1,
+          "success": 8,
+          "total": 8,
+          "elapsed_ms": 2213.109,
+          "aggregate_verified_mbps": 0.9476044785864591,
+          "first_byte_p50_ms": 99.5
+        },
+        {
+          "payload_makespan_ms": 2188.860107421875,
+          "payload_aggregate_mbps": 0.9581023441786363,
+          "block": 2,
+          "success": 8,
+          "total": 8,
+          "elapsed_ms": 2189.843,
+          "aggregate_verified_mbps": 0.9576723080147757,
+          "first_byte_p50_ms": 99.085
+        },
+        {
+          "payload_makespan_ms": 2337.527099609375,
+          "payload_aggregate_mbps": 0.8971669249740274,
+          "block": 3,
+          "success": 8,
+          "total": 8,
+          "elapsed_ms": 2338.047,
+          "aggregate_verified_mbps": 0.8969674262322357,
+          "first_byte_p50_ms": 98.948
+        }
+      ],
+      "first_sample_first_byte_ms": [
+        440.595,
+        410.757,
+        354.018
+      ],
+      "payload_aggregate_mbps": {
+        "n": 3,
+        "p50": 0.948,
+        "p95": 0.957,
+        "mean": 0.934,
+        "min": 0.8971669249740274,
+        "max": 0.9581023441786363
+      },
+      "batch_aggregate_mbps": {
+        "n": 3,
+        "p50": 0.948,
+        "p95": 0.957,
+        "mean": 0.934,
+        "min": 0.8969674262322357,
+        "max": 0.9576723080147757
+      }
+    },
+    "concurrent": {
+      "success": 24,
+      "total": 24,
+      "first_byte_ms": {
+        "n": 24,
+        "p50": 334.745,
+        "p95": 889.967,
+        "mean": 404.995,
+        "min": 101.23,
+        "max": 890.118
+      },
+      "total_ms": {
+        "n": 24,
+        "p50": 1632.975,
+        "p95": 2365.595,
+        "mean": 1636.062,
+        "min": 686.932,
+        "max": 2390.811
+      },
+      "entry_ms": {
+        "n": 24,
+        "p50": 168.941,
+        "p95": 481.594,
+        "mean": 215.718,
+        "min": 0.245,
+        "max": 482.28
+      },
+      "e2e_mbps": {
+        "n": 24,
+        "p50": 0.65,
+        "p95": 1.188,
+        "mean": 0.725,
+        "min": 0.43858481588972753,
+        "max": 1.5264475464094127
+      },
+      "cleanup_ms": {
+        "n": 24,
+        "p50": 0.133,
+        "p95": 0.156,
+        "mean": 0.127,
+        "min": 0.041,
+        "max": 0.157
+      },
+      "per_block": [
+        {
+          "payload_makespan_ms": 3317.013916015625,
+          "payload_aggregate_mbps": 2.5289637645163516,
+          "block": 1,
+          "success": 8,
+          "total": 8,
+          "elapsed_ms": 3317.186,
+          "aggregate_verified_mbps": 2.5288325707391746,
+          "first_byte_p50_ms": 555.825
+        },
+        {
+          "payload_makespan_ms": 3835.998046875,
+          "payload_aggregate_mbps": 2.1868123751610846,
+          "block": 2,
+          "success": 8,
+          "total": 8,
+          "elapsed_ms": 3837.299,
+          "aggregate_verified_mbps": 2.1860709837831247,
+          "first_byte_p50_ms": 334.745
+        },
+        {
+          "payload_makespan_ms": 3443.179931640625,
+          "payload_aggregate_mbps": 2.436296727601729,
+          "block": 3,
+          "success": 8,
+          "total": 8,
+          "elapsed_ms": 3444.155,
+          "aggregate_verified_mbps": 2.4356069921359516,
+          "first_byte_p50_ms": 350.709
+        }
+      ],
+      "payload_aggregate_mbps": {
+        "n": 3,
+        "p50": 2.436,
+        "p95": 2.52,
+        "mean": 2.384,
+        "min": 2.1868123751610846,
+        "max": 2.5289637645163516
+      },
+      "batch_aggregate_mbps": {
+        "n": 3,
+        "p50": 2.436,
+        "p95": 2.52,
+        "mean": 2.384,
+        "min": 2.1860709837831247,
+        "max": 2.5288325707391746
+      }
+    },
+    "download_single": {
+      "success": 6,
+      "total": 6,
+      "first_byte_ms": {
+        "n": 6,
+        "p50": 479.959,
+        "p95": 1024.698,
+        "mean": 594.689,
+        "min": 416.13,
+        "max": 1175.325
+      },
+      "total_ms": {
+        "n": 6,
+        "p50": 5380.156,
+        "p95": 10935.441,
+        "mean": 6002.31,
+        "min": 1923.493,
+        "max": 11320.48
+      },
+      "entry_ms": {
+        "n": 6,
+        "p50": 376.209,
+        "p95": 921.667,
+        "mean": 489.166,
+        "min": 308.149,
+        "max": 1072.968
+      },
+      "e2e_mbps": {
+        "n": 6,
+        "p50": 9.12,
+        "p95": 16.846,
+        "mean": 9.522,
+        "min": 2.964045625974111,
+        "max": 17.444455693202517
+      },
+      "cleanup_ms": {
+        "n": 6,
+        "p50": 0.152,
+        "p95": 0.222,
+        "mean": 0.163,
+        "min": 0.129,
+        "max": 0.244
+      },
+      "per_block": [
+        {
+          "payload_makespan_ms": 2355.18994140625,
+          "payload_aggregate_mbps": 14.24701736793472,
+          "block": 1,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 2356.209,
+          "aggregate_verified_mbps": 14.240855543799384,
+          "first_byte_p50_ms": 510.983
+        },
+        {
+          "payload_makespan_ms": 11320.47998046875,
+          "payload_aggregate_mbps": 2.964046759315112,
+          "block": 2,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 11321.752,
+          "aggregate_verified_mbps": 2.963713743243978,
+          "first_byte_p50_ms": 1175.325
+        },
+        {
+          "payload_makespan_ms": 8405.1220703125,
+          "payload_aggregate_mbps": 3.992140949209612,
+          "block": 3,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 8406.409,
+          "aggregate_verified_mbps": 3.991529795897392,
+          "first_byte_p50_ms": 416.13
+        },
+        {
+          "payload_makespan_ms": 9780.324951171875,
+          "payload_aggregate_mbps": 3.430809524992267,
+          "block": 4,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 9781.484,
+          "aggregate_verified_mbps": 3.430402994065113,
+          "first_byte_p50_ms": 572.819
+        },
+        {
+          "payload_makespan_ms": 1923.492919921875,
+          "payload_aggregate_mbps": 17.444531067659376,
+          "block": 5,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 1924.772,
+          "aggregate_verified_mbps": 17.43293855064392,
+          "first_byte_p50_ms": 443.941
+        },
+        {
+          "payload_makespan_ms": 2229.2470703125,
+          "payload_aggregate_mbps": 15.05191257032639,
+          "block": 6,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 2230.507,
+          "aggregate_verified_mbps": 15.04341030985332,
+          "first_byte_p50_ms": 448.936
+        }
+      ],
+      "payload_aggregate_mbps": {
+        "n": 6,
+        "p50": 9.12,
+        "p95": 16.846,
+        "mean": 9.522,
+        "min": 2.964046759315112,
+        "max": 17.444531067659376
+      },
+      "batch_aggregate_mbps": {
+        "n": 6,
+        "p50": 9.116,
+        "p95": 16.836,
+        "mean": 9.517,
+        "min": 2.963713743243978,
+        "max": 17.43293855064392
+      }
+    },
+    "download_4": {
+      "success": 24,
+      "total": 24,
+      "first_byte_ms": {
+        "n": 24,
+        "p50": 457.305,
+        "p95": 1360.05,
+        "mean": 655.707,
+        "min": 378.522,
+        "max": 1569.062
+      },
+      "total_ms": {
+        "n": 24,
+        "p50": 1734.986,
+        "p95": 18482.954,
+        "mean": 6960.898,
+        "min": 1524.289,
+        "max": 18769.359
+      },
+      "entry_ms": {
+        "n": 24,
+        "p50": 343.486,
+        "p95": 1046.393,
+        "mean": 460.672,
+        "min": 263.283,
+        "max": 1046.567
+      },
+      "e2e_mbps": {
+        "n": 24,
+        "p50": 4.835,
+        "p95": 5.311,
+        "mean": 3.485,
+        "min": 0.4469308456186191,
+        "max": 5.503272360344836
+      },
+      "cleanup_ms": {
+        "n": 24,
+        "p50": 0.137,
+        "p95": 0.234,
+        "mean": 0.138,
+        "min": 0.049,
+        "max": 0.289
+      },
+      "per_block": [
+        {
+          "payload_makespan_ms": 18770.35888671875,
+          "payload_aggregate_mbps": 1.7876286864041766,
+          "block": 1,
+          "success": 4,
+          "total": 4,
+          "elapsed_ms": 18771.073,
+          "aggregate_verified_mbps": 1.7875606791364562,
+          "first_byte_p50_ms": 1359.889
+        },
+        {
+          "payload_makespan_ms": 1861.6640625,
+          "payload_aggregate_mbps": 18.02389199850604,
+          "block": 2,
+          "success": 4,
+          "total": 4,
+          "elapsed_ms": 1862.661,
+          "aggregate_verified_mbps": 18.014245211554865,
+          "first_byte_p50_ms": 427.783
+        },
+        {
+          "payload_makespan_ms": 1818.68603515625,
+          "payload_aggregate_mbps": 18.4498211078622,
+          "block": 3,
+          "success": 4,
+          "total": 4,
+          "elapsed_ms": 1819.068,
+          "aggregate_verified_mbps": 18.445947045410065,
+          "first_byte_p50_ms": 446.74
+        },
+        {
+          "payload_makespan_ms": 1663.514892578125,
+          "payload_aggregate_mbps": 20.170803489469904,
+          "block": 4,
+          "success": 4,
+          "total": 4,
+          "elapsed_ms": 1664.667,
+          "aggregate_verified_mbps": 20.156843380688148,
+          "first_byte_p50_ms": 382.13
+        },
+        {
+          "payload_makespan_ms": 1740.908935546875,
+          "payload_aggregate_mbps": 19.274087986376774,
+          "block": 5,
+          "success": 4,
+          "total": 4,
+          "elapsed_ms": 1741.856,
+          "aggregate_verified_mbps": 19.263608472801426,
+          "first_byte_p50_ms": 459.055
+        },
+        {
+          "payload_makespan_ms": 17003.570068359375,
+          "payload_aggregate_mbps": 1.9733757008146684,
+          "block": 6,
+          "success": 4,
+          "total": 4,
+          "elapsed_ms": 17004.987,
+          "aggregate_verified_mbps": 1.9732112703173486,
+          "first_byte_p50_ms": 788.724
+        }
+      ],
+      "payload_aggregate_mbps": {
+        "n": 6,
+        "p50": 18.237,
+        "p95": 19.947,
+        "mean": 13.28,
+        "min": 1.7876286864041766,
+        "max": 20.170803489469904
+      },
+      "batch_aggregate_mbps": {
+        "n": 6,
+        "p50": 18.23,
+        "p95": 19.934,
+        "mean": 13.274,
+        "min": 1.7875606791364562,
+        "max": 20.156843380688148
+      }
+    },
+    "upload": {
+      "success": 6,
+      "total": 6,
+      "first_byte_ms": {
+        "n": 6,
+        "p50": 1175.068,
+        "p95": 1385.442,
+        "mean": 1231.522,
+        "min": 1131.242,
+        "max": 1394.871
+      },
+      "total_ms": {
+        "n": 6,
+        "p50": 1175.091,
+        "p95": 1385.465,
+        "mean": 1231.544,
+        "min": 1131.264,
+        "max": 1394.894
+      },
+      "entry_ms": {
+        "n": 6,
+        "p50": 407.03,
+        "p95": 605.62,
+        "mean": 433.839,
+        "min": 283.271,
+        "max": 628.28
+      },
+      "e2e_mbps": {
+        "n": 6,
+        "p50": 7.14,
+        "p95": 7.376,
+        "mean": 6.858,
+        "min": 6.0137817686576245,
+        "max": 7.415226100269786
+      },
+      "cleanup_ms": {
+        "n": 6,
+        "p50": 0.143,
+        "p95": 0.169,
+        "mean": 0.15,
+        "min": 0.141,
+        "max": 0.172
+      },
+      "per_block": [
+        {
+          "payload_makespan_ms": 1131.263916015625,
+          "payload_aggregate_mbps": 7.415252870033323,
+          "block": 1,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 1132.387,
+          "aggregate_verified_mbps": 7.407898536454409,
+          "first_byte_p50_ms": 1131.242
+        },
+        {
+          "payload_makespan_ms": 1394.89404296875,
+          "payload_aggregate_mbps": 6.013795845128525,
+          "block": 2,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 1396.082,
+          "aggregate_verified_mbps": 6.008678573321624,
+          "first_byte_p50_ms": 1394.871
+        },
+        {
+          "payload_makespan_ms": 1192.136962890625,
+          "payload_aggregate_mbps": 7.03661429946756,
+          "block": 3,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 1193.235,
+          "aggregate_verified_mbps": 7.030139075705961,
+          "first_byte_p50_ms": 1192.114
+        },
+        {
+          "payload_makespan_ms": 1158.044921875,
+          "payload_aggregate_mbps": 7.243767354394108,
+          "block": 4,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 1159.034,
+          "aggregate_verified_mbps": 7.237585782643131,
+          "first_byte_p50_ms": 1158.023
+        },
+        {
+          "payload_makespan_ms": 1357.176025390625,
+          "payload_aggregate_mbps": 6.180928518528446,
+          "block": 5,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 1358.057,
+          "aggregate_verified_mbps": 6.176918936392213,
+          "first_byte_p50_ms": 1357.153
+        },
+        {
+          "payload_makespan_ms": 1155.7490234375,
+          "payload_aggregate_mbps": 7.2581571170617,
+          "block": 6,
+          "success": 1,
+          "total": 1,
+          "elapsed_ms": 1156.863,
+          "aggregate_verified_mbps": 7.2511680294036545,
+          "first_byte_p50_ms": 1155.729
+        }
+      ],
+      "payload_aggregate_mbps": {
+        "n": 6,
+        "p50": 7.14,
+        "p95": 7.376,
+        "mean": 6.858,
+        "min": 6.013795845128525,
+        "max": 7.415252870033323
+      },
+      "batch_aggregate_mbps": {
+        "n": 6,
+        "p50": 7.134,
+        "p95": 7.369,
+        "mean": 6.852,
+        "min": 6.008678573321624,
+        "max": 7.407898536454409
+      }
+    },
+    "client_resources": {
+      "sample_rows": 138,
+      "peak_rss_mib": 21.99,
+      "peak_heap_mib": 5.4,
+      "peak_fds": 8,
+      "peak_goroutines": 13
+    }
+  }
+}

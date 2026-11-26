@@ -1,0 +1,3 @@
+MemoryPeak=35405824
+CPUUsageNSec=1779143000
+TasksCurrent=7

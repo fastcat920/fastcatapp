@@ -1,0 +1,6 @@
+mechanism: recorded binary SHA256 match frozen artifacts
+performance: recorded binary SHA256 match frozen artifacts
+cross-network: recorded binary SHA256 match frozen artifacts
+ecn-device: recorded binary SHA256 match frozen artifacts
+ecn-fixed: recorded binary SHA256 match frozen artifacts
+ecn-performance/performance: recorded binary SHA256 match frozen artifacts

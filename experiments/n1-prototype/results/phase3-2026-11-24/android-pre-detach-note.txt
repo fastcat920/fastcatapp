@@ -1,0 +1,1 @@
+Earlier native test process printed PASS, but its stderr contained recovered HTTP server panics: invalid Body.Read call. After hijacked, the original Request must not be used. This is NOT accepted as a clean regression pass. The fixture now treats recovered server panics as test failures, and the replacement reader no longer uses the original Body after Hijack.

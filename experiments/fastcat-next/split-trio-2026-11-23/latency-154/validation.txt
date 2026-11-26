@@ -1,0 +1,5 @@
+PASS:84 measured cases+2pilots, unique timeline; exact sample counts and zero observed request failures.
+PASS: mixed72/72 strict samples, backgrounds12/12; web24/24 and4/4 each variant/site.
+PASS: frozen3binary hashes and protocol .go source unchanged. Prior comparator race/vet logs included.
+PASS: test listeners, files and runtime units gone; temporary cert/private key/hosts entry removed; Android VPN CONNECTED, keepawake0, no fc-opt directories.
+SPEED PENDING:104.64.221.179:22 timeout fromMac and154; no performance data collected there.

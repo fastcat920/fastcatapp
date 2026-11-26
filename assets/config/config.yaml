@@ -39,11 +39,11 @@ remote_config:
   sources:
 
     - name: "source_0"
-      url: https://cat920-1457006933.cos.ap-chengdu.myqcloud.com/cat360.json
+      url: https://cat920-1457006933.cos.ap-chengdu.myqcloud.com/cat363.json
     - name: "source_1"
-      url: https://cat921.oss-cn-hongkong.aliyuncs.com/cat360.json
+      url: https://cat921.oss-cn-hongkong.aliyuncs.com/cat363.json
     - name: "source_2"
-      url: https://sdfsf.cn-bj.ufileos.com/cat360.json
+      url: https://sdfsf.cn-bj.ufileos.com/cat363.json
 
 # 协议链接：OSS 的同名 legal 字段优先；未配置或格式无效时使用此处兜底。
 legal:

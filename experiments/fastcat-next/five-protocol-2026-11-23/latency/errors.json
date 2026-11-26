@@ -1,0 +1,23 @@
+[
+  {
+    "source": "latency-b2-p5-vless-vision",
+    "metric": "latency",
+    "version": "vless-vision",
+    "phase": "warm",
+    "error": "entry: 154.37.155.240:19451 connect error: EOF"
+  },
+  {
+    "source": "latency-b2-p5-vless-vision",
+    "metric": "latency",
+    "version": "vless-vision",
+    "phase": "warm",
+    "error": "target TLS: EOF"
+  },
+  {
+    "source": "latency-b2-p5-vless-vision",
+    "metric": "latency",
+    "version": "vless-vision",
+    "phase": "warm",
+    "error": "entry: 154.37.155.240:19451 connect error: EOF"
+  }
+]

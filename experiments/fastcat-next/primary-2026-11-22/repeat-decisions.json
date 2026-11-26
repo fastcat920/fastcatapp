@@ -1,0 +1,23 @@
+[
+  {
+    "test": "final-parallel-6",
+    "extend": true,
+    "reasons": [
+      "next-base: workers=4 range-ratio=4.05 CV=0.317",
+      "next-opt: workers=4 range-ratio=3.42 CV=0.513",
+      "next-primary: incomplete group",
+      "next-primary: workers=4 range-ratio=201908.79 CV=0.728",
+      "tuic: workers=4 range-ratio=8.68 CV=0.672"
+    ]
+  },
+  {
+    "test": "final-echo-3",
+    "extend": true,
+    "reasons": [
+      "next-base: workers=1 range-ratio=4.19 CV=0.583",
+      "next-primary: workers=1 range-ratio=5.73 CV=0.826",
+      "next-primary: workers=4 range-ratio=4.75 CV=0.498",
+      "tuic: workers=4 range-ratio=3.48 CV=0.431"
+    ]
+  }
+]

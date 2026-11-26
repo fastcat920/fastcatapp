@@ -1,0 +1,1 @@
+Invalid load cohort. Foreground external HEAD requests succeeded, but background TLS used a literal IP without a matching IP SAN. Background downloads failed certificate verification; too few genuinely loaded samples. Kept for audit, excluded from acceptance. Valid repeat uses zlhk.fastcat.ink:19454 as background target, without disabling certificate checks.

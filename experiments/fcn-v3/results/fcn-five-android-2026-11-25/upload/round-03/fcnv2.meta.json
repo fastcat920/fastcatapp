@@ -1,0 +1,56 @@
+{
+  "phase": "upload",
+  "arm": "fcnv2",
+  "entry_port": 18530,
+  "round": 3,
+  "rounds": 5,
+  "position": 5,
+  "args": [
+    "./compare",
+    "-config",
+    "bench.json",
+    "-protocol",
+    "fcnv2",
+    "-phase",
+    "upload",
+    "-bytes",
+    "1048576",
+    "-count",
+    "1",
+    "-timeout",
+    "25s",
+    "-diagnostic-id",
+    "fcnfive02-upload-3-fcnv2"
+  ],
+  "planned": 1,
+  "diagnostic_id": "fcnfive02-upload-3-fcnv2",
+  "host_timeout_s": 40,
+  "before": {
+    "default_net_id": 361,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795599640292,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "after": {
+    "default_net_id": 361,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795599641387,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "network_stable": true,
+  "status": "exited",
+  "exit_code": 0,
+  "start_unix_ms": 1795599640292,
+  "end_unix_ms": 1795599641307,
+  "elapsed_ms": 1015.194083
+}

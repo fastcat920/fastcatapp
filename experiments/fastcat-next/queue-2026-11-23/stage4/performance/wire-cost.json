@@ -1,0 +1,90 @@
+{
+  "baseline": {
+    "mixed_summary": {
+      "groups": 6,
+      "live_session_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "received_wire_bytes": 205901263,
+      "verified_business_bytes": 201326592,
+      "wire_per_business_byte": 1.02272263665994
+    },
+    "parallel_download": {
+      "groups": 6,
+      "live_session_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "received_wire_bytes": 102943737,
+      "verified_business_bytes": 100663296,
+      "wire_per_business_byte": 1.0226541459560394
+    },
+    "rolling_download": {
+      "groups": 6,
+      "live_session_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "received_wire_bytes": 308486896,
+      "verified_business_bytes": 301989888,
+      "wire_per_business_byte": 1.021513991885715
+    }
+  },
+  "prefix": {
+    "mixed_summary": {
+      "groups": 6,
+      "live_session_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "received_wire_bytes": 206261437,
+      "verified_business_bytes": 201326592,
+      "wire_per_business_byte": 1.024511640270551
+    },
+    "parallel_download": {
+      "groups": 6,
+      "live_session_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "received_wire_bytes": 103138714,
+      "verified_business_bytes": 100663296,
+      "wire_per_business_byte": 1.024591068426768
+    },
+    "rolling_download": {
+      "groups": 6,
+      "live_session_counts": [
+        2,
+        2,
+        2,
+        2,
+        2,
+        2
+      ],
+      "received_wire_bytes": 309028551,
+      "verified_business_bytes": 301989888,
+      "wire_per_business_byte": 1.0233076115449269
+    }
+  }
+}

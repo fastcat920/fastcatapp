@@ -1,0 +1,13 @@
+udp UNCONN 0      0      0.0.0.0:68    0.0.0.0:*
+udp UNCONN 0      0            *:443         *:*
+udp UNCONN 0      0            *:18445       *:*
+udp UNCONN 0      0            *:18446       *:*
+udp UNCONN 0      0            *:18447       *:*
+tcp LISTEN 0      128    0.0.0.0:22    0.0.0.0:*
+tcp LISTEN 0      4096         *:8443        *:*
+tcp LISTEN 0      4096         *:21201       *:*
+tcp LISTEN 0      4096         *:18447       *:*
+tcp LISTEN 0      4096         *:18446       *:*
+tcp LISTEN 0      4096         *:18445       *:*
+tcp LISTEN 0      128       [::]:22       [::]:*
+tcp LISTEN 0      4096         *:443         *:*

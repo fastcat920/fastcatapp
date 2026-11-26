@@ -1,0 +1,23 @@
+{
+  "target_dns": {
+    "samples": 122,
+    "p50_us": 2484.5,
+    "p95_us": 4011,
+    "max_us": 5940,
+    "above20ms": 0
+  },
+  "target_open": {
+    "samples": 122,
+    "p50_us": 3698.5,
+    "p95_us": 5448,
+    "max_us": 1030421,
+    "above20ms": 1
+  },
+  "send": {
+    "samples": 882,
+    "p50_us": 47.0,
+    "p95_us": 193,
+    "max_us": 1313361,
+    "above20ms": 22
+  }
+}

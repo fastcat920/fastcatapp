@@ -1,0 +1,11 @@
+# Stability phase: predeclared live diagnosis
+
+User confirmed SIM is loaded and authorized cellular comparison; TCP web first, UDP deferred. Independent lab server18466, old services untouched. No business-data replay.
+
+- Stage-specific telemetry: DNS/TCP hooks, TLS, entry authorization/target headers, body byte/progress history, FIN, outer HTTP EOF, TLS send/receive close. No IP/address/payload/TLS-key data in telemetry. Preserve contextual absolute deadlines, separate setup phases. Failure rates include every request; inner setup attempts/failures remain visible.
+- Cases per network, randomized seed20261129: four cold 32KiB sessions each of N1 domain, N1 literal-IP (same verified TLS name), diagnostic X25519, ordinary HTTPS GET, N1 bounded setup-attempts=2. Additionally two 1MiB burst requests each of domain N1, ordinary HTTPS GET, bounded-retry N1. 26 requests/network. Every request has total30s budget; no extending failed samples. DNS cache is not forcibly cleared; 'cold' means fresh TCP/TLS, not uncached OS DNS.
+- Smaller key exchange is diagnostic only; no production curve change. Setup retry at most2,150ms apart, only transient timeout/EOF/reset before any HTTP auth bytes; certificate failures, auth failures and all partial business transfer failures never replay. Baseline attempts remain1.
+- Collect complete lab-port packet metadata and sender TCP/window stats as available. Historical Phase4 handshake and Phase7 body failure used only for retrospective root-stage observations, not new held-out performance scores. Repeated sequence/SACK/ACK delay does not locate the physical loss source or establish GFW detection.
+- Switch Wi-Fi/cellular with saved original network settings; verify actual validated transport. Restore Wi-Fi afterward, do not count no-default-network transitions as protocol errors.
+- Fault tests must validate phase labels and cleanup under resolver failure, refused TCP, TLS cancellation, corrupt/partial body, wrong certificate/key and bounded transient handshake retry. Timing/trace changes do not justify changing protocol crypto or bypassing verification.
+- Independent server only; controls defaultoff elsewhere. Retain public fake data bounds, source allowlist, max sessions. Stop capture/lab services when no longer needed.

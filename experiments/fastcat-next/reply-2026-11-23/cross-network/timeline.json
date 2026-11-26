@@ -1,0 +1,65 @@
+[
+  {
+    "name": "wifi-before-baseline",
+    "network": "wifi-before",
+    "variant": "baseline",
+    "pilot": false,
+    "start": 1795365687.968877,
+    "end": 1795365706.9898398,
+    "active_after": "WIFI"
+  },
+  {
+    "name": "wifi-before-coalesce5",
+    "network": "wifi-before",
+    "variant": "coalesce5",
+    "pilot": false,
+    "start": 1795365715.769554,
+    "end": 1795365740.41868,
+    "active_after": "WIFI"
+  },
+  {
+    "name": "cellular-baseline-pilot",
+    "network": "cellular",
+    "variant": "baseline",
+    "pilot": true,
+    "start": 1795365749.143698,
+    "end": 1795365753.4805398,
+    "active_after": "CELLULAR"
+  },
+  {
+    "name": "cellular-coalesce5",
+    "network": "cellular",
+    "variant": "coalesce5",
+    "pilot": false,
+    "start": 1795365761.209228,
+    "end": 1795365788.5071821,
+    "active_after": "CELLULAR"
+  },
+  {
+    "name": "cellular-baseline",
+    "network": "cellular",
+    "variant": "baseline",
+    "pilot": false,
+    "start": 1795365796.524601,
+    "end": 1795365817.388861,
+    "active_after": "CELLULAR"
+  },
+  {
+    "name": "wifi-after-coalesce5",
+    "network": "wifi-after",
+    "variant": "coalesce5",
+    "pilot": false,
+    "start": 1795365831.167191,
+    "end": 1795365855.085653,
+    "active_after": "WIFI"
+  },
+  {
+    "name": "wifi-after-baseline",
+    "network": "wifi-after",
+    "variant": "baseline",
+    "pilot": false,
+    "start": 1795365862.030241,
+    "end": 1795365890.038514,
+    "active_after": "WIFI"
+  }
+]

@@ -1,4 +1,5 @@
 import 'package:fl_clash/common/sensitive_masker.dart';
+import 'package:fl_clash/l10n/l10n.dart';
 
 /// Older cores initialize downstream stages as failed/unavailable even when
 /// configuration, DNS or TCP failed before those stages could run.
@@ -74,6 +75,7 @@ class NetworkDiagnosticSnapshot {
     required this.proxyResults,
     required this.nodeResult,
     this.localProxyResults = const [],
+    this.download,
   });
 
   final DateTime generatedAt;
@@ -91,6 +93,70 @@ class NetworkDiagnosticSnapshot {
   final List<NetworkDiagnosticItem> proxyResults;
   final Map<String, dynamic> nodeResult;
   final List<NetworkDiagnosticItem> localProxyResults;
+  final NetworkDiagnosticDownload? download;
+}
+
+enum NetworkDiagnosticDownloadStatus { complete, failed, cancelled, noNode }
+
+class NetworkDiagnosticDownload {
+  const NetworkDiagnosticDownload(this.status,
+      {this.bytes = 0, this.sampleUs = 0, this.httpStatus});
+
+  factory NetworkDiagnosticDownload.fromProbe(Object? value) {
+    if (value is! Map) {
+      return const NetworkDiagnosticDownload(
+          NetworkDiagnosticDownloadStatus.failed);
+    }
+    final bytes = value['bytes'] as int? ?? 0;
+    final sampleUs = value['sample-us'] as int? ?? 0;
+    final status = switch (value['status']) {
+      'complete' when bytes > 0 && sampleUs > 0 =>
+        NetworkDiagnosticDownloadStatus.complete,
+      'no-node' => NetworkDiagnosticDownloadStatus.noNode,
+      'cancelled' => NetworkDiagnosticDownloadStatus.cancelled,
+      _ => NetworkDiagnosticDownloadStatus.failed,
+    };
+    return NetworkDiagnosticDownload(status,
+        bytes: bytes,
+        sampleUs: sampleUs,
+        httpStatus: value['http-status'] as int?);
+  }
+
+  final NetworkDiagnosticDownloadStatus status;
+  final int bytes;
+  final int sampleUs;
+  final int? httpStatus;
+
+  List<String> describe(AppLocalizations l10n) {
+    final summary = switch (status) {
+      NetworkDiagnosticDownloadStatus.complete =>
+        '${l10n.xboardNetworkDiagnosticsDownloadAverageSpeed}: '
+            '${(bytes * 8 / sampleUs).toStringAsFixed(2)} Mbps',
+      NetworkDiagnosticDownloadStatus.failed =>
+        l10n.xboardNetworkDiagnosticsDownloadFailed,
+      NetworkDiagnosticDownloadStatus.cancelled =>
+        l10n.xboardNetworkDiagnosticsDownloadCancelled,
+      NetworkDiagnosticDownloadStatus.noNode =>
+        l10n.xboardNetworkDiagnosticsDownloadNoNode,
+    };
+    return [
+      summary,
+      if (status == NetworkDiagnosticDownloadStatus.failed &&
+          httpStatus != null &&
+          httpStatus != 200)
+        'HTTP $httpStatus',
+      if (sampleUs > 0)
+        '${l10n.xboardNetworkDiagnosticsDownloadSampleTime}: '
+            '${(sampleUs / 1000000).toStringAsFixed(2)} '
+            '${l10n.xboardNetworkDiagnosticsDownloadSecondsUnit}',
+      if (bytes > 0)
+        '${l10n.xboardNetworkDiagnosticsDownloadTotalBytes}: '
+            '${(bytes / 1000000).toStringAsFixed(2)} MB',
+      if (status == NetworkDiagnosticDownloadStatus.complete &&
+          sampleUs < 1000000)
+        l10n.xboardNetworkDiagnosticsDownloadShort,
+    ];
+  }
 }
 
 enum NetworkDiagnosticSeverity { healthy, warning, error }

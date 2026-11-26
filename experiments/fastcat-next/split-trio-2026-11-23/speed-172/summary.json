@@ -1,0 +1,458 @@
+{
+  "next-opt": {
+    "latency/cold": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {}
+    },
+    "latency/warm": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {}
+    },
+    "latency/batch": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {}
+    },
+    "batch8/batch": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {}
+    },
+    "mixed/mixed": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {},
+      "all_foreground_total": 0,
+      "all_foreground_success": 0,
+      "background_total": 0,
+      "background_success": 0
+    },
+    "web-example/mixed": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {},
+      "all_foreground_total": 0,
+      "all_foreground_success": 0,
+      "background_total": 0,
+      "background_success": 0
+    },
+    "web-google/mixed": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {},
+      "all_foreground_total": 0,
+      "all_foreground_success": 0,
+      "background_total": 0,
+      "background_success": 0
+    },
+    "idle/idle-resume": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {},
+      "median_actual_idle_seconds": null
+    },
+    "single64": {
+      "groups": 6,
+      "success": 6,
+      "jobs": 6,
+      "verified_bytes": 402653184,
+      "elapsed_ms": 84838,
+      "aggregate_mbps": 37.96913496310615,
+      "median_mbps": 37.755630173589196,
+      "min_mbps": 36.9720344328903,
+      "max_mbps": 39.36869634083743
+    },
+    "parallel4": {
+      "groups": 6,
+      "success": 24,
+      "jobs": 24,
+      "verified_bytes": 402653184,
+      "elapsed_ms": 86357,
+      "aggregate_mbps": 37.30126650995287,
+      "median_mbps": 37.987641771371,
+      "min_mbps": 33.43740109616343,
+      "max_mbps": 38.76044415565663
+    },
+    "parallel8": {
+      "groups": 6,
+      "success": 48,
+      "jobs": 48,
+      "verified_bytes": 402653184,
+      "elapsed_ms": 90255,
+      "aggregate_mbps": 35.6902716968589,
+      "median_mbps": 36.15056259106554,
+      "min_mbps": 32.648437849671616,
+      "max_mbps": 39.71820019235037
+    },
+    "rolling": {
+      "groups": 6,
+      "success": 72,
+      "jobs": 72,
+      "verified_bytes": 603979776,
+      "elapsed_ms": 131164,
+      "aggregate_mbps": 36.8381431490348,
+      "median_mbps": 37.94038211730561,
+      "min_mbps": 32.22772402753321,
+      "max_mbps": 39.07926277478527
+    },
+    "rolling-small": {
+      "groups": 0,
+      "success": 0,
+      "jobs": 0,
+      "verified_bytes": 0,
+      "elapsed_ms": 0,
+      "aggregate_mbps": 0.0,
+      "median_mbps": null,
+      "min_mbps": null,
+      "max_mbps": null
+    },
+    "echo1": {
+      "groups": 6,
+      "workers": 6,
+      "success": 6,
+      "median_receive_mbps": 11.53299873746916,
+      "median_alloc_per_verified_byte": 1.323027623224408,
+      "median_heapalloc_mib": 10.274330139160156,
+      "errors": []
+    },
+    "echo4": {
+      "groups": 6,
+      "workers": 24,
+      "success": 24,
+      "median_receive_mbps": 10.452161430977522,
+      "median_alloc_per_verified_byte": 1.508627792292343,
+      "median_heapalloc_mib": 8.21999740600586,
+      "errors": []
+    }
+  },
+  "next-base": {
+    "latency/cold": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {}
+    },
+    "latency/warm": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {}
+    },
+    "latency/batch": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {}
+    },
+    "batch8/batch": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {}
+    },
+    "mixed/mixed": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {},
+      "all_foreground_total": 0,
+      "all_foreground_success": 0,
+      "background_total": 0,
+      "background_success": 0
+    },
+    "web-example/mixed": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {},
+      "all_foreground_total": 0,
+      "all_foreground_success": 0,
+      "background_total": 0,
+      "background_success": 0
+    },
+    "web-google/mixed": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {},
+      "all_foreground_total": 0,
+      "all_foreground_success": 0,
+      "background_total": 0,
+      "background_success": 0
+    },
+    "idle/idle-resume": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {},
+      "median_actual_idle_seconds": null
+    },
+    "single64": {
+      "groups": 6,
+      "success": 6,
+      "jobs": 6,
+      "verified_bytes": 402653184,
+      "elapsed_ms": 84573,
+      "aggregate_mbps": 38.088106984498594,
+      "median_mbps": 38.21450520204438,
+      "min_mbps": 35.43468497128902,
+      "max_mbps": 40.16390454103389
+    },
+    "parallel4": {
+      "groups": 6,
+      "success": 24,
+      "jobs": 24,
+      "verified_bytes": 402653184,
+      "elapsed_ms": 84401,
+      "aggregate_mbps": 38.165726377649555,
+      "median_mbps": 38.25347306094834,
+      "min_mbps": 36.08731007595617,
+      "max_mbps": 39.721138798461084
+    },
+    "parallel8": {
+      "groups": 6,
+      "success": 48,
+      "jobs": 48,
+      "verified_bytes": 402653184,
+      "elapsed_ms": 84146,
+      "aggregate_mbps": 38.28138559170964,
+      "median_mbps": 38.59410568912827,
+      "min_mbps": 36.56162571506402,
+      "max_mbps": 39.80949962924514
+    },
+    "rolling": {
+      "groups": 6,
+      "success": 72,
+      "jobs": 72,
+      "verified_bytes": 603979776,
+      "elapsed_ms": 129303,
+      "aggregate_mbps": 37.36833799679822,
+      "median_mbps": 38.528860700622275,
+      "min_mbps": 32.963830045026604,
+      "max_mbps": 40.51448246717311
+    },
+    "rolling-small": {
+      "groups": 0,
+      "success": 0,
+      "jobs": 0,
+      "verified_bytes": 0,
+      "elapsed_ms": 0,
+      "aggregate_mbps": 0.0,
+      "median_mbps": null,
+      "min_mbps": null,
+      "max_mbps": null
+    },
+    "echo1": {
+      "groups": 6,
+      "workers": 6,
+      "success": 6,
+      "median_receive_mbps": 12.180635102175955,
+      "median_alloc_per_verified_byte": 1.247533688735471,
+      "median_heapalloc_mib": 10.058479309082031,
+      "errors": []
+    },
+    "echo4": {
+      "groups": 6,
+      "workers": 24,
+      "success": 24,
+      "median_receive_mbps": 10.4917837498608,
+      "median_alloc_per_verified_byte": 1.379572163339941,
+      "median_heapalloc_mib": 13.999725341796875,
+      "errors": []
+    }
+  },
+  "tuic": {
+    "latency/cold": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {}
+    },
+    "latency/warm": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {}
+    },
+    "latency/batch": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {}
+    },
+    "batch8/batch": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {}
+    },
+    "mixed/mixed": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {},
+      "all_foreground_total": 0,
+      "all_foreground_success": 0,
+      "background_total": 0,
+      "background_success": 0
+    },
+    "web-example/mixed": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {},
+      "all_foreground_total": 0,
+      "all_foreground_success": 0,
+      "background_total": 0,
+      "background_success": 0
+    },
+    "web-google/mixed": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {},
+      "all_foreground_total": 0,
+      "all_foreground_success": 0,
+      "background_total": 0,
+      "background_success": 0
+    },
+    "idle/idle-resume": {
+      "total": 0,
+      "success": 0,
+      "p50_ms": null,
+      "p95_ms": null,
+      "max_ms": null,
+      "errors": {},
+      "median_actual_idle_seconds": null
+    },
+    "single64": {
+      "groups": 6,
+      "success": 6,
+      "jobs": 6,
+      "verified_bytes": 402653184,
+      "elapsed_ms": 87059,
+      "aggregate_mbps": 37.00048785306516,
+      "median_mbps": 37.62233253984343,
+      "min_mbps": 32.62066545145218,
+      "max_mbps": 40.91692035668013
+    },
+    "parallel4": {
+      "groups": 6,
+      "success": 24,
+      "jobs": 24,
+      "verified_bytes": 402653184,
+      "elapsed_ms": 88042,
+      "aggregate_mbps": 36.5873727539129,
+      "median_mbps": 37.11240119878697,
+      "min_mbps": 31.73746228422795,
+      "max_mbps": 39.35715211494758
+    },
+    "parallel8": {
+      "groups": 6,
+      "success": 48,
+      "jobs": 48,
+      "verified_bytes": 402653184,
+      "elapsed_ms": 88746,
+      "aggregate_mbps": 36.2971342032317,
+      "median_mbps": 36.73412516960767,
+      "min_mbps": 32.73403524175355,
+      "max_mbps": 39.50775715652366
+    },
+    "rolling": {
+      "groups": 6,
+      "success": 72,
+      "jobs": 72,
+      "verified_bytes": 603979776,
+      "elapsed_ms": 131594,
+      "aggregate_mbps": 36.71776986792711,
+      "median_mbps": 37.412458583049315,
+      "min_mbps": 32.844176679309925,
+      "max_mbps": 38.631217883526816
+    },
+    "rolling-small": {
+      "groups": 0,
+      "success": 0,
+      "jobs": 0,
+      "verified_bytes": 0,
+      "elapsed_ms": 0,
+      "aggregate_mbps": 0.0,
+      "median_mbps": null,
+      "min_mbps": null,
+      "max_mbps": null
+    },
+    "echo1": {
+      "groups": 6,
+      "workers": 6,
+      "success": 6,
+      "median_receive_mbps": 9.927687261406888,
+      "median_alloc_per_verified_byte": 1.5303013886772951,
+      "median_heapalloc_mib": 8.982460021972656,
+      "errors": []
+    },
+    "echo4": {
+      "groups": 6,
+      "workers": 24,
+      "success": 24,
+      "median_receive_mbps": 9.330051995578213,
+      "median_alloc_per_verified_byte": 1.5692685584604549,
+      "median_heapalloc_mib": 8.565181732177734,
+      "errors": []
+    }
+  }
+}

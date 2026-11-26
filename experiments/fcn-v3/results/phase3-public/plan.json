@@ -1,0 +1,686 @@
+[
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 1,
+    "profile": "tuic"
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 1,
+    "profile": "padding"
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 1,
+    "profile": "control"
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 1,
+    "profile": "adaptive"
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 2,
+    "profile": "padding"
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 2,
+    "profile": "control"
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 2,
+    "profile": "adaptive"
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 2,
+    "profile": "tuic"
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 3,
+    "profile": "control"
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 3,
+    "profile": "adaptive"
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 3,
+    "profile": "tuic"
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 3,
+    "profile": "padding"
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 4,
+    "profile": "adaptive"
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 4,
+    "profile": "tuic"
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 4,
+    "profile": "padding"
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 4,
+    "profile": "control"
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 1,
+    "profile": "control"
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 1,
+    "profile": "padding"
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 1,
+    "profile": "tuic"
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 1,
+    "profile": "adaptive"
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 2,
+    "profile": "padding"
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 2,
+    "profile": "tuic"
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 2,
+    "profile": "adaptive"
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 2,
+    "profile": "control"
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 3,
+    "profile": "tuic"
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 3,
+    "profile": "adaptive"
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 3,
+    "profile": "control"
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 3,
+    "profile": "padding"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 1,
+    "profile": "padding"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 1,
+    "profile": "control"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 1,
+    "profile": "adaptive"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 1,
+    "profile": "tuic"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 2,
+    "profile": "control"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 2,
+    "profile": "adaptive"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 2,
+    "profile": "tuic"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 2,
+    "profile": "padding"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 3,
+    "profile": "adaptive"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 3,
+    "profile": "tuic"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 3,
+    "profile": "padding"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 3,
+    "profile": "control"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 4,
+    "profile": "tuic"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 4,
+    "profile": "padding"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 4,
+    "profile": "control"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 4,
+    "profile": "adaptive"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 5,
+    "profile": "padding"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 5,
+    "profile": "control"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 5,
+    "profile": "adaptive"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 5,
+    "profile": "tuic"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 6,
+    "profile": "control"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 6,
+    "profile": "adaptive"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 6,
+    "profile": "tuic"
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 6,
+    "profile": "padding"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 1,
+    "profile": "adaptive"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 1,
+    "profile": "control"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 1,
+    "profile": "tuic"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 1,
+    "profile": "padding"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 2,
+    "profile": "control"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 2,
+    "profile": "tuic"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 2,
+    "profile": "padding"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 2,
+    "profile": "adaptive"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 3,
+    "profile": "tuic"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 3,
+    "profile": "padding"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 3,
+    "profile": "adaptive"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 3,
+    "profile": "control"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 4,
+    "profile": "padding"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 4,
+    "profile": "adaptive"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 4,
+    "profile": "control"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 4,
+    "profile": "tuic"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 5,
+    "profile": "adaptive"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 5,
+    "profile": "control"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 5,
+    "profile": "tuic"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 5,
+    "profile": "padding"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 6,
+    "profile": "control"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 6,
+    "profile": "tuic"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 6,
+    "profile": "padding"
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 6,
+    "profile": "adaptive"
+  }
+]

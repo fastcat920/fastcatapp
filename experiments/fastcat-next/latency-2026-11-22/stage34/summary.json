@@ -1,0 +1,163 @@
+{
+  "stage": "stage34",
+  "rows": 2547,
+  "summary": {
+    "next-opt": {
+      "loaded_success": 72,
+      "loaded_total": 72,
+      "loaded_p50": 402.87,
+      "loaded_p95": 640.569,
+      "mixed_groups": 6,
+      "foreground_success": 72,
+      "foreground_total": 72,
+      "background_success": 12,
+      "background_total": 12,
+      "parallel": {
+        "groups": 6,
+        "success": 24,
+        "jobs": 24,
+        "aggregate_mbps": 12.467393804282198,
+        "median_mbps": 11.299979113354986
+      },
+      "rolling": {
+        "groups": 6,
+        "success": 72,
+        "jobs": 72,
+        "aggregate_mbps": 20.556639897894062,
+        "median_mbps": 27.499429232329067
+      },
+      "cold": {
+        "success": 36,
+        "total": 36,
+        "p50": 812.369,
+        "p95": 3057.246
+      },
+      "warm": {
+        "success": 36,
+        "total": 36,
+        "p50": 416.844,
+        "p95": 720.449
+      },
+      "batch": {
+        "success": 36,
+        "total": 36,
+        "p50": 310.124,
+        "p95": 679.327
+      }
+    },
+    "next-latency": {
+      "loaded_success": 72,
+      "loaded_total": 72,
+      "loaded_p50": 468.717,
+      "loaded_p95": 1133.263,
+      "mixed_groups": 6,
+      "foreground_success": 72,
+      "foreground_total": 72,
+      "background_success": 12,
+      "background_total": 12,
+      "parallel": {
+        "groups": 6,
+        "success": 24,
+        "jobs": 24,
+        "aggregate_mbps": 13.159245845384577,
+        "median_mbps": 18.77863443088885
+      },
+      "rolling": {
+        "groups": 6,
+        "success": 72,
+        "jobs": 72,
+        "aggregate_mbps": 24.065336228708038,
+        "median_mbps": 24.790252844592736
+      },
+      "cold": {
+        "success": 36,
+        "total": 36,
+        "p50": 691.547,
+        "p95": 1580.179
+      },
+      "warm": {
+        "success": 36,
+        "total": 36,
+        "p50": 458.544,
+        "p95": 1300.26
+      },
+      "batch": {
+        "success": 36,
+        "total": 36,
+        "p50": 399.569,
+        "p95": 1071.248
+      }
+    },
+    "next-reserve": {
+      "loaded_success": 66,
+      "loaded_total": 66,
+      "loaded_p50": 367.058,
+      "loaded_p95": 813.931,
+      "mixed_groups": 6,
+      "foreground_success": 72,
+      "foreground_total": 72,
+      "background_success": 12,
+      "background_total": 12,
+      "parallel": {
+        "groups": 6,
+        "success": 24,
+        "jobs": 24,
+        "aggregate_mbps": 12.18591765150942,
+        "median_mbps": 11.00165191738514
+      },
+      "rolling": {
+        "groups": 6,
+        "success": 72,
+        "jobs": 72,
+        "aggregate_mbps": 16.913581752882614,
+        "median_mbps": 15.86983838569832
+      },
+      "cold": {
+        "success": 36,
+        "total": 36,
+        "p50": 696.607,
+        "p95": 1886.073
+      },
+      "warm": {
+        "success": 36,
+        "total": 36,
+        "p50": 605.775,
+        "p95": 1593.812
+      },
+      "batch": {
+        "success": 36,
+        "total": 36,
+        "p50": 419.564,
+        "p95": 1182.78
+      }
+    }
+  },
+  "gate": {
+    "next-latency": {
+      "passed": false,
+      "checks": {
+        "enough_samples": true,
+        "loaded_p95": false,
+        "foreground_completion": true,
+        "background_completion": true,
+        "parallel_complete": true,
+        "parallel_throughput": true,
+        "rolling_complete": true,
+        "rolling_throughput": true
+      }
+    },
+    "next-reserve": {
+      "passed": false,
+      "checks": {
+        "enough_samples": true,
+        "loaded_p95": false,
+        "foreground_completion": true,
+        "background_completion": true,
+        "parallel_complete": true,
+        "parallel_throughput": true,
+        "rolling_complete": true,
+        "rolling_throughput": false
+      }
+    }
+  }
+}

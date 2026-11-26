@@ -1,0 +1,182 @@
+{
+  "pairs": [
+    {
+      "bytes": 1048576,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 8,
+      "repeat": 1,
+      "arms": [
+        "capped",
+        "baseline"
+      ]
+    },
+    {
+      "bytes": 33331,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 8,
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "capped"
+      ]
+    },
+    {
+      "bytes": 5003,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "capped"
+      ]
+    },
+    {
+      "bytes": 131101,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 2,
+      "arms": [
+        "capped",
+        "baseline"
+      ]
+    },
+    {
+      "bytes": 131101,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 8,
+      "repeat": 1,
+      "arms": [
+        "capped",
+        "baseline"
+      ]
+    },
+    {
+      "bytes": 33331,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "capped"
+      ]
+    },
+    {
+      "bytes": 5003,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 8,
+      "repeat": 2,
+      "arms": [
+        "capped",
+        "baseline"
+      ]
+    },
+    {
+      "bytes": 33331,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 1,
+      "arms": [
+        "capped",
+        "baseline"
+      ]
+    },
+    {
+      "bytes": 131101,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "capped"
+      ]
+    },
+    {
+      "bytes": 33331,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 8,
+      "repeat": 2,
+      "arms": [
+        "capped",
+        "baseline"
+      ]
+    },
+    {
+      "bytes": 1048576,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 1,
+      "arms": [
+        "capped",
+        "baseline"
+      ]
+    },
+    {
+      "bytes": 5003,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 1,
+      "arms": [
+        "capped",
+        "baseline"
+      ]
+    },
+    {
+      "bytes": 1048576,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 2,
+      "arms": [
+        "capped",
+        "baseline"
+      ]
+    },
+    {
+      "bytes": 131101,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 8,
+      "repeat": 2,
+      "arms": [
+        "baseline",
+        "capped"
+      ]
+    },
+    {
+      "bytes": 5003,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 8,
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "capped"
+      ]
+    },
+    {
+      "bytes": 1048576,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 8,
+      "repeat": 2,
+      "arms": [
+        "capped",
+        "baseline"
+      ]
+    }
+  ],
+  "seed": 20261127,
+  "scope": "Implementation A/B; no classifier; not a censorship probability"
+}

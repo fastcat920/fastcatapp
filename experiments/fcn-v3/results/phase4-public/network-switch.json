@@ -1,0 +1,58 @@
+[
+  {
+    "case": "initial_wifi",
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED",
+      "network_handle": "355"
+    },
+    "interface_ready_ms": 229.47,
+    "result": {
+      "changed": false,
+      "elapsed_ms": 6878.492923,
+      "event": "network-probe",
+      "first_tcp_ms": 1702.907384,
+      "first_udp_ms": 2269.08923,
+      "iteration": 1,
+      "tcp_attempts": 3,
+      "tcp_failures": null,
+      "tcp_success": 3,
+      "udp_attempts": 12,
+      "udp_error": "timeout",
+      "udp_oversize_rejected": true,
+      "udp_quota": {
+        "accepted": 8,
+        "capacity_reused": true,
+        "ninth_rejected": true
+      },
+      "udp_success": 5
+    }
+  },
+  {
+    "case": "wifi_to_cellular",
+    "network": {
+      "transport": "cellular",
+      "validated": true,
+      "sim": "ABSENT,LOADED",
+      "network_handle": "356"
+    },
+    "interface_ready_ms": 1493.47,
+    "result": {
+      "changed": true,
+      "elapsed_ms": 3922.980385,
+      "event": "network-probe",
+      "first_tcp_ms": 974.869924,
+      "first_udp_ms": 1921.457616,
+      "iteration": 2,
+      "old_udp_closed": true,
+      "tcp_attempts": 3,
+      "tcp_failures": null,
+      "tcp_success": 3,
+      "udp_attempts": 12,
+      "udp_error": "timeout",
+      "udp_oversize_rejected": true,
+      "udp_success": 1
+    }
+  }
+]

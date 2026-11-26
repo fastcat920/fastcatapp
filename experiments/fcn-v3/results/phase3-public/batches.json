@@ -1,0 +1,3734 @@
+[
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 1,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 0.0022499678561110755,
+      "bytes": 256,
+      "client_ms": 0.093616,
+      "count": 16,
+      "elapsed_ms": 14563.763616,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.5143074999999999,
+        "p95": 59.90459599999985
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 530.6697305,
+        "p95": 2077.2227689999995
+      },
+      "interval_ms": 150,
+      "payload_aggregate_mbps": 0.0022500811749675375,
+      "payload_makespan_ms": 14563.030154,
+      "phase": "warm",
+      "protocol": "tuic",
+      "retained_first_byte_ms": {
+        "n": 15,
+        "p50": 671.010538,
+        "p95": 2114.0337843999996
+      },
+      "retained_total_ms": {
+        "n": 15,
+        "p50": 671.030154,
+        "p95": 2114.0540301999995
+      },
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 530.6895,
+        "p95": 2077.2429224999996
+      },
+      "verified_bytes": 4096,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 1,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 0.004744345621801372,
+      "bytes": 256,
+      "client_ms": 0.274077,
+      "count": 16,
+      "elapsed_ms": 6906.748077,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.744654,
+        "p95": 84.08244299999978
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 241.7080385,
+        "p95": 574.349846
+      },
+      "interval_ms": 150,
+      "payload_aggregate_mbps": 0.004745069422770192,
+      "payload_makespan_ms": 6905.694539,
+      "phase": "warm",
+      "protocol": "fcnv3",
+      "retained_first_byte_ms": {
+        "n": 15,
+        "p50": 236.371385,
+        "p95": 578.8936613999999
+      },
+      "retained_total_ms": {
+        "n": 15,
+        "p50": 236.392924,
+        "p95": 578.9138998
+      },
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 241.729231,
+        "p95": 574.3700574999999
+      },
+      "verified_bytes": 4096,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 1,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 0.005799975380336438,
+      "bytes": 256,
+      "client_ms": 0.168923,
+      "count": 16,
+      "elapsed_ms": 5649.679154,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.7929235,
+        "p95": 57.547903999999846
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 238.835885,
+        "p95": 342.21771125
+      },
+      "interval_ms": 150,
+      "payload_aggregate_mbps": 0.005801453196039828,
+      "payload_makespan_ms": 5648.24,
+      "phase": "warm",
+      "protocol": "fcnv3",
+      "retained_first_byte_ms": {
+        "n": 15,
+        "p50": 228.451462,
+        "p95": 342.9515305
+      },
+      "retained_total_ms": {
+        "n": 15,
+        "p50": 228.47177,
+        "p95": 342.972946
+      },
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 238.855885,
+        "p95": 342.23909599999996
+      },
+      "verified_bytes": 4096,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 1,
+    "profile": "adaptive",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 0.004293467640516794,
+      "bytes": 256,
+      "client_ms": 0.14,
+      "count": 16,
+      "elapsed_ms": 7632.059385,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.798769,
+        "p95": 63.01621174999983
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 263.305769,
+        "p95": 758.6816732499997
+      },
+      "interval_ms": 150,
+      "payload_aggregate_mbps": 0.00429379429490227,
+      "payload_makespan_ms": 7631.478769,
+      "phase": "warm",
+      "protocol": "fcnv3",
+      "retained_first_byte_ms": {
+        "n": 15,
+        "p50": 256.393154,
+        "p95": 783.6041462999997
+      },
+      "retained_total_ms": {
+        "n": 15,
+        "p50": 256.413846,
+        "p95": 783.6244542999997
+      },
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 263.3261535,
+        "p95": 758.7019812499997
+      },
+      "verified_bytes": 4096,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 2,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 0.002057669612597676,
+      "bytes": 256,
+      "client_ms": 0.186693,
+      "count": 16,
+      "elapsed_ms": 15924.811155,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.7866155,
+        "p95": 143.66515374999963
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 853.8572305,
+        "p95": 1742.100211999999
+      },
+      "interval_ms": 150,
+      "payload_aggregate_mbps": 0.002057696429513294,
+      "payload_makespan_ms": 15924.603615,
+      "phase": "warm",
+      "protocol": "fcnv3",
+      "retained_first_byte_ms": {
+        "n": 15,
+        "p50": 841.171692,
+        "p95": 1313.7375843
+      },
+      "retained_total_ms": {
+        "n": 15,
+        "p50": 841.191769,
+        "p95": 1313.7579074
+      },
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 853.9326925,
+        "p95": 1742.120634749999
+      },
+      "verified_bytes": 4096,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 2,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 0.0028328225325424334,
+      "bytes": 256,
+      "client_ms": 0.125154,
+      "count": 16,
+      "elapsed_ms": 11567.261847,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.795423,
+        "p95": 201.07776999999945
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 378.0182685,
+        "p95": 1178.7044619999997
+      },
+      "interval_ms": 150,
+      "payload_aggregate_mbps": 0.002832961266130288,
+      "payload_makespan_ms": 11566.695384,
+      "phase": "warm",
+      "protocol": "fcnv3",
+      "retained_first_byte_ms": {
+        "n": 15,
+        "p50": 365.215307,
+        "p95": 1198.6796312
+      },
+      "retained_total_ms": {
+        "n": 15,
+        "p50": 365.236,
+        "p95": 1198.7003465999999
+      },
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 378.0393845,
+        "p95": 1178.7252119999998
+      },
+      "verified_bytes": 4096,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 2,
+    "profile": "adaptive",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 0.004717260953798805,
+      "bytes": 256,
+      "client_ms": 0.204615,
+      "count": 16,
+      "elapsed_ms": 6946.403924,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.767231,
+        "p95": 271.1919419999993
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 195.327846,
+        "p95": 793.9426927499997
+      },
+      "interval_ms": 150,
+      "payload_aggregate_mbps": 0.004717432666919807,
+      "payload_makespan_ms": 6946.151077,
+      "phase": "warm",
+      "protocol": "fcnv3",
+      "retained_first_byte_ms": {
+        "n": 15,
+        "p50": 107.938154,
+        "p95": 455.8908073999998
+      },
+      "retained_total_ms": {
+        "n": 15,
+        "p50": 107.955924,
+        "p95": 455.9175459999998
+      },
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 195.34673099999998,
+        "p95": 793.9636349999996
+      },
+      "verified_bytes": 4096,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 2,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 0.0042105343063041185,
+      "bytes": 256,
+      "client_ms": 0.070769,
+      "count": 16,
+      "elapsed_ms": 7782.385231,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.5328465,
+        "p95": 207.68267249999943
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 360.340308,
+        "p95": 541.4053272499997
+      },
+      "interval_ms": 150,
+      "payload_aggregate_mbps": 0.0042110717465461195,
+      "payload_makespan_ms": 7781.392,
+      "phase": "warm",
+      "protocol": "tuic",
+      "retained_first_byte_ms": {
+        "n": 15,
+        "p50": 359.943693,
+        "p95": 401.7595617
+      },
+      "retained_total_ms": {
+        "n": 15,
+        "p50": 359.963616,
+        "p95": 401.7799079
+      },
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 360.3604235,
+        "p95": 541.4260962499997
+      },
+      "verified_bytes": 4096,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 3,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 0.003326691128709376,
+      "bytes": 256,
+      "client_ms": 0.122385,
+      "count": 16,
+      "elapsed_ms": 9850.02777,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.8119995,
+        "p95": 60.04632674999985
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 461.79957650000006,
+        "p95": 873.947942
+      },
+      "interval_ms": 150,
+      "payload_aggregate_mbps": 0.00332706018342417,
+      "payload_makespan_ms": 9848.935154,
+      "phase": "warm",
+      "protocol": "fcnv3",
+      "retained_first_byte_ms": {
+        "n": 15,
+        "p50": 563.621923,
+        "p95": 874.745792
+      },
+      "retained_total_ms": {
+        "n": 15,
+        "p50": 563.643076,
+        "p95": 874.7658462
+      },
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 461.8203455,
+        "p95": 873.9680385
+      },
+      "verified_bytes": 4096,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 3,
+    "profile": "adaptive",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 0.004938588089667721,
+      "bytes": 256,
+      "client_ms": 0.218385,
+      "count": 16,
+      "elapsed_ms": 6635.094769,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.7484999999999999,
+        "p95": 61.38132749999984
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 242.953385,
+        "p95": 602.79463425
+      },
+      "interval_ms": 150,
+      "payload_aggregate_mbps": 0.004938755049955036,
+      "payload_makespan_ms": 6634.870462,
+      "phase": "warm",
+      "protocol": "fcnv3",
+      "retained_first_byte_ms": {
+        "n": 15,
+        "p50": 241.461847,
+        "p95": 607.0742381
+      },
+      "retained_total_ms": {
+        "n": 15,
+        "p50": 241.482385,
+        "p95": 607.0962074
+      },
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 242.973808,
+        "p95": 602.8164805
+      },
+      "verified_bytes": 4096,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 3,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 0.005033692025520112,
+      "bytes": 256,
+      "client_ms": 0.098769,
+      "count": 16,
+      "elapsed_ms": 6509.73477,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.5454224999999999,
+        "p95": 30.38405774999992
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 218.9311925,
+        "p95": 438.1816154999998
+      },
+      "interval_ms": 150,
+      "payload_aggregate_mbps": 0.005033782617967185,
+      "payload_makespan_ms": 6509.617615,
+      "phase": "warm",
+      "protocol": "tuic",
+      "retained_first_byte_ms": {
+        "n": 15,
+        "p50": 209.144923,
+        "p95": 453.4844615999998
+      },
+      "retained_total_ms": {
+        "n": 15,
+        "p50": 209.164231,
+        "p95": 453.50460789999977
+      },
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 218.951,
+        "p95": 438.20175024999975
+      },
+      "verified_bytes": 4096,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 3,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 0.005728683962823111,
+      "bytes": 256,
+      "client_ms": 0.194154,
+      "count": 16,
+      "elapsed_ms": 5719.987385,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.740346,
+        "p95": 81.77613424999979
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 173.2193845,
+        "p95": 441.36990424999993
+      },
+      "interval_ms": 150,
+      "payload_aggregate_mbps": 0.005729709471891839,
+      "payload_makespan_ms": 5718.963616,
+      "phase": "warm",
+      "protocol": "fcnv3",
+      "retained_first_byte_ms": {
+        "n": 15,
+        "p50": 134.941846,
+        "p95": 400.25223049999994
+      },
+      "retained_total_ms": {
+        "n": 15,
+        "p50": 134.963616,
+        "p95": 400.2723459999999
+      },
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 173.240231,
+        "p95": 441.39069274999997
+      },
+      "verified_bytes": 4096,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 4,
+    "profile": "adaptive",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 0.004237506602656791,
+      "bytes": 256,
+      "client_ms": 0.139692,
+      "count": 16,
+      "elapsed_ms": 7732.849308,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.8328074999999999,
+        "p95": 63.370711999999834
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 359.285,
+        "p95": 664.7934422499999
+      },
+      "interval_ms": 150,
+      "payload_aggregate_mbps": 0.004237880026186286,
+      "payload_makespan_ms": 7732.167923,
+      "phase": "warm",
+      "protocol": "fcnv3",
+      "retained_first_byte_ms": {
+        "n": 15,
+        "p50": 358.889308,
+        "p95": 675.3329769
+      },
+      "retained_total_ms": {
+        "n": 15,
+        "p50": 358.909308,
+        "p95": 675.3492847999999
+      },
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 359.30588450000005,
+        "p95": 664.8094424999998
+      },
+      "verified_bytes": 4096,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 4,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 0.0037726765414333664,
+      "bytes": 256,
+      "client_ms": 0.223692,
+      "count": 16,
+      "elapsed_ms": 8685.61077,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.4935385,
+        "p95": 63.36075049999983
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 360.0144235,
+        "p95": 971.411289
+      },
+      "interval_ms": 150,
+      "payload_aggregate_mbps": 0.003773278860359902,
+      "payload_makespan_ms": 8684.224308,
+      "phase": "warm",
+      "protocol": "tuic",
+      "retained_first_byte_ms": {
+        "n": 15,
+        "p50": 360.184616,
+        "p95": 971.6278082
+      },
+      "retained_total_ms": {
+        "n": 15,
+        "p50": 360.204846,
+        "p95": 971.6483693
+      },
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 360.0376155,
+        "p95": 971.4318077500001
+      },
+      "verified_bytes": 4096,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 4,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 0.006456523291412914,
+      "bytes": 256,
+      "client_ms": 0.124,
+      "count": 16,
+      "elapsed_ms": 5075.177231,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.775769,
+        "p95": 36.3618844999999
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 162.2544995,
+        "p95": 261.20007624999994
+      },
+      "interval_ms": 150,
+      "payload_aggregate_mbps": 0.006457605116895304,
+      "payload_makespan_ms": 5074.327,
+      "phase": "warm",
+      "protocol": "fcnv3",
+      "retained_first_byte_ms": {
+        "n": 15,
+        "p50": 141.306461,
+        "p95": 265.09866089999997
+      },
+      "retained_total_ms": {
+        "n": 15,
+        "p50": 141.327,
+        "p95": 265.11918449999996
+      },
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 162.2750385,
+        "p95": 261.2206152499999
+      },
+      "verified_bytes": 4096,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "interactive",
+    "phase": "warm",
+    "bytes": 256,
+    "count": 16,
+    "workers": 1,
+    "block": 4,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 0.005413639446804868,
+      "bytes": 256,
+      "client_ms": 0.513615,
+      "count": 16,
+      "elapsed_ms": 6052.859693,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.826615,
+        "p95": 30.081076499999924
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 248.92596149999997,
+        "p95": 367.603519
+      },
+      "interval_ms": 150,
+      "payload_aggregate_mbps": 0.005413702743785569,
+      "payload_makespan_ms": 6052.788923,
+      "phase": "warm",
+      "protocol": "fcnv3",
+      "retained_first_byte_ms": {
+        "n": 15,
+        "p50": 259.960923,
+        "p95": 368.62926899999997
+      },
+      "retained_total_ms": {
+        "n": 15,
+        "p50": 259.981846,
+        "p95": 368.72936159999995
+      },
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 248.9464615,
+        "p95": 367.709327
+      },
+      "verified_bytes": 4096,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 1,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 10.365781559357439,
+      "bytes": 131072,
+      "client_ms": 0.189539,
+      "count": 16,
+      "elapsed_ms": 1618.519154,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.789577,
+        "p95": 240.03567299999997
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 104.01692299999999,
+        "p95": 385.5560385
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 10.369557148276996,
+      "payload_makespan_ms": 1617.929846,
+      "phase": "concurrent",
+      "protocol": "fcnv3",
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 241.114308,
+        "p95": 941.25100025
+      },
+      "verified_bytes": 2097152,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 1,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 11.583021885727268,
+      "bytes": 131072,
+      "client_ms": 0.136923,
+      "count": 16,
+      "elapsed_ms": 1448.431693,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.8926540000000001,
+        "p95": 232.80040375000002
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 104.444692,
+        "p95": 351.06744199999997
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 11.587060524741455,
+      "payload_makespan_ms": 1447.926846,
+      "phase": "concurrent",
+      "protocol": "fcnv3",
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 269.210461,
+        "p95": 734.6717687500001
+      },
+      "verified_bytes": 2097152,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 1,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 3.9146039651873616,
+      "bytes": 131072,
+      "client_ms": 0.096,
+      "count": 16,
+      "elapsed_ms": 4285.801616,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.5715,
+        "p95": 230.56463449999998
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 105.341077,
+        "p95": 343.18298125
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 3.9154006728230595,
+      "payload_makespan_ms": 4284.929539,
+      "phase": "concurrent",
+      "protocol": "tuic",
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 880.779577,
+        "p95": 1501.5668465
+      },
+      "verified_bytes": 2097152,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 1,
+    "profile": "adaptive",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 8.017292639373904,
+      "bytes": 131072,
+      "client_ms": 0.185846,
+      "count": 16,
+      "elapsed_ms": 2092.628616,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.8982695,
+        "p95": 673.6924615
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 159.98850000000002,
+        "p95": 863.298308
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 8.021346338401292,
+      "payload_makespan_ms": 2091.571077,
+      "phase": "concurrent",
+      "protocol": "fcnv3",
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 260.938769,
+        "p95": 1267.7766354999999
+      },
+      "verified_bytes": 2097152,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 2,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 10.73267974643689,
+      "bytes": 131072,
+      "client_ms": 0.170154,
+      "count": 16,
+      "elapsed_ms": 1563.189846,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.892923,
+        "p95": 226.62636525
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 107.9767305,
+        "p95": 338.5233275
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 10.733725577357184,
+      "payload_makespan_ms": 1563.037538,
+      "phase": "concurrent",
+      "protocol": "fcnv3",
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 226.629731,
+        "p95": 871.755154
+      },
+      "verified_bytes": 2097152,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 2,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 2.8970438606935143,
+      "bytes": 131072,
+      "client_ms": 0.046154,
+      "count": 16,
+      "elapsed_ms": 5791.150154,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.6485,
+        "p95": 593.55198025
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 159.9056925,
+        "p95": 731.80075025
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 2.897683557164396,
+      "payload_makespan_ms": 5789.871692,
+      "phase": "concurrent",
+      "protocol": "tuic",
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 1396.685115,
+        "p95": 1586.29792325
+      },
+      "verified_bytes": 2097152,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 2,
+    "profile": "adaptive",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 10.402431020736975,
+      "bytes": 131072,
+      "client_ms": 0.250461,
+      "count": 16,
+      "elapsed_ms": 1612.816847,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.8200000000000001,
+        "p95": 121.03248049999999
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 111.391538,
+        "p95": 251.48824949999994
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 10.403407033058333,
+      "payload_makespan_ms": 1612.665538,
+      "phase": "concurrent",
+      "protocol": "fcnv3",
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 338.131654,
+        "p95": 761.09971125
+      },
+      "verified_bytes": 2097152,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 2,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 10.161015888208418,
+      "bytes": 131072,
+      "client_ms": 0.224385,
+      "count": 16,
+      "elapsed_ms": 1651.135692,
+      "entry_ms": {
+        "n": 16,
+        "p50": 1.029269,
+        "p95": 228.27901975
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 115.7463075,
+        "p95": 375.3878275
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 10.161328327991765,
+      "payload_makespan_ms": 1651.084923,
+      "phase": "concurrent",
+      "protocol": "fcnv3",
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 241.636,
+        "p95": 889.891962
+      },
+      "verified_bytes": 2097152,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 3,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 2.9319156677479974,
+      "bytes": 131072,
+      "client_ms": 0.079693,
+      "count": 16,
+      "elapsed_ms": 5722.271,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.628923,
+        "p95": 251.21515424999998
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 108.11453850000001,
+        "p95": 366.4325195
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 2.9325260265544264,
+      "payload_makespan_ms": 5721.08,
+      "phase": "concurrent",
+      "protocol": "tuic",
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 1381.2375769999999,
+        "p95": 1600.189865
+      },
+      "verified_bytes": 2097152,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 3,
+    "profile": "adaptive",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 3.885744225137136,
+      "bytes": 131072,
+      "client_ms": 0.13723,
+      "count": 16,
+      "elapsed_ms": 4317.632615,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.9112695,
+        "p95": 344.97551925
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 165.538308,
+        "p95": 480.13615424999995
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 3.8872542007709905,
+      "payload_makespan_ms": 4315.955462,
+      "phase": "concurrent",
+      "protocol": "fcnv3",
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 1056.127731,
+        "p95": 1464.999942
+      },
+      "verified_bytes": 2097152,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 3,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 9.38840810587238,
+      "bytes": 131072,
+      "client_ms": 0.135923,
+      "count": 16,
+      "elapsed_ms": 1787.013923,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.904846,
+        "p95": 346.724058
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 108.917231,
+        "p95": 487.8575194999999
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 9.392979013429189,
+      "payload_makespan_ms": 1786.144308,
+      "phase": "concurrent",
+      "protocol": "fcnv3",
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 234.245539,
+        "p95": 1088.55586525
+      },
+      "verified_bytes": 2097152,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "concurrent",
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 16,
+    "workers": 4,
+    "block": 3,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 2.88157589122002,
+      "bytes": 131072,
+      "client_ms": 0.253,
+      "count": 16,
+      "elapsed_ms": 5822.236385,
+      "entry_ms": {
+        "n": 16,
+        "p50": 0.9723455000000001,
+        "p95": 495.4076925
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 16,
+        "p50": 215.8899225,
+        "p95": 734.8272504999999
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 2.8820499181972776,
+      "payload_makespan_ms": 5821.2787690000005,
+      "phase": "concurrent",
+      "protocol": "fcnv3",
+      "success": 16,
+      "total_ms": {
+        "n": 16,
+        "p50": 1276.1284620000001,
+        "p95": 2195.7043465
+      },
+      "verified_bytes": 2097152,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 1,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 20.458907321083352,
+      "bytes": 4194304,
+      "client_ms": 0.408,
+      "count": 1,
+      "elapsed_ms": 1640.089154,
+      "entry_ms": {
+        "n": 1,
+        "p50": 250.340077,
+        "p95": 250.340077
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 359.825539,
+        "p95": 359.825539
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 20.472352843986283,
+      "payload_makespan_ms": 1639.012001,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 1638.012001,
+        "p95": 1638.012001
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 1,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 21.371591041762702,
+      "bytes": 4194304,
+      "client_ms": 0.164616,
+      "count": 1,
+      "elapsed_ms": 1570.048385,
+      "entry_ms": {
+        "n": 1,
+        "p50": 259.056,
+        "p95": 259.056
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 368.61023,
+        "p95": 368.61023
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 21.38753532578073,
+      "payload_makespan_ms": 1568.877923,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 1567.877923,
+        "p95": 1567.877923
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 1,
+    "profile": "adaptive",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 20.49794166668184,
+      "bytes": 4194304,
+      "client_ms": 0.118692,
+      "count": 1,
+      "elapsed_ms": 1636.965923,
+      "entry_ms": {
+        "n": 1,
+        "p50": 251.586077,
+        "p95": 251.586077
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 357.131077,
+        "p95": 357.131077
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 20.523449673699915,
+      "payload_makespan_ms": 1634.931385,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 1634.931385,
+        "p95": 1634.931385
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 1,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 5.544767533304668,
+      "bytes": 4194304,
+      "client_ms": 0.089307,
+      "count": 1,
+      "elapsed_ms": 6051.548924,
+      "entry_ms": {
+        "n": 1,
+        "p50": 589.924616,
+        "p95": 589.924616
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 696.262154,
+        "p95": 696.262154
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 5.546588450327159,
+      "payload_makespan_ms": 6049.562231,
+      "phase": "download",
+      "protocol": "tuic",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 6049.562231,
+        "p95": 6049.562231
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 2,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 23.437907959130406,
+      "bytes": 4194304,
+      "client_ms": 0.21477,
+      "count": 1,
+      "elapsed_ms": 1431.630846,
+      "entry_ms": {
+        "n": 1,
+        "p50": 121.473538,
+        "p95": 121.473538
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 229.691076,
+        "p95": 229.691076
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 23.474077903705336,
+      "payload_makespan_ms": 1429.424923,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 1429.424923,
+        "p95": 1429.424923
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 2,
+    "profile": "adaptive",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 8.889518883694628,
+      "bytes": 4194304,
+      "client_ms": 0.242462,
+      "count": 1,
+      "elapsed_ms": 3774.606077,
+      "entry_ms": {
+        "n": 1,
+        "p50": 804.54777,
+        "p95": 804.54777
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 1210.052308,
+        "p95": 1210.052308
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 8.894273443207629,
+      "payload_makespan_ms": 3772.588308,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 3772.588308,
+        "p95": 3772.588308
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 2,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 8.538946665352132,
+      "bytes": 4194304,
+      "client_ms": 0.069923,
+      "count": 1,
+      "elapsed_ms": 3929.575077,
+      "entry_ms": {
+        "n": 1,
+        "p50": 245.512385,
+        "p95": 245.512385
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 347.204923,
+        "p95": 347.204923
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 8.5431367487416,
+      "payload_makespan_ms": 3927.64777,
+      "phase": "download",
+      "protocol": "tuic",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 3927.64777,
+        "p95": 3927.64777
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 2,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 5.322658006675789,
+      "bytes": 4194304,
+      "client_ms": 0.156,
+      "count": 1,
+      "elapsed_ms": 6304.074385,
+      "entry_ms": {
+        "n": 1,
+        "p50": 1321.705462,
+        "p95": 1321.705462
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 1420.234154,
+        "p95": 1420.234154
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 5.324527338832575,
+      "payload_makespan_ms": 6301.861154,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 6301.861154,
+        "p95": 6301.861154
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 3,
+    "profile": "adaptive",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 20.377832421280594,
+      "bytes": 4194304,
+      "client_ms": 0.186462,
+      "count": 1,
+      "elapsed_ms": 1646.614385,
+      "entry_ms": {
+        "n": 1,
+        "p50": 223.890462,
+        "p95": 223.890462
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 331.481846,
+        "p95": 331.481846
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 20.390457627630138,
+      "payload_makespan_ms": 1645.594847,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 1644.594847,
+        "p95": 1644.594847
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 3,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 16.337332688378112,
+      "bytes": 4194304,
+      "client_ms": 0.092538,
+      "count": 1,
+      "elapsed_ms": 2053.850077,
+      "entry_ms": {
+        "n": 1,
+        "p50": 565.991384,
+        "p95": 565.991384
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 668.152615,
+        "p95": 668.152615
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 16.351459836434923,
+      "payload_makespan_ms": 2052.075615,
+      "phase": "download",
+      "protocol": "tuic",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 2052.075615,
+        "p95": 2052.075615
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 3,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 6.335217734446297,
+      "bytes": 4194304,
+      "client_ms": 0.221308,
+      "count": 1,
+      "elapsed_ms": 5296.492308,
+      "entry_ms": {
+        "n": 1,
+        "p50": 1279.827384,
+        "p95": 1279.827384
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 1693.476692,
+        "p95": 1693.476692
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 6.337697056143885,
+      "payload_makespan_ms": 5294.420308,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 5294.420308,
+        "p95": 5294.420308
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 3,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 11.442375604650953,
+      "bytes": 4194304,
+      "client_ms": 0.167462,
+      "count": 1,
+      "elapsed_ms": 2932.47077,
+      "entry_ms": {
+        "n": 1,
+        "p50": 209.805615,
+        "p95": 209.805615
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 310.574231,
+        "p95": 310.574231
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 11.450474597275631,
+      "payload_makespan_ms": 2930.396615,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 2930.396615,
+        "p95": 2930.396615
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 4,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 18.30400670159132,
+      "bytes": 4194304,
+      "client_ms": 0.083384,
+      "count": 1,
+      "elapsed_ms": 1833.174154,
+      "entry_ms": {
+        "n": 1,
+        "p50": 252.735077,
+        "p95": 252.735077
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 356.993769,
+        "p95": 356.993769
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 18.32119065562356,
+      "payload_makespan_ms": 1831.454769,
+      "phase": "download",
+      "protocol": "tuic",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 1831.454769,
+        "p95": 1831.454769
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 4,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 15.811057608260812,
+      "bytes": 4194304,
+      "client_ms": 0.165231,
+      "count": 1,
+      "elapsed_ms": 2122.213,
+      "entry_ms": {
+        "n": 1,
+        "p50": 798.582461,
+        "p95": 798.582461
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 1003.414538,
+        "p95": 1003.414538
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 15.82696272088576,
+      "payload_makespan_ms": 2120.080308,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 2120.080308,
+        "p95": 2120.080308
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 4,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 6.131165634793696,
+      "bytes": 4194304,
+      "client_ms": 0.161308,
+      "count": 1,
+      "elapsed_ms": 5472.765539,
+      "entry_ms": {
+        "n": 1,
+        "p50": 460.889924,
+        "p95": 460.889924
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 564.041231,
+        "p95": 564.041231
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 6.133715732407508,
+      "payload_makespan_ms": 5470.490232,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 5470.490232,
+        "p95": 5470.490232
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 4,
+    "profile": "adaptive",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 17.15381008621099,
+      "bytes": 4194304,
+      "client_ms": 0.23223,
+      "count": 1,
+      "elapsed_ms": 1956.092077,
+      "entry_ms": {
+        "n": 1,
+        "p50": 251.630461,
+        "p95": 251.630461
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 354.422154,
+        "p95": 354.422154
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 17.172134814914763,
+      "payload_makespan_ms": 1954.004692,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 1954.004692,
+        "p95": 1954.004692
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 5,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 2.974072546619366,
+      "bytes": 4194304,
+      "client_ms": 0.281923,
+      "count": 1,
+      "elapsed_ms": 11282.317924,
+      "entry_ms": {
+        "n": 1,
+        "p50": 799.720308,
+        "p95": 799.720308
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 900.028847,
+        "p95": 900.028847
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 2.9746463827658474,
+      "payload_makespan_ms": 11280.141463,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 11280.141463,
+        "p95": 11280.141463
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 5,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 7.463749406325203,
+      "bytes": 4194304,
+      "client_ms": 0.157539,
+      "count": 1,
+      "elapsed_ms": 4495.653615,
+      "entry_ms": {
+        "n": 1,
+        "p50": 345.135923,
+        "p95": 345.135923
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 661.673231,
+        "p95": 661.673231
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 7.4674278264394065,
+      "payload_makespan_ms": 4493.439077,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 4493.439077,
+        "p95": 4493.439077
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 5,
+    "profile": "adaptive",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 21.839891958376732,
+      "bytes": 4194304,
+      "client_ms": 0.210077,
+      "count": 1,
+      "elapsed_ms": 1536.382692,
+      "entry_ms": {
+        "n": 1,
+        "p50": 256.411769,
+        "p95": 256.411769
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 361.002153,
+        "p95": 361.002153
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 21.869779118993698,
+      "payload_makespan_ms": 1534.283077,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 1534.283077,
+        "p95": 1534.283077
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 5,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 17.306637355237548,
+      "bytes": 4194304,
+      "client_ms": 0.095077,
+      "count": 1,
+      "elapsed_ms": 1938.818692,
+      "entry_ms": {
+        "n": 1,
+        "p50": 383.667385,
+        "p95": 383.667385
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 495.554154,
+        "p95": 495.554154
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 17.31900853570855,
+      "payload_makespan_ms": 1937.43377,
+      "phase": "download",
+      "protocol": "tuic",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 1936.43377,
+        "p95": 1936.43377
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 6,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 15.102425025576213,
+      "bytes": 4194304,
+      "client_ms": 0.358462,
+      "count": 1,
+      "elapsed_ms": 2221.791,
+      "entry_ms": {
+        "n": 1,
+        "p50": 816.398154,
+        "p95": 816.398154
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 916.71577,
+        "p95": 916.71577
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 15.115817852283719,
+      "payload_makespan_ms": 2219.822462,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 2219.822462,
+        "p95": 2219.822462
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 6,
+    "profile": "adaptive",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 6.738729169854717,
+      "bytes": 4194304,
+      "client_ms": 0.155077,
+      "count": 1,
+      "elapsed_ms": 4979.341231,
+      "entry_ms": {
+        "n": 1,
+        "p50": 236.827692,
+        "p95": 236.827692
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 340.657538,
+        "p95": 340.657538
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 6.742037620756675,
+      "payload_makespan_ms": 4976.89777,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 4976.89777,
+        "p95": 4976.89777
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 6,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 18.017766231702034,
+      "bytes": 4194304,
+      "client_ms": 0.087616,
+      "count": 1,
+      "elapsed_ms": 1862.297,
+      "entry_ms": {
+        "n": 1,
+        "p50": 255.072846,
+        "p95": 255.072846
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 359.975923,
+        "p95": 359.975923
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 18.036171281681245,
+      "payload_makespan_ms": 1860.396615,
+      "phase": "download",
+      "protocol": "tuic",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 1860.396615,
+        "p95": 1860.396615
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "single",
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "block": 6,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 21.37261933255118,
+      "bytes": 4194304,
+      "client_ms": 0.155308,
+      "count": 1,
+      "elapsed_ms": 1569.972846,
+      "entry_ms": {
+        "n": 1,
+        "p50": 249.924692,
+        "p95": 249.924692
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 1,
+        "p50": 356.632308,
+        "p95": 356.632308
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 21.396667667698647,
+      "payload_makespan_ms": 1568.208308,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 1,
+      "total_ms": {
+        "n": 1,
+        "p50": 1568.208308,
+        "p95": 1568.208308
+      },
+      "verified_bytes": 4194304,
+      "workers": 1
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 1,
+    "profile": "adaptive",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 18.315260424849765,
+      "bytes": 1048576,
+      "client_ms": 0.339,
+      "count": 4,
+      "elapsed_ms": 1832.047769,
+      "entry_ms": {
+        "n": 4,
+        "p50": 249.377231,
+        "p95": 250.0141995
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 467.5478845,
+        "p95": 471.6783419
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 18.32199636317805,
+      "payload_makespan_ms": 1831.374231,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 1767.223846,
+        "p95": 1826.619281
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 1,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 16.892718663119744,
+      "bytes": 1048576,
+      "client_ms": 0.241539,
+      "count": 4,
+      "elapsed_ms": 1986.325154,
+      "entry_ms": {
+        "n": 4,
+        "p50": 251.6263075,
+        "p95": 252.7174927
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 513.8937305,
+        "p95": 551.5930036999999
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 16.896740943335047,
+      "payload_makespan_ms": 1985.852308,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 1901.810039,
+        "p95": 1973.633508
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 1,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 19.23285086834295,
+      "bytes": 1048576,
+      "client_ms": 0.140077,
+      "count": 4,
+      "elapsed_ms": 1744.641615,
+      "entry_ms": {
+        "n": 4,
+        "p50": 424.48876900000005,
+        "p95": 425.50364245000003
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 556.073077,
+        "p95": 558.99961495
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 19.230731955895358,
+      "payload_makespan_ms": 1744.833846,
+      "phase": "download",
+      "protocol": "tuic",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 1740.8578080000002,
+        "p95": 1743.42680375
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 1,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 14.612556792317113,
+      "bytes": 1048576,
+      "client_ms": 0.238846,
+      "count": 4,
+      "elapsed_ms": 2296.273847,
+      "entry_ms": {
+        "n": 4,
+        "p50": 416.924192,
+        "p95": 417.78770735
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 614.523692,
+        "p95": 616.4712347999999
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 14.621310512645257,
+      "payload_makespan_ms": 2294.899077,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 2285.2204615,
+        "p95": 2293.4626308
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 2,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 5.485261232911571,
+      "bytes": 1048576,
+      "client_ms": 0.234461,
+      "count": 4,
+      "elapsed_ms": 6117.198539,
+      "entry_ms": {
+        "n": 4,
+        "p50": 981.7440385,
+        "p95": 982.0810039
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 1100.3298465,
+        "p95": 1350.05016165
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 5.486071827750316,
+      "payload_makespan_ms": 6116.294692,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 6077.515885000001,
+        "p95": 6111.984595950001
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 2,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 20.64521053774511,
+      "bytes": 1048576,
+      "client_ms": 0.079615,
+      "count": 4,
+      "elapsed_ms": 1625.288923,
+      "entry_ms": {
+        "n": 4,
+        "p50": 233.686577,
+        "p95": 234.09192275
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 346.93653800000004,
+        "p95": 350.67632305
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 20.649487270982725,
+      "payload_makespan_ms": 1624.952308,
+      "phase": "download",
+      "protocol": "tuic",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 1536.283346,
+        "p95": 1612.2512924999999
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 2,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 5.445968069802756,
+      "bytes": 1048576,
+      "client_ms": 0.216923,
+      "count": 4,
+      "elapsed_ms": 6161.334692,
+      "entry_ms": {
+        "n": 4,
+        "p50": 729.778423,
+        "p95": 730.1558032
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 843.454346,
+        "p95": 924.6691955499999
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 5.447184238583346,
+      "payload_makespan_ms": 6159.959078,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 6006.345346,
+        "p95": 6148.1425432
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 2,
+    "profile": "adaptive",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 7.232355593543421,
+      "bytes": 1048576,
+      "client_ms": 0.258846,
+      "count": 4,
+      "elapsed_ms": 4639.488693,
+      "entry_ms": {
+        "n": 4,
+        "p50": 611.1416535000001,
+        "p95": 611.66282325
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 722.420577,
+        "p95": 728.2726422000001
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 7.234535430886907,
+      "payload_makespan_ms": 4638.090769,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 4560.302423499999,
+        "p95": 4629.60279985
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 3,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 19.648750081650125,
+      "bytes": 1048576,
+      "client_ms": 0.032,
+      "count": 4,
+      "elapsed_ms": 1707.713308,
+      "entry_ms": {
+        "n": 4,
+        "p50": 181.8379615,
+        "p95": 181.9650273
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 294.1400005,
+        "p95": 296.2064805
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 19.654216010378654,
+      "payload_makespan_ms": 1707.238385,
+      "phase": "download",
+      "protocol": "tuic",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 1688.8218465,
+        "p95": 1703.63984275
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 3,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 22.44617776362581,
+      "bytes": 1048576,
+      "client_ms": 0.107308,
+      "count": 4,
+      "elapsed_ms": 1494.884,
+      "entry_ms": {
+        "n": 4,
+        "p50": 116.9213845,
+        "p95": 117.21299625
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 237.974154,
+        "p95": 246.0915619
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 22.460667656163906,
+      "payload_makespan_ms": 1493.919616,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 1486.6961155,
+        "p95": 1492.9260735999999
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 3,
+    "profile": "adaptive",
+    "exit_code": 1,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 0,
+      "bytes": 1048576,
+      "client_ms": 0.187385,
+      "count": 4,
+      "elapsed_ms": 25004.547693,
+      "entry_ms": {
+        "n": 0,
+        "p50": null,
+        "p95": null
+      },
+      "event": "batch-ended",
+      "failed": 4,
+      "first_byte_ms": {
+        "n": 0,
+        "p50": null,
+        "p95": null
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 0,
+      "payload_makespan_ms": 25001.896617,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 0,
+      "total_ms": {
+        "n": 0,
+        "p50": null,
+        "p95": null
+      },
+      "verified_bytes": 0,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 3,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 2.085188082850133,
+      "bytes": 1048576,
+      "client_ms": 0.308923,
+      "count": 4,
+      "elapsed_ms": 16091.801155,
+      "entry_ms": {
+        "n": 4,
+        "p50": 627.8998469999999,
+        "p95": 629.75868035
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 858.0115385,
+        "p95": 862.28224675
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 2.085320263620228,
+      "payload_makespan_ms": 16090.781155,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 15118.322347000001,
+        "p95": 15961.181074150001
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 4,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 11.716959831326001,
+      "bytes": 1048576,
+      "client_ms": 0.171077,
+      "count": 4,
+      "elapsed_ms": 2863.749,
+      "entry_ms": {
+        "n": 4,
+        "p50": 455.0621535,
+        "p95": 455.12295765
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 1559.8501925,
+        "p95": 1560.50686155
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 11.719339667362894,
+      "payload_makespan_ms": 2863.167461,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 2799.1609234999996,
+        "p95": 2860.26190735
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 4,
+    "profile": "adaptive",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 1.641159692802645,
+      "bytes": 1048576,
+      "client_ms": 0.175077,
+      "count": 4,
+      "elapsed_ms": 20445.561847,
+      "entry_ms": {
+        "n": 4,
+        "p50": 244.5689615,
+        "p95": 244.75504625000002
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 351.79980750000004,
+        "p95": 435.90936934999996
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 1.6411770558904433,
+      "payload_makespan_ms": 20445.34554,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 20022.549231999998,
+        "p95": 20444.8527282
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 4,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 2.2084603666274627,
+      "bytes": 1048576,
+      "client_ms": 0.180616,
+      "count": 4,
+      "elapsed_ms": 15193.58577,
+      "entry_ms": {
+        "n": 4,
+        "p50": 1753.797615,
+        "p95": 1754.0163116
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 1869.356,
+        "p95": 1880.94475395
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 2.2084946150711877,
+      "payload_makespan_ms": 15193.350154,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 15140.2292315,
+        "p95": 15192.3314964
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 4,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 22.27875258415081,
+      "bytes": 1048576,
+      "client_ms": 0.089231,
+      "count": 4,
+      "elapsed_ms": 1506.118077,
+      "entry_ms": {
+        "n": 4,
+        "p50": 228.7741155,
+        "p95": 229.33458525
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 339.18399999999997,
+        "p95": 344.5746309
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 22.29206438794344,
+      "payload_makespan_ms": 1505.218692,
+      "phase": "download",
+      "protocol": "tuic",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 1493.2845005,
+        "p95": 1504.3270690499999
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 5,
+    "profile": "adaptive",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 3.7173981667174716,
+      "bytes": 1048576,
+      "client_ms": 0.12,
+      "count": 4,
+      "elapsed_ms": 9026.32177,
+      "entry_ms": {
+        "n": 4,
+        "p50": 723.6936155000001,
+        "p95": 724.50862305
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 948.635538,
+        "p95": 1056.1130465
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 3.717931353685614,
+      "payload_makespan_ms": 9025.027309,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 8835.130000500001,
+        "p95": 8998.61638195
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 5,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 2.958584902283446,
+      "bytes": 1048576,
+      "client_ms": 0.236384,
+      "count": 4,
+      "elapsed_ms": 11341.37877,
+      "entry_ms": {
+        "n": 4,
+        "p50": 538.882346,
+        "p95": 539.5448463500001
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 769.8402695,
+        "p95": 777.5838301
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 2.958893720011542,
+      "payload_makespan_ms": 11340.195078,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 11089.851461999999,
+        "p95": 11307.4528587
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 5,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 22.458912203801518,
+      "bytes": 1048576,
+      "client_ms": 0.100615,
+      "count": 4,
+      "elapsed_ms": 1494.036385,
+      "entry_ms": {
+        "n": 4,
+        "p50": 250.7516535,
+        "p95": 251.1274965
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 365.423231,
+        "p95": 376.4260928
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 22.481501966686675,
+      "payload_makespan_ms": 1492.535154,
+      "phase": "download",
+      "protocol": "tuic",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 1490.546962,
+        "p95": 1492.52018865
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 5,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 3.6372153341584283,
+      "bytes": 1048576,
+      "client_ms": 0.347154,
+      "count": 4,
+      "elapsed_ms": 9225.308077,
+      "entry_ms": {
+        "n": 4,
+        "p50": 249.2513455,
+        "p95": 249.84911115
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 517.2195380000001,
+        "p95": 579.862511
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 3.637733350593318,
+      "payload_makespan_ms": 9223.994385,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 9098.1198085,
+        "p95": 9223.82020035
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 6,
+    "profile": "control",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 4.120262370175157,
+      "bytes": 1048576,
+      "client_ms": 0.234846,
+      "count": 4,
+      "elapsed_ms": 8143.761,
+      "entry_ms": {
+        "n": 4,
+        "p50": 610.4398845000001,
+        "p95": 610.5613499
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 825.9397305,
+        "p95": 833.03939185
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 4.120625005937276,
+      "payload_makespan_ms": 8143.044308,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 8056.462616,
+        "p95": 8142.0098773
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 6,
+    "profile": "tuic",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 2.9329654740959175,
+      "bytes": 1048576,
+      "client_ms": 0.054769,
+      "count": 4,
+      "elapsed_ms": 11440.445616,
+      "entry_ms": {
+        "n": 4,
+        "p50": 223.8154615,
+        "p95": 224.19789255
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 341.4868075,
+        "p95": 343.86006125
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 2.933170287040253,
+      "payload_makespan_ms": 11439.64677,
+      "phase": "download",
+      "protocol": "tuic",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 11298.275615999999,
+        "p95": 11424.34488915
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 6,
+    "profile": "padding",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 19.868798798145118,
+      "bytes": 1048576,
+      "client_ms": 0.187692,
+      "count": 4,
+      "elapsed_ms": 1688.800231,
+      "entry_ms": {
+        "n": 4,
+        "p50": 228.29584649999998,
+        "p95": 228.42812304999998
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 342.5352315,
+        "p95": 351.69674945
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 19.881396288592587,
+      "payload_makespan_ms": 1687.730153,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 1642.229808,
+        "p95": 1687.17057245
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  },
+  {
+    "workload": "parallel",
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "block": 6,
+    "profile": "adaptive",
+    "exit_code": 0,
+    "network": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "batch": {
+      "aggregate_verified_mbps": 3.401967353966902,
+      "bytes": 1048576,
+      "client_ms": 0.25323,
+      "count": 4,
+      "elapsed_ms": 9863.243385,
+      "entry_ms": {
+        "n": 4,
+        "p50": 321.370769,
+        "p95": 323.6755655
+      },
+      "event": "batch-ended",
+      "failed": 0,
+      "first_byte_ms": {
+        "n": 4,
+        "p50": 528.9287305,
+        "p95": 617.61708085
+      },
+      "interval_ms": 0,
+      "payload_aggregate_mbps": 3.4023073931432375,
+      "payload_makespan_ms": 9862.257616,
+      "phase": "download",
+      "protocol": "fcnv3",
+      "success": 4,
+      "total_ms": {
+        "n": 4,
+        "p50": 9827.4985775,
+        "p95": 9861.94717375
+      },
+      "verified_bytes": 4194304,
+      "workers": 4
+    }
+  }
+]

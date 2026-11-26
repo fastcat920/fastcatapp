@@ -1,0 +1,452 @@
+[
+  {
+    "phase": "batch",
+    "protocol": "h2",
+    "version": "v2",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 851.0,
+      "p95_ms": 1605.5,
+      "max_ms": 1703.9
+    },
+    "entry": {
+      "p50_ms": 104.4,
+      "p95_ms": 637.7,
+      "max_ms": 637.8
+    },
+    "target_tls": {
+      "p50_ms": 368.2,
+      "p95_ms": 884.7,
+      "max_ms": 890.2
+    },
+    "response": {
+      "p50_ms": 186.0,
+      "p95_ms": 718.4,
+      "max_ms": 765.8
+    },
+    "errors": []
+  },
+  {
+    "phase": "batch",
+    "protocol": "h2",
+    "version": "v3-light-fast",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 713.4,
+      "p95_ms": 947.2,
+      "max_ms": 947.3
+    },
+    "entry": {
+      "p50_ms": 112.5,
+      "p95_ms": 228.2,
+      "max_ms": 228.8
+    },
+    "target_tls": {
+      "p50_ms": 340.4,
+      "p95_ms": 428.2,
+      "max_ms": 470.3
+    },
+    "response": {
+      "p50_ms": 241.6,
+      "p95_ms": 320.4,
+      "max_ms": 424.6
+    },
+    "errors": []
+  },
+  {
+    "phase": "batch",
+    "protocol": "h3",
+    "version": "v2",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 569.4,
+      "p95_ms": 872.1,
+      "max_ms": 942.7
+    },
+    "entry": {
+      "p50_ms": 160.3,
+      "p95_ms": 341.1,
+      "max_ms": 370.9
+    },
+    "target_tls": {
+      "p50_ms": 246.8,
+      "p95_ms": 455.9,
+      "max_ms": 514.8
+    },
+    "response": {
+      "p50_ms": 130.1,
+      "p95_ms": 264.6,
+      "max_ms": 314.9
+    },
+    "errors": []
+  },
+  {
+    "phase": "batch",
+    "protocol": "h3",
+    "version": "v3-light-fast",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 703.0,
+      "p95_ms": 974.9,
+      "max_ms": 987.3
+    },
+    "entry": {
+      "p50_ms": 109.7,
+      "p95_ms": 310.2,
+      "max_ms": 314.7
+    },
+    "target_tls": {
+      "p50_ms": 362.4,
+      "p95_ms": 711.2,
+      "max_ms": 712.5
+    },
+    "response": {
+      "p50_ms": 130.4,
+      "p95_ms": 326.6,
+      "max_ms": 340.5
+    },
+    "errors": []
+  },
+  {
+    "phase": "cold",
+    "protocol": "h2",
+    "version": "v2",
+    "success": 19,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 1566.3,
+      "p95_ms": 3656.4,
+      "max_ms": 3656.4
+    },
+    "entry": {
+      "p50_ms": 901.5,
+      "p95_ms": 2155.8,
+      "max_ms": 2155.8
+    },
+    "target_tls": {
+      "p50_ms": 293.1,
+      "p95_ms": 2309.2,
+      "max_ms": 2309.2
+    },
+    "response": {
+      "p50_ms": 114.1,
+      "p95_ms": 1286.8,
+      "max_ms": 1286.8
+    },
+    "errors": [
+      "entry: context deadline exceeded"
+    ]
+  },
+  {
+    "phase": "cold",
+    "protocol": "h2",
+    "version": "v3-light-fast",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 1519.8,
+      "p95_ms": 4365.0,
+      "max_ms": 4817.6
+    },
+    "entry": {
+      "p50_ms": 1144.0,
+      "p95_ms": 3955.3,
+      "max_ms": 4548.6
+    },
+    "target_tls": {
+      "p50_ms": 170.8,
+      "p95_ms": 801.4,
+      "max_ms": 918.8
+    },
+    "response": {
+      "p50_ms": 115.4,
+      "p95_ms": 501.2,
+      "max_ms": 573.9
+    },
+    "errors": []
+  },
+  {
+    "phase": "cold",
+    "protocol": "h3",
+    "version": "v2",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 870.1,
+      "p95_ms": 2292.7,
+      "max_ms": 2529.1
+    },
+    "entry": {
+      "p50_ms": 328.9,
+      "p95_ms": 924.0,
+      "max_ms": 2146.5
+    },
+    "target_tls": {
+      "p50_ms": 327.0,
+      "p95_ms": 1001.5,
+      "max_ms": 1167.0
+    },
+    "response": {
+      "p50_ms": 115.9,
+      "p95_ms": 508.8,
+      "max_ms": 896.2
+    },
+    "errors": []
+  },
+  {
+    "phase": "cold",
+    "protocol": "h3",
+    "version": "v3-light-fast",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 1156.6,
+      "p95_ms": 2639.1,
+      "max_ms": 5133.8
+    },
+    "entry": {
+      "p50_ms": 629.2,
+      "p95_ms": 2367.6,
+      "max_ms": 2727.9
+    },
+    "target_tls": {
+      "p50_ms": 291.6,
+      "p95_ms": 683.1,
+      "max_ms": 2295.7
+    },
+    "response": {
+      "p50_ms": 115.3,
+      "p95_ms": 498.9,
+      "max_ms": 582.4
+    },
+    "errors": []
+  },
+  {
+    "phase": "prime",
+    "protocol": "h2",
+    "version": "v2",
+    "success": 3,
+    "attempts": 3,
+    "first_byte": {
+      "p50_ms": 2137.3,
+      "p95_ms": 2348.5,
+      "max_ms": 2348.5
+    },
+    "entry": {
+      "p50_ms": 1003.1,
+      "p95_ms": 1403.4,
+      "max_ms": 1403.4
+    },
+    "target_tls": {
+      "p50_ms": 767.4,
+      "p95_ms": 1025.6,
+      "max_ms": 1025.6
+    },
+    "response": {
+      "p50_ms": 124.6,
+      "p95_ms": 177.7,
+      "max_ms": 177.7
+    },
+    "errors": []
+  },
+  {
+    "phase": "prime",
+    "protocol": "h2",
+    "version": "v3-light-fast",
+    "success": 3,
+    "attempts": 3,
+    "first_byte": {
+      "p50_ms": 680.8,
+      "p95_ms": 1099.7,
+      "max_ms": 1099.7
+    },
+    "entry": {
+      "p50_ms": 164.0,
+      "p95_ms": 231.9,
+      "max_ms": 231.9
+    },
+    "target_tls": {
+      "p50_ms": 277.1,
+      "p95_ms": 762.9,
+      "max_ms": 762.9
+    },
+    "response": {
+      "p50_ms": 115.7,
+      "p95_ms": 239.6,
+      "max_ms": 239.6
+    },
+    "errors": []
+  },
+  {
+    "phase": "prime",
+    "protocol": "h3",
+    "version": "v2",
+    "success": 3,
+    "attempts": 3,
+    "first_byte": {
+      "p50_ms": 1037.3,
+      "p95_ms": 1037.8,
+      "max_ms": 1037.8
+    },
+    "entry": {
+      "p50_ms": 656.7,
+      "p95_ms": 768.9,
+      "max_ms": 768.9
+    },
+    "target_tls": {
+      "p50_ms": 254.5,
+      "p95_ms": 264.5,
+      "max_ms": 264.5
+    },
+    "response": {
+      "p50_ms": 116.5,
+      "p95_ms": 143.7,
+      "max_ms": 143.7
+    },
+    "errors": []
+  },
+  {
+    "phase": "prime",
+    "protocol": "h3",
+    "version": "v3-light-fast",
+    "success": 3,
+    "attempts": 3,
+    "first_byte": {
+      "p50_ms": 561.9,
+      "p95_ms": 792.8,
+      "max_ms": 792.8
+    },
+    "entry": {
+      "p50_ms": 108.8,
+      "p95_ms": 111.8,
+      "max_ms": 111.8
+    },
+    "target_tls": {
+      "p50_ms": 332.1,
+      "p95_ms": 574.5,
+      "max_ms": 574.5
+    },
+    "response": {
+      "p50_ms": 117.9,
+      "p95_ms": 159.7,
+      "max_ms": 159.7
+    },
+    "errors": []
+  },
+  {
+    "phase": "warm",
+    "protocol": "h2",
+    "version": "v2",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 659.5,
+      "p95_ms": 2116.4,
+      "max_ms": 11478.8
+    },
+    "entry": {
+      "p50_ms": 106.1,
+      "p95_ms": 788.4,
+      "max_ms": 1184.6
+    },
+    "target_tls": {
+      "p50_ms": 318.7,
+      "p95_ms": 1171.0,
+      "max_ms": 11268.6
+    },
+    "response": {
+      "p50_ms": 123.4,
+      "p95_ms": 562.9,
+      "max_ms": 703.9
+    },
+    "errors": []
+  },
+  {
+    "phase": "warm",
+    "protocol": "h2",
+    "version": "v3-light-fast",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 613.6,
+      "p95_ms": 3125.9,
+      "max_ms": 3330.4
+    },
+    "entry": {
+      "p50_ms": 117.9,
+      "p95_ms": 733.7,
+      "max_ms": 2850.5
+    },
+    "target_tls": {
+      "p50_ms": 191.4,
+      "p95_ms": 1049.0,
+      "max_ms": 2667.3
+    },
+    "response": {
+      "p50_ms": 109.7,
+      "p95_ms": 248.0,
+      "max_ms": 252.3
+    },
+    "errors": []
+  },
+  {
+    "phase": "warm",
+    "protocol": "h3",
+    "version": "v2",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 531.0,
+      "p95_ms": 841.5,
+      "max_ms": 1405.1
+    },
+    "entry": {
+      "p50_ms": 108.8,
+      "p95_ms": 357.3,
+      "max_ms": 370.0
+    },
+    "target_tls": {
+      "p50_ms": 251.0,
+      "p95_ms": 577.3,
+      "max_ms": 584.1
+    },
+    "response": {
+      "p50_ms": 116.3,
+      "p95_ms": 393.6,
+      "max_ms": 829.2
+    },
+    "errors": []
+  },
+  {
+    "phase": "warm",
+    "protocol": "h3",
+    "version": "v3-light-fast",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 649.6,
+      "p95_ms": 1617.3,
+      "max_ms": 1735.5
+    },
+    "entry": {
+      "p50_ms": 199.3,
+      "p95_ms": 454.7,
+      "max_ms": 629.5
+    },
+    "target_tls": {
+      "p50_ms": 281.8,
+      "p95_ms": 843.8,
+      "max_ms": 1215.4
+    },
+    "response": {
+      "p50_ms": 116.5,
+      "p95_ms": 321.7,
+      "max_ms": 947.1
+    },
+    "errors": []
+  }
+]

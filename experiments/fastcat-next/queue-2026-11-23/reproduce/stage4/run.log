@@ -1,0 +1,106 @@
+Running as unit: fc-opt-backend-1795403376.service; invocation ID: 7c9e637bd8a249a1b2fa32fe86476f7b
+Running as unit: fc-opt-next-1795403376.service; invocation ID: 2355d133ce5f4ef491b92175331282e6
+/tmp/fc-next-prefix/compare: 1 file pushed, 0 skipped. 38.4 MB/s (38896702 bytes in 0.965s)
+/tmp/fc-next-prefix/client-1795403376.json: 1 file pushed, 0 skipped. 3.6 MB/s (432 bytes in 0.000s)
+/etc/ssl/cert.pem: 1 file pushed, 0 skipped. 161.1 MB/s (333483 bytes in 0.002s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+/tmp/fc-next-prefix/reply-client-1795403376.json: 1 file pushed, 0 skipped. 4.5 MB/s (609 bytes in 0.000s)
+/tmp/fc-next-prefix/latency-baseline-b1-p1-1795403376.json: 1 file pushed, 0 skipped. 6.1 MB/s (667 bytes in 0.000s)
+COMPLETE latency-baseline-b1-p1
+/tmp/fc-next-prefix/latency-prefix-b1-p2-1795403376.json: 1 file pushed, 0 skipped. 5.8 MB/s (666 bytes in 0.000s)
+COMPLETE latency-prefix-b1-p2
+/tmp/fc-next-prefix/latency-prefix-b2-p1-1795403376.json: 1 file pushed, 0 skipped. 4.8 MB/s (666 bytes in 0.000s)
+COMPLETE latency-prefix-b2-p1
+/tmp/fc-next-prefix/latency-baseline-b2-p2-1795403376.json: 1 file pushed, 0 skipped. 7.5 MB/s (667 bytes in 0.000s)
+COMPLETE latency-baseline-b2-p2
+/tmp/fc-next-prefix/latency-baseline-b3-p1-1795403376.json: 1 file pushed, 0 skipped. 4.8 MB/s (667 bytes in 0.000s)
+COMPLETE latency-baseline-b3-p1
+/tmp/fc-next-prefix/latency-prefix-b3-p2-1795403376.json: 1 file pushed, 0 skipped. 5.3 MB/s (666 bytes in 0.000s)
+COMPLETE latency-prefix-b3-p2
+/tmp/fc-next-prefix/mixed-baseline-b1-p1-1795403376.json: 1 file pushed, 0 skipped. 5.6 MB/s (667 bytes in 0.000s)
+COMPLETE mixed-baseline-b1-p1
+/tmp/fc-next-prefix/mixed-prefix-b1-p2-1795403376.json: 1 file pushed, 0 skipped. 6.1 MB/s (666 bytes in 0.000s)
+COMPLETE mixed-prefix-b1-p2
+/tmp/fc-next-prefix/mixed-prefix-b2-p1-1795403376.json: 1 file pushed, 0 skipped. 6.1 MB/s (666 bytes in 0.000s)
+COMPLETE mixed-prefix-b2-p1
+/tmp/fc-next-prefix/mixed-baseline-b2-p2-1795403376.json: 1 file pushed, 0 skipped. 5.7 MB/s (667 bytes in 0.000s)
+COMPLETE mixed-baseline-b2-p2
+/tmp/fc-next-prefix/mixed-baseline-b3-p1-1795403376.json: 1 file pushed, 0 skipped. 6.7 MB/s (667 bytes in 0.000s)
+COMPLETE mixed-baseline-b3-p1
+/tmp/fc-next-prefix/mixed-prefix-b3-p2-1795403376.json: 1 file pushed, 0 skipped. 5.2 MB/s (666 bytes in 0.000s)
+COMPLETE mixed-prefix-b3-p2
+/tmp/fc-next-prefix/mixed-prefix-b4-p1-1795403376.json: 1 file pushed, 0 skipped. 5.8 MB/s (666 bytes in 0.000s)
+COMPLETE mixed-prefix-b4-p1
+/tmp/fc-next-prefix/mixed-baseline-b4-p2-1795403376.json: 1 file pushed, 0 skipped. 5.9 MB/s (667 bytes in 0.000s)
+COMPLETE mixed-baseline-b4-p2
+/tmp/fc-next-prefix/mixed-baseline-b5-p1-1795403376.json: 1 file pushed, 0 skipped. 6.3 MB/s (667 bytes in 0.000s)
+COMPLETE mixed-baseline-b5-p1
+/tmp/fc-next-prefix/mixed-prefix-b5-p2-1795403376.json: 1 file pushed, 0 skipped. 5.9 MB/s (666 bytes in 0.000s)
+COMPLETE mixed-prefix-b5-p2
+/tmp/fc-next-prefix/mixed-prefix-b6-p1-1795403376.json: 1 file pushed, 0 skipped. 6.8 MB/s (666 bytes in 0.000s)
+COMPLETE mixed-prefix-b6-p1
+/tmp/fc-next-prefix/mixed-baseline-b6-p2-1795403376.json: 1 file pushed, 0 skipped. 10.1 MB/s (667 bytes in 0.000s)
+COMPLETE mixed-baseline-b6-p2
+/tmp/fc-next-prefix/parallel-baseline-b1-p1-1795403376.json: 1 file pushed, 0 skipped. 5.7 MB/s (667 bytes in 0.000s)
+COMPLETE parallel-baseline-b1-p1
+/tmp/fc-next-prefix/parallel-prefix-b1-p2-1795403376.json: 1 file pushed, 0 skipped. 5.8 MB/s (666 bytes in 0.000s)
+COMPLETE parallel-prefix-b1-p2
+/tmp/fc-next-prefix/parallel-prefix-b2-p1-1795403376.json: 1 file pushed, 0 skipped. 7.8 MB/s (666 bytes in 0.000s)
+COMPLETE parallel-prefix-b2-p1
+/tmp/fc-next-prefix/parallel-baseline-b2-p2-1795403376.json: 1 file pushed, 0 skipped. 6.4 MB/s (667 bytes in 0.000s)
+COMPLETE parallel-baseline-b2-p2
+/tmp/fc-next-prefix/parallel-baseline-b3-p1-1795403376.json: 1 file pushed, 0 skipped. 6.1 MB/s (667 bytes in 0.000s)
+COMPLETE parallel-baseline-b3-p1
+/tmp/fc-next-prefix/parallel-prefix-b3-p2-1795403376.json: 1 file pushed, 0 skipped. 4.7 MB/s (666 bytes in 0.000s)
+COMPLETE parallel-prefix-b3-p2
+/tmp/fc-next-prefix/parallel-prefix-b4-p1-1795403376.json: 1 file pushed, 0 skipped. 3.8 MB/s (666 bytes in 0.000s)
+COMPLETE parallel-prefix-b4-p1
+/tmp/fc-next-prefix/parallel-baseline-b4-p2-1795403376.json: 1 file pushed, 0 skipped. 5.9 MB/s (667 bytes in 0.000s)
+COMPLETE parallel-baseline-b4-p2
+/tmp/fc-next-prefix/parallel-baseline-b5-p1-1795403376.json: 1 file pushed, 0 skipped. 5.1 MB/s (667 bytes in 0.000s)
+COMPLETE parallel-baseline-b5-p1
+/tmp/fc-next-prefix/parallel-prefix-b5-p2-1795403376.json: 1 file pushed, 0 skipped. 6.4 MB/s (666 bytes in 0.000s)
+COMPLETE parallel-prefix-b5-p2
+/tmp/fc-next-prefix/parallel-prefix-b6-p1-1795403376.json: 1 file pushed, 0 skipped. 6.0 MB/s (666 bytes in 0.000s)
+COMPLETE parallel-prefix-b6-p1
+/tmp/fc-next-prefix/parallel-baseline-b6-p2-1795403376.json: 1 file pushed, 0 skipped. 6.8 MB/s (667 bytes in 0.000s)
+COMPLETE parallel-baseline-b6-p2
+/tmp/fc-next-prefix/rolling-baseline-b1-p1-1795403376.json: 1 file pushed, 0 skipped. 5.0 MB/s (667 bytes in 0.000s)
+COMPLETE rolling-baseline-b1-p1
+/tmp/fc-next-prefix/rolling-prefix-b1-p2-1795403376.json: 1 file pushed, 0 skipped. 4.9 MB/s (666 bytes in 0.000s)
+COMPLETE rolling-prefix-b1-p2
+/tmp/fc-next-prefix/rolling-prefix-b2-p1-1795403376.json: 1 file pushed, 0 skipped. 6.3 MB/s (666 bytes in 0.000s)
+COMPLETE rolling-prefix-b2-p1
+/tmp/fc-next-prefix/rolling-baseline-b2-p2-1795403376.json: 1 file pushed, 0 skipped. 6.2 MB/s (667 bytes in 0.000s)
+COMPLETE rolling-baseline-b2-p2
+/tmp/fc-next-prefix/rolling-baseline-b3-p1-1795403376.json: 1 file pushed, 0 skipped. 5.2 MB/s (667 bytes in 0.000s)
+COMPLETE rolling-baseline-b3-p1
+/tmp/fc-next-prefix/rolling-prefix-b3-p2-1795403376.json: 1 file pushed, 0 skipped. 5.3 MB/s (666 bytes in 0.000s)
+COMPLETE rolling-prefix-b3-p2
+/tmp/fc-next-prefix/rolling-prefix-b4-p1-1795403376.json: 1 file pushed, 0 skipped. 6.7 MB/s (666 bytes in 0.000s)
+COMPLETE rolling-prefix-b4-p1
+/tmp/fc-next-prefix/rolling-baseline-b4-p2-1795403376.json: 1 file pushed, 0 skipped. 1.8 MB/s (667 bytes in 0.000s)
+COMPLETE rolling-baseline-b4-p2
+/tmp/fc-next-prefix/rolling-baseline-b5-p1-1795403376.json: 1 file pushed, 0 skipped. 6.3 MB/s (667 bytes in 0.000s)
+COMPLETE rolling-baseline-b5-p1
+/tmp/fc-next-prefix/rolling-prefix-b5-p2-1795403376.json: 1 file pushed, 0 skipped. 6.9 MB/s (666 bytes in 0.000s)
+COMPLETE rolling-prefix-b5-p2
+/tmp/fc-next-prefix/rolling-prefix-b6-p1-1795403376.json: 1 file pushed, 0 skipped. 6.1 MB/s (666 bytes in 0.000s)
+COMPLETE rolling-prefix-b6-p1
+/tmp/fc-next-prefix/rolling-baseline-b6-p2-1795403376.json: 1 file pushed, 0 skipped. 6.5 MB/s (667 bytes in 0.000s)
+COMPLETE rolling-baseline-b6-p2
+/tmp/fc-next-prefix/latency-baseline-b1-p1-1795403376.json: 1 file pushed, 0 skipped. 4.9 MB/s (667 bytes in 0.000s)
+COMPLETE latency-baseline-b1-p1
+/tmp/fc-next-prefix/latency-prefix-b1-p2-1795403376.json: 1 file pushed, 0 skipped. 5.6 MB/s (666 bytes in 0.000s)
+COMPLETE latency-prefix-b1-p2
+/tmp/fc-next-prefix/latency-prefix-b2-p1-1795403376.json: 1 file pushed, 0 skipped. 5.7 MB/s (666 bytes in 0.000s)
+COMPLETE latency-prefix-b2-p1
+/tmp/fc-next-prefix/latency-baseline-b2-p2-1795403376.json: 1 file pushed, 0 skipped. 7.0 MB/s (667 bytes in 0.000s)
+COMPLETE latency-baseline-b2-p2
+/tmp/fc-next-prefix/latency-baseline-b3-p1-1795403376.json: 1 file pushed, 0 skipped. 5.3 MB/s (667 bytes in 0.000s)
+COMPLETE latency-baseline-b3-p1
+/tmp/fc-next-prefix/latency-prefix-b3-p2-1795403376.json: 1 file pushed, 0 skipped. 5.5 MB/s (666 bytes in 0.000s)
+COMPLETE latency-prefix-b3-p2
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+VPN restored: True
+PREFIX STAGE4 COMPLETE

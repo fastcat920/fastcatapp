@@ -1,0 +1,9 @@
+{
+  "android_release": "12",
+  "android_model": "TFY-AN00",
+  "android_sdk": "31",
+  "android_soc": "MT6833V/PNZA",
+  "android_tcp_congestion": "bic",
+  "android_battery": "Current Battery Service state:\n  AC powered: false\n  USB powered: true\n  Wireless powered: false\n  Max charging current: 500000\n  Max charging voltage: 5000000\n  Charge counter: 3900000\n  status: 2\n  health: 2\n  present: true\n  level: 100\n  scale: 100\n  voltage: 4395\n  temperature: 237\n  technology: Li-ion",
+  "server": "6.12.117+deb13-amd64\n1\nbbr\n"
+}

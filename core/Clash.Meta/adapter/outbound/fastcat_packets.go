@@ -3,6 +3,7 @@ package outbound
 import (
 	"context"
 	"errors"
+	"io"
 	"net"
 	"net/netip"
 	"os"
@@ -16,9 +17,14 @@ import (
 // socket needs its own RFC 9298 association, with the original address on reply.
 type datagramTarget struct {
 	ready     chan struct{}
-	stream    net.Conn
+	stream    fastCatPacketAssociation
 	err       error
 	lastWrite time.Time
+}
+
+type fastCatPacketAssociation interface {
+	io.ReadWriteCloser
+	SetWriteDeadline(time.Time) error
 }
 type targetReply struct {
 	body []byte
@@ -27,7 +33,7 @@ type targetReply struct {
 type fastCatPackets struct {
 	ctx           context.Context
 	stop          context.CancelFunc
-	open          func(context.Context, string) (net.Conn, error)
+	open          func(context.Context, string) (fastCatPacketAssociation, error)
 	readDeadline  deadline.PipeDeadline
 	replies       chan targetReply
 	mu            sync.Mutex
@@ -35,11 +41,17 @@ type fastCatPackets struct {
 	writeDeadline time.Time
 }
 
-func newFastCatPackets(network context.Context, open func(context.Context, string) (net.Conn, error)) *fastCatPackets {
+func newFastCatPackets[T fastCatPacketAssociation](network context.Context, open func(context.Context, string) (T, error)) *fastCatPackets {
 	ctx, cancel := context.WithCancel(network)
-	return &fastCatPackets{ctx: ctx, stop: cancel, open: open, readDeadline: deadline.MakePipeDeadline(), replies: make(chan targetReply, 8), targets: make(map[netip.AddrPort]*datagramTarget)}
+	return &fastCatPackets{ctx: ctx, stop: cancel, open: func(ctx context.Context, target string) (fastCatPacketAssociation, error) {
+		stream, err := open(ctx, target)
+		if err != nil {
+			return nil, err
+		}
+		return stream, nil
+	}, readDeadline: deadline.MakePipeDeadline(), replies: make(chan targetReply, 8), targets: make(map[netip.AddrPort]*datagramTarget)}
 }
-func (p *fastCatPackets) target(ctx context.Context, addr netip.AddrPort) (net.Conn, error) {
+func (p *fastCatPackets) target(ctx context.Context, addr netip.AddrPort) (fastCatPacketAssociation, error) {
 	p.mu.Lock()
 	if p.ctx.Err() != nil {
 		p.mu.Unlock()

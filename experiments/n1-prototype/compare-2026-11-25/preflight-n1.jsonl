@@ -1,0 +1,3 @@
+{"bytes":8192,"cleanup_ms":0.001,"entry_ms":6495.727,"error_category":"timeout","error_stage":"entry","phase":"cold","protocol":"n1","sample":1,"start_unix_ms":1795538020514,"success":false,"total_ms":6495.736}
+{"bytes":8192,"cleanup_ms":0,"entry_ms":5542.081,"error_category":"timeout","error_stage":"entry","phase":"cold","protocol":"n1","sample":2,"start_unix_ms":1795538027011,"success":false,"total_ms":5542.089}
+{"count":2,"elapsed_ms":12039.928,"event":"batch-ended","failed":2,"phase":"cold","protocol":"n1","workers":1}

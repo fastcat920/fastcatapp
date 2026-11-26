@@ -1,0 +1,6 @@
+{"sample":1,"tcp_ms":106.674,"tls_ms":168.278,"open_ms":102.340,"first_response_headers_ms":626.412,"full_request_ms":627.314,"bytes":32768,"end_to_end_mbps":0.418}
+{"sample":2,"tcp_ms":106.681,"tls_ms":300.779,"open_ms":106.440,"first_response_headers_ms":753.658,"full_request_ms":846.807,"bytes":32768,"end_to_end_mbps":0.310}
+{"sample":3,"tcp_ms":102.076,"tls_ms":284.734,"open_ms":100.577,"first_response_headers_ms":724.799,"full_request_ms":727.661,"bytes":32768,"end_to_end_mbps":0.360}
+{"sample":4,"tcp_ms":106.591,"tls_ms":161.002,"open_ms":98.220,"first_response_headers_ms":691.181,"full_request_ms":821.572,"bytes":32768,"end_to_end_mbps":0.319}
+{"sample":5,"tcp_ms":108.913,"tls_ms":175.452,"open_ms":104.605,"first_response_headers_ms":839.402,"full_request_ms":1280.760,"bytes":32768,"end_to_end_mbps":0.205}
+{"bytes_each":32768,"failed":0,"p50_ms":821.572,"p95_ms":1280.76,"scope":"fresh TCP + TLS + authenticated tunnel + complete verified HTTP response; speed includes setup and verification","success":5}

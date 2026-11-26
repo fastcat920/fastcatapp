@@ -1,0 +1,30 @@
+{
+  "initial": {
+    "cases": 24,
+    "raw_jsonl_lines": 3227,
+    "binary_hashes": "verified"
+  },
+  "prefix": {
+    "cases": 6,
+    "raw_jsonl_lines": 1220,
+    "binary_hashes": "verified"
+  },
+  "kernel-check": {
+    "cases": 2,
+    "raw_jsonl_lines": 1062,
+    "binary_hashes": "verified"
+  },
+  "auxiliary_json_lines_verified": 18544,
+  "journal_suppression": "none observed",
+  "total_cases": 32,
+  "prefix_requests": 108,
+  "prefix_status_recovery_unblock": 26,
+  "supplement_requests": 36,
+  "supplement_status_recovery_unblock": 12,
+  "packet_metadata_dropped": 0,
+  "cleanup": "verified",
+  "races": "passed",
+  "vet": "passed",
+  "source_scope": "Initial core source and final diagnostic sources supplied; binaries have frozen hashes. Archive is not a standalone full repository.",
+  "conclusion": "Concrete stream-head recovery waits confirmed; underlying delivery failure location remains unproven."
+}

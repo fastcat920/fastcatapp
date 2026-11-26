@@ -1,0 +1,555 @@
+{
+  "method": "paired whole-block bootstrap10000draws,10blocks; exploratory, no multiple-comparison correction, not formal significance",
+  "results": [
+    {
+      "metric": "latency/cold/p95",
+      "ratio": "next-base/next-opt",
+      "estimate": 0.8541926576592349,
+      "exploratory_ci95": [
+        0.6238359623041778,
+        1.2517030203416466
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/warm/p95",
+      "ratio": "next-base/next-opt",
+      "estimate": 1.0501204798577437,
+      "exploratory_ci95": [
+        0.712040678412442,
+        1.261401557285873
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/batch/p95",
+      "ratio": "next-base/next-opt",
+      "estimate": 0.9098885070070704,
+      "exploratory_ci95": [
+        0.7292304391236561,
+        1.148574803953503
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "batch8/batch/p95",
+      "ratio": "next-base/next-opt",
+      "estimate": 1.0424139110908044,
+      "exploratory_ci95": [
+        0.827791222305975,
+        1.498329820903676
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "next-base/next-opt",
+      "estimate": 0.5074209098244484,
+      "exploratory_ci95": [
+        0.3440880356281887,
+        1.228855668776561
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/cold/p95",
+      "ratio": "tuic/next-opt",
+      "estimate": 0.7475581389532238,
+      "exploratory_ci95": [
+        0.5769241546439285,
+        0.9598111563308078
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/warm/p95",
+      "ratio": "tuic/next-opt",
+      "estimate": 0.7681353325974255,
+      "exploratory_ci95": [
+        0.6205675217524025,
+        1.1501592325661447
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/batch/p95",
+      "ratio": "tuic/next-opt",
+      "estimate": 0.8075839691156111,
+      "exploratory_ci95": [
+        0.6753366598591646,
+        1.207482450542438
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "batch8/batch/p95",
+      "ratio": "tuic/next-opt",
+      "estimate": 0.9719856332377871,
+      "exploratory_ci95": [
+        0.8292643520645326,
+        1.2346600138703354
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "tuic/next-opt",
+      "estimate": 0.7177284490507507,
+      "exploratory_ci95": [
+        0.4434977043606228,
+        1.354318925314958
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/cold/p95",
+      "ratio": "hysteria2/next-opt",
+      "estimate": 1.0403273489437694,
+      "exploratory_ci95": [
+        0.7321853383925789,
+        1.5874690351439977
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/warm/p95",
+      "ratio": "hysteria2/next-opt",
+      "estimate": 1.0639595565654008,
+      "exploratory_ci95": [
+        0.7332008883880249,
+        1.5431923240112846
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/batch/p95",
+      "ratio": "hysteria2/next-opt",
+      "estimate": 0.9787123934964603,
+      "exploratory_ci95": [
+        0.7238425461745277,
+        1.2924970539678515
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "batch8/batch/p95",
+      "ratio": "hysteria2/next-opt",
+      "estimate": 0.9715287324999846,
+      "exploratory_ci95": [
+        0.8510990011627418,
+        1.2571859333764348
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "hysteria2/next-opt",
+      "estimate": 0.9909903883539795,
+      "exploratory_ci95": [
+        0.7257092194514344,
+        1.5598036377036666
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/cold/p95",
+      "ratio": "vless-vision/next-opt",
+      "estimate": 2.288518275815496,
+      "exploratory_ci95": [
+        1.3163193087538514,
+        3.5425046642641402
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/warm/p95",
+      "ratio": "vless-vision/next-opt",
+      "estimate": 5.925371211112496,
+      "exploratory_ci95": [
+        3.501362207880474,
+        16.515751540559044
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/batch/p95",
+      "ratio": "vless-vision/next-opt",
+      "estimate": 4.094841101741177,
+      "exploratory_ci95": [
+        2.8226804685690032,
+        6.312383928685786
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "batch8/batch/p95",
+      "ratio": "vless-vision/next-opt",
+      "estimate": 3.603621194457364,
+      "exploratory_ci95": [
+        2.7513136967082743,
+        4.732174672661498
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "vless-vision/next-opt",
+      "estimate": 2.2411931568759433,
+      "exploratory_ci95": [
+        1.5966131895769036,
+        4.01614952431396
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/cold/p95",
+      "ratio": "tuic/next-base",
+      "estimate": 0.8751633864446641,
+      "exploratory_ci95": [
+        0.6090001427226271,
+        1.1534967774952423
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/warm/p95",
+      "ratio": "tuic/next-base",
+      "estimate": 0.7314735283531298,
+      "exploratory_ci95": [
+        0.6399209777166978,
+        1.4447185004092709
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/batch/p95",
+      "ratio": "tuic/next-base",
+      "estimate": 0.8875636552131281,
+      "exploratory_ci95": [
+        0.7126409779408809,
+        1.2277324624131807
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "batch8/batch/p95",
+      "ratio": "tuic/next-base",
+      "estimate": 0.932437319663818,
+      "exploratory_ci95": [
+        0.7124892544512494,
+        1.2215431986715342
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "tuic/next-base",
+      "estimate": 1.4144636832153055,
+      "exploratory_ci95": [
+        0.7527608321153016,
+        1.8316461900753354
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/cold/p95",
+      "ratio": "hysteria2/next-base",
+      "estimate": 1.2179071543351871,
+      "exploratory_ci95": [
+        0.6983342608432783,
+        2.0571363825315814
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/warm/p95",
+      "ratio": "hysteria2/next-base",
+      "estimate": 1.013178560910965,
+      "exploratory_ci95": [
+        0.7743836098295213,
+        1.74083800234334
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/batch/p95",
+      "ratio": "hysteria2/next-base",
+      "estimate": 1.0756399118786268,
+      "exploratory_ci95": [
+        0.7871950019364956,
+        1.381759184975977
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "batch8/batch/p95",
+      "ratio": "hysteria2/next-base",
+      "estimate": 0.931999009379447,
+      "exploratory_ci95": [
+        0.6570061788574156,
+        1.280826660750422
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "hysteria2/next-base",
+      "estimate": 1.9529947804019954,
+      "exploratory_ci95": [
+        0.9067551440109967,
+        2.588023209015294
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/cold/p95",
+      "ratio": "vless-vision/next-base",
+      "estimate": 2.6791593855264204,
+      "exploratory_ci95": [
+        1.4250468907805514,
+        4.206857231934597
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/warm/p95",
+      "ratio": "vless-vision/next-base",
+      "estimate": 5.642563234187363,
+      "exploratory_ci95": [
+        3.3568682307516116,
+        16.940852860953918
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/batch/p95",
+      "ratio": "vless-vision/next-base",
+      "estimate": 4.500376771666771,
+      "exploratory_ci95": [
+        3.0684821048755246,
+        6.47597893184207
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "batch8/batch/p95",
+      "ratio": "vless-vision/next-base",
+      "estimate": 3.4569964542073857,
+      "exploratory_ci95": [
+        2.4852814121523346,
+        4.1582774763630335
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "vless-vision/next-base",
+      "estimate": 4.416832482625371,
+      "exploratory_ci95": [
+        2.6280608330580626,
+        5.810741596074974
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/cold/p95",
+      "ratio": "hysteria2/tuic",
+      "estimate": 1.3916340345120166,
+      "exploratory_ci95": [
+        1.0753638981389602,
+        1.9905830297027367
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/warm/p95",
+      "ratio": "hysteria2/tuic",
+      "estimate": 1.3851199279789081,
+      "exploratory_ci95": [
+        0.7690668634308497,
+        2.012770585221576
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/batch/p95",
+      "ratio": "hysteria2/tuic",
+      "estimate": 1.2119017104416432,
+      "exploratory_ci95": [
+        0.8272833169283753,
+        1.3356203478952737
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "batch8/batch/p95",
+      "ratio": "hysteria2/tuic",
+      "estimate": 0.9995299305646314,
+      "exploratory_ci95": [
+        0.75166421443598,
+        1.2976972718610145
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "hysteria2/tuic",
+      "estimate": 1.380731653684117,
+      "exploratory_ci95": [
+        0.8864950822428335,
+        1.9778085621678478
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/cold/p95",
+      "ratio": "vless-vision/tuic",
+      "estimate": 3.061324807485901,
+      "exploratory_ci95": [
+        2.1421406937510477,
+        3.9320195024027242
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/warm/p95",
+      "ratio": "vless-vision/tuic",
+      "estimate": 7.713967786218138,
+      "exploratory_ci95": [
+        3.529194069696811,
+        19.40902494663971
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/batch/p95",
+      "ratio": "vless-vision/tuic",
+      "estimate": 5.070483390384106,
+      "exploratory_ci95": [
+        3.1927660698949594,
+        7.113360101839637
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "batch8/batch/p95",
+      "ratio": "vless-vision/tuic",
+      "estimate": 3.7074840113153935,
+      "exploratory_ci95": [
+        2.6717092863854655,
+        4.372735960065934
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "vless-vision/tuic",
+      "estimate": 3.1226199265754175,
+      "exploratory_ci95": [
+        1.9924692465043292,
+        4.62186902745252
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/cold/p95",
+      "ratio": "vless-vision/hysteria2",
+      "estimate": 2.199805934294622,
+      "exploratory_ci95": [
+        1.1974078333334501,
+        3.1797743970548904
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/warm/p95",
+      "ratio": "vless-vision/hysteria2",
+      "estimate": 5.569169593476242,
+      "exploratory_ci95": [
+        2.907420627646951,
+        16.34256732341866
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "latency/batch/p95",
+      "ratio": "vless-vision/hysteria2",
+      "estimate": 4.183906456024649,
+      "exploratory_ci95": [
+        3.2320105395500627,
+        6.559203609310745
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "batch8/batch/p95",
+      "ratio": "vless-vision/hysteria2",
+      "estimate": 3.709227605841725,
+      "exploratory_ci95": [
+        2.5104296797085777,
+        4.956505219735485
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "vless-vision/hysteria2",
+      "estimate": 2.2615690154155104,
+      "exploratory_ci95": [
+        1.627941984523101,
+        3.8251079069752776
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    }
+  ]
+}

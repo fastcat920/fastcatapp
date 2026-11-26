@@ -1,0 +1,1112 @@
+[
+  {
+    "name": "pilot-ports1",
+    "metric": "pilot",
+    "block": 1,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "pilot-ports2",
+    "metric": "pilot",
+    "block": 2,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "latency-b1-p1-next-opt",
+    "metric": "latency",
+    "block": 1,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795420920.6765928,
+    "end": 1795420929.502833,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "latency-b1-p2-next-base",
+    "metric": "latency",
+    "block": 1,
+    "position": 2,
+    "version": "next-base",
+    "start": 1795420943.599647,
+    "end": 1795420950.062517,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "latency-b1-p3-tuic",
+    "metric": "latency",
+    "block": 1,
+    "position": 3,
+    "version": "tuic",
+    "start": 1795420956.173009,
+    "end": 1795420964.2735412,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "latency-b2-p1-next-opt",
+    "metric": "latency",
+    "block": 2,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795420970.435509,
+    "end": 1795420977.893538,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "latency-b2-p2-tuic",
+    "metric": "latency",
+    "block": 2,
+    "position": 2,
+    "version": "tuic",
+    "start": 1795420984.06367,
+    "end": 1795420993.1611059,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "latency-b2-p3-next-base",
+    "metric": "latency",
+    "block": 2,
+    "position": 3,
+    "version": "next-base",
+    "start": 1795421000.4204311,
+    "end": 1795421010.3462882,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "latency-b3-p1-next-base",
+    "metric": "latency",
+    "block": 3,
+    "position": 1,
+    "version": "next-base",
+    "start": 1795421016.6502972,
+    "end": 1795421027.805349,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "latency-b3-p2-next-opt",
+    "metric": "latency",
+    "block": 3,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795421034.241966,
+    "end": 1795421044.665065,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "latency-b3-p3-tuic",
+    "metric": "latency",
+    "block": 3,
+    "position": 3,
+    "version": "tuic",
+    "start": 1795421051.325423,
+    "end": 1795421057.467731,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "latency-b4-p1-next-base",
+    "metric": "latency",
+    "block": 4,
+    "position": 1,
+    "version": "next-base",
+    "start": 1795421063.5964851,
+    "end": 1795421070.682275,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "latency-b4-p2-tuic",
+    "metric": "latency",
+    "block": 4,
+    "position": 2,
+    "version": "tuic",
+    "start": 1795421076.783885,
+    "end": 1795421083.711327,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "latency-b4-p3-next-opt",
+    "metric": "latency",
+    "block": 4,
+    "position": 3,
+    "version": "next-opt",
+    "start": 1795421090.0592918,
+    "end": 1795421096.850904,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "latency-b5-p1-tuic",
+    "metric": "latency",
+    "block": 5,
+    "position": 1,
+    "version": "tuic",
+    "start": 1795421103.078231,
+    "end": 1795421109.94166,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "latency-b5-p2-next-opt",
+    "metric": "latency",
+    "block": 5,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795421116.106869,
+    "end": 1795421122.711655,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "latency-b5-p3-next-base",
+    "metric": "latency",
+    "block": 5,
+    "position": 3,
+    "version": "next-base",
+    "start": 1795421128.847585,
+    "end": 1795421135.741971,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "latency-b6-p1-tuic",
+    "metric": "latency",
+    "block": 6,
+    "position": 1,
+    "version": "tuic",
+    "start": 1795421141.884672,
+    "end": 1795421148.8153641,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "latency-b6-p2-next-base",
+    "metric": "latency",
+    "block": 6,
+    "position": 2,
+    "version": "next-base",
+    "start": 1795421155.045821,
+    "end": 1795421163.230847,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "latency-b6-p3-next-opt",
+    "metric": "latency",
+    "block": 6,
+    "position": 3,
+    "version": "next-opt",
+    "start": 1795421169.275263,
+    "end": 1795421175.8420322,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "batch8-b1-p1-next-opt",
+    "metric": "batch8",
+    "block": 1,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795421181.88324,
+    "end": 1795421183.521485,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "batch8-b1-p2-next-base",
+    "metric": "batch8",
+    "block": 1,
+    "position": 2,
+    "version": "next-base",
+    "start": 1795421189.6393769,
+    "end": 1795421191.0474298,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "batch8-b1-p3-tuic",
+    "metric": "batch8",
+    "block": 1,
+    "position": 3,
+    "version": "tuic",
+    "start": 1795421197.075548,
+    "end": 1795421198.429164,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "batch8-b2-p1-next-opt",
+    "metric": "batch8",
+    "block": 2,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795421204.8908951,
+    "end": 1795421206.522718,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "batch8-b2-p2-tuic",
+    "metric": "batch8",
+    "block": 2,
+    "position": 2,
+    "version": "tuic",
+    "start": 1795421212.65051,
+    "end": 1795421214.031986,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "batch8-b2-p3-next-base",
+    "metric": "batch8",
+    "block": 2,
+    "position": 3,
+    "version": "next-base",
+    "start": 1795421220.466609,
+    "end": 1795421222.21059,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "batch8-b3-p1-next-base",
+    "metric": "batch8",
+    "block": 3,
+    "position": 1,
+    "version": "next-base",
+    "start": 1795421228.518034,
+    "end": 1795421230.070345,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "batch8-b3-p2-next-opt",
+    "metric": "batch8",
+    "block": 3,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795421236.248918,
+    "end": 1795421238.943744,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "batch8-b3-p3-tuic",
+    "metric": "batch8",
+    "block": 3,
+    "position": 3,
+    "version": "tuic",
+    "start": 1795421245.005274,
+    "end": 1795421246.891635,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "batch8-b4-p1-next-base",
+    "metric": "batch8",
+    "block": 4,
+    "position": 1,
+    "version": "next-base",
+    "start": 1795421253.031159,
+    "end": 1795421254.2424698,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "batch8-b4-p2-tuic",
+    "metric": "batch8",
+    "block": 4,
+    "position": 2,
+    "version": "tuic",
+    "start": 1795421260.358471,
+    "end": 1795421262.551832,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "batch8-b4-p3-next-opt",
+    "metric": "batch8",
+    "block": 4,
+    "position": 3,
+    "version": "next-opt",
+    "start": 1795421268.59744,
+    "end": 1795421270.189908,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "batch8-b5-p1-tuic",
+    "metric": "batch8",
+    "block": 5,
+    "position": 1,
+    "version": "tuic",
+    "start": 1795421276.2361631,
+    "end": 1795421277.56957,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "batch8-b5-p2-next-opt",
+    "metric": "batch8",
+    "block": 5,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795421283.722579,
+    "end": 1795421285.1439428,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "batch8-b5-p3-next-base",
+    "metric": "batch8",
+    "block": 5,
+    "position": 3,
+    "version": "next-base",
+    "start": 1795421291.30162,
+    "end": 1795421292.9784052,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "batch8-b6-p1-tuic",
+    "metric": "batch8",
+    "block": 6,
+    "position": 1,
+    "version": "tuic",
+    "start": 1795421299.0643399,
+    "end": 1795421300.3487868,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "batch8-b6-p2-next-base",
+    "metric": "batch8",
+    "block": 6,
+    "position": 2,
+    "version": "next-base",
+    "start": 1795421306.503455,
+    "end": 1795421308.0392718,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "batch8-b6-p3-next-opt",
+    "metric": "batch8",
+    "block": 6,
+    "position": 3,
+    "version": "next-opt",
+    "start": 1795421314.1312299,
+    "end": 1795421316.2763112,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "mixed-b1-p1-next-opt",
+    "metric": "mixed",
+    "block": 1,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795421322.6226392,
+    "end": 1795421360.327447,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "mixed-b1-p2-next-base",
+    "metric": "mixed",
+    "block": 1,
+    "position": 2,
+    "version": "next-base",
+    "start": 1795421366.42484,
+    "end": 1795421404.2999449,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "mixed-b1-p3-tuic",
+    "metric": "mixed",
+    "block": 1,
+    "position": 3,
+    "version": "tuic",
+    "start": 1795421410.435261,
+    "end": 1795421448.746899,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "mixed-b2-p1-next-opt",
+    "metric": "mixed",
+    "block": 2,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795421454.8982131,
+    "end": 1795421492.174339,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "mixed-b2-p2-tuic",
+    "metric": "mixed",
+    "block": 2,
+    "position": 2,
+    "version": "tuic",
+    "start": 1795421498.76701,
+    "end": 1795421536.713375,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "mixed-b2-p3-next-base",
+    "metric": "mixed",
+    "block": 2,
+    "position": 3,
+    "version": "next-base",
+    "start": 1795421548.4907572,
+    "end": 1795421586.3999941,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "mixed-b3-p1-next-base",
+    "metric": "mixed",
+    "block": 3,
+    "position": 1,
+    "version": "next-base",
+    "start": 1795421592.917832,
+    "end": 1795421630.159263,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "mixed-b3-p2-next-opt",
+    "metric": "mixed",
+    "block": 3,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795421636.726621,
+    "end": 1795421674.121382,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "mixed-b3-p3-tuic",
+    "metric": "mixed",
+    "block": 3,
+    "position": 3,
+    "version": "tuic",
+    "start": 1795421680.5170949,
+    "end": 1795421717.9909089,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "mixed-b4-p1-next-base",
+    "metric": "mixed",
+    "block": 4,
+    "position": 1,
+    "version": "next-base",
+    "start": 1795421724.164883,
+    "end": 1795421761.61677,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "mixed-b4-p2-tuic",
+    "metric": "mixed",
+    "block": 4,
+    "position": 2,
+    "version": "tuic",
+    "start": 1795421767.724839,
+    "end": 1795421805.543742,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "mixed-b4-p3-next-opt",
+    "metric": "mixed",
+    "block": 4,
+    "position": 3,
+    "version": "next-opt",
+    "start": 1795421811.7038,
+    "end": 1795421848.9947321,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "mixed-b5-p1-tuic",
+    "metric": "mixed",
+    "block": 5,
+    "position": 1,
+    "version": "tuic",
+    "start": 1795421855.027172,
+    "end": 1795421892.553705,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "mixed-b5-p2-next-opt",
+    "metric": "mixed",
+    "block": 5,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795421898.665492,
+    "end": 1795421936.5282571,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "mixed-b5-p3-next-base",
+    "metric": "mixed",
+    "block": 5,
+    "position": 3,
+    "version": "next-base",
+    "start": 1795421942.549459,
+    "end": 1795421979.8253708,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "mixed-b6-p1-tuic",
+    "metric": "mixed",
+    "block": 6,
+    "position": 1,
+    "version": "tuic",
+    "start": 1795421985.986868,
+    "end": 1795422023.087703,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "mixed-b6-p2-next-base",
+    "metric": "mixed",
+    "block": 6,
+    "position": 2,
+    "version": "next-base",
+    "start": 1795422029.369104,
+    "end": 1795422066.8759758,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "mixed-b6-p3-next-opt",
+    "metric": "mixed",
+    "block": 6,
+    "position": 3,
+    "version": "next-opt",
+    "start": 1795422073.019937,
+    "end": 1795422111.231852,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "idle-b1-p1-next-opt",
+    "metric": "idle",
+    "block": 1,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795422117.427135,
+    "end": 1795422142.9190478,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "idle-b1-p2-next-base",
+    "metric": "idle",
+    "block": 1,
+    "position": 2,
+    "version": "next-base",
+    "start": 1795422149.042513,
+    "end": 1795422170.31659,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "idle-b1-p3-tuic",
+    "metric": "idle",
+    "block": 1,
+    "position": 3,
+    "version": "tuic",
+    "start": 1795422176.377972,
+    "end": 1795422198.168596,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "idle-b2-p1-next-opt",
+    "metric": "idle",
+    "block": 2,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795422204.56356,
+    "end": 1795422225.741354,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "idle-b2-p2-tuic",
+    "metric": "idle",
+    "block": 2,
+    "position": 2,
+    "version": "tuic",
+    "start": 1795422232.007203,
+    "end": 1795422253.353884,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "idle-b2-p3-next-base",
+    "metric": "idle",
+    "block": 2,
+    "position": 3,
+    "version": "next-base",
+    "start": 1795422259.5044968,
+    "end": 1795422280.722371,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "idle-b3-p1-next-base",
+    "metric": "idle",
+    "block": 3,
+    "position": 1,
+    "version": "next-base",
+    "start": 1795422286.9067142,
+    "end": 1795422308.7379851,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "idle-b3-p2-next-opt",
+    "metric": "idle",
+    "block": 3,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795422314.826166,
+    "end": 1795422336.00285,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "idle-b3-p3-tuic",
+    "metric": "idle",
+    "block": 3,
+    "position": 3,
+    "version": "tuic",
+    "start": 1795422342.05776,
+    "end": 1795422363.636031,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "idle-b4-p1-next-base",
+    "metric": "idle",
+    "block": 4,
+    "position": 1,
+    "version": "next-base",
+    "start": 1795422369.8223581,
+    "end": 1795422391.518394,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "idle-b4-p2-tuic",
+    "metric": "idle",
+    "block": 4,
+    "position": 2,
+    "version": "tuic",
+    "start": 1795422397.9514802,
+    "end": 1795422419.264124,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "idle-b4-p3-next-opt",
+    "metric": "idle",
+    "block": 4,
+    "position": 3,
+    "version": "next-opt",
+    "start": 1795422425.335365,
+    "end": 1795422446.6871638,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "idle-b5-p1-tuic",
+    "metric": "idle",
+    "block": 5,
+    "position": 1,
+    "version": "tuic",
+    "start": 1795422452.7266371,
+    "end": 1795422473.929464,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "idle-b5-p2-next-opt",
+    "metric": "idle",
+    "block": 5,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795422480.293289,
+    "end": 1795422501.46295,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "idle-b5-p3-next-base",
+    "metric": "idle",
+    "block": 5,
+    "position": 3,
+    "version": "next-base",
+    "start": 1795422507.592659,
+    "end": 1795422529.190637,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "idle-b6-p1-tuic",
+    "metric": "idle",
+    "block": 6,
+    "position": 1,
+    "version": "tuic",
+    "start": 1795422535.361815,
+    "end": 1795422557.000834,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "idle-b6-p2-next-base",
+    "metric": "idle",
+    "block": 6,
+    "position": 2,
+    "version": "next-base",
+    "start": 1795422563.218379,
+    "end": 1795422584.860211,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "idle-b6-p3-next-opt",
+    "metric": "idle",
+    "block": 6,
+    "position": 3,
+    "version": "next-opt",
+    "start": 1795422591.145649,
+    "end": 1795422612.46579,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "web-example-b1-p1-next-opt",
+    "metric": "web-example",
+    "block": 1,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795422619.0323808,
+    "end": 1795422656.525503,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "web-example-b1-p2-next-base",
+    "metric": "web-example",
+    "block": 1,
+    "position": 2,
+    "version": "next-base",
+    "start": 1795422662.697957,
+    "end": 1795422700.124935,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "web-example-b1-p3-tuic",
+    "metric": "web-example",
+    "block": 1,
+    "position": 3,
+    "version": "tuic",
+    "start": 1795422706.3029408,
+    "end": 1795422748.7111402,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "web-example-b2-p1-tuic",
+    "metric": "web-example",
+    "block": 2,
+    "position": 1,
+    "version": "tuic",
+    "start": 1795422754.82478,
+    "end": 1795422793.1047502,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "web-example-b2-p2-next-base",
+    "metric": "web-example",
+    "block": 2,
+    "position": 2,
+    "version": "next-base",
+    "start": 1795422799.2935958,
+    "end": 1795422837.043453,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "web-example-b2-p3-next-opt",
+    "metric": "web-example",
+    "block": 2,
+    "position": 3,
+    "version": "next-opt",
+    "start": 1795422843.190052,
+    "end": 1795422880.5208771,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "web-google-b1-p1-next-opt",
+    "metric": "web-google",
+    "block": 1,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795422886.653617,
+    "end": 1795422924.3003972,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "web-google-b1-p2-next-base",
+    "metric": "web-google",
+    "block": 1,
+    "position": 2,
+    "version": "next-base",
+    "start": 1795422930.456449,
+    "end": 1795422967.851736,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "web-google-b1-p3-tuic",
+    "metric": "web-google",
+    "block": 1,
+    "position": 3,
+    "version": "tuic",
+    "start": 1795422973.837076,
+    "end": 1795423011.701239,
+    "ports": {
+      "next_port": 19458,
+      "tuic_port": 19451
+    }
+  },
+  {
+    "name": "web-google-b2-p1-tuic",
+    "metric": "web-google",
+    "block": 2,
+    "position": 1,
+    "version": "tuic",
+    "start": 1795423017.777269,
+    "end": 1795423055.864556,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "web-google-b2-p2-next-base",
+    "metric": "web-google",
+    "block": 2,
+    "position": 2,
+    "version": "next-base",
+    "start": 1795423061.918731,
+    "end": 1795423099.665438,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  },
+  {
+    "name": "web-google-b2-p3-next-opt",
+    "metric": "web-google",
+    "block": 2,
+    "position": 3,
+    "version": "next-opt",
+    "start": 1795423105.868165,
+    "end": 1795423143.324713,
+    "ports": {
+      "next_port": 19451,
+      "tuic_port": 19458
+    }
+  }
+]

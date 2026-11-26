@@ -1,0 +1,8 @@
+{
+  "parent": 21487,
+  "insert_started": 1795256325.105255,
+  "kind": "single-pool serial controlled target; 20 one-worker rounds, no cold samples",
+  "test_started": 1795256779.1535628,
+  "complete": true,
+  "runner_resumed": 1795256961.233442
+}

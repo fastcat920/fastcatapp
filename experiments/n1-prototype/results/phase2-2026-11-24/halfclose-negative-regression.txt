@@ -1,0 +1,5 @@
+--- FAIL: TestTargetHalfClosePreservesUpload (0.01s)
+    main_test.go:178: upload lost after target half-close: ""
+FAIL
+FAIL	fastcat/n1prototype	1.443s
+FAIL

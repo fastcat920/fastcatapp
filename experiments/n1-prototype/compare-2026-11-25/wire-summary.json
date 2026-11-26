@@ -1,0 +1,32 @@
+{
+  "ports": {
+    "18468": {
+      "up_packets": 19582,
+      "up_captured_ip_bytes": 8340824,
+      "up_original_capture_bytes": 8732464,
+      "down_packets": 58018,
+      "down_captured_ip_bytes": 73757015,
+      "down_original_capture_bytes": 74917375,
+      "observed_peer_flows": 42
+    },
+    "18469": {
+      "up_packets": 19495,
+      "up_captured_ip_bytes": 8467152,
+      "up_original_capture_bytes": 8857052,
+      "down_packets": 60172,
+      "down_captured_ip_bytes": 76392899,
+      "down_original_capture_bytes": 77596339,
+      "observed_peer_flows": 42
+    },
+    "18466": {
+      "up_packets": 41632,
+      "up_captured_ip_bytes": 9642688,
+      "up_original_capture_bytes": 10475328,
+      "down_packets": 27659,
+      "down_captured_ip_bytes": 64383104,
+      "down_original_capture_bytes": 64936284,
+      "observed_peer_flows": 103
+    }
+  },
+  "scope": "experiment IPv4 TCP/UDP only, snaplen96, IP/capture counters; offload and ACKs/retransmissions included, not exact Ethernet wire overhead; no payload decryption"
+}

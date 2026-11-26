@@ -1,0 +1,24 @@
+{
+  "date": "2026-11-21",
+  "client_go": "1.26.2",
+  "server_go": "1.27.3",
+  "device": "A3GMVB2110006859",
+  "network_before": 171,
+  "network_after": 171,
+  "versions": [
+    "v2",
+    "v3-light",
+    "v3-light-fast"
+  ],
+  "pools": 3,
+  "samples": 20,
+  "batches": 5,
+  "workers": 4,
+  "formal_requests": 360,
+  "warmup_requests": 18,
+  "errors": [],
+  "sha256": {
+    "compare": "ed6e6d838f80138df1982f57afbc72d7f168fd8470528456382cbc19e1d67db6",
+    "server": "e41848048708741700c9971290bdfa0c7148cd8feba82a62e4ef8d137355827b"
+  }
+}

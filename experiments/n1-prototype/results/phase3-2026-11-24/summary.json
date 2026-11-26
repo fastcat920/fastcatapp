@@ -1,0 +1,127 @@
+{
+  "ab": {
+    "legacy": {
+      "success": 10,
+      "failed": 0,
+      "first_response_headers_ms": {
+        "p50": 875.691,
+        "p95": 4689.59,
+        "min": 506.219,
+        "max": 4689.59
+      },
+      "full_request_ms": {
+        "p50": 1064.085,
+        "p95": 5333.992,
+        "min": 710.2,
+        "max": 5333.992
+      }
+    },
+    "coalesced": {
+      "success": 10,
+      "failed": 0,
+      "first_response_headers_ms": {
+        "p50": 952.81,
+        "p95": 2165.725,
+        "min": 516.023,
+        "max": 2165.725
+      },
+      "full_request_ms": {
+        "p50": 1105.88,
+        "p95": 4771.618,
+        "min": 641.211,
+        "max": 4771.618
+      }
+    }
+  },
+  "captures": {
+    "legacy": {
+      "samples": 10,
+      "server_encrypted_record_counts": [
+        19,
+        19,
+        19,
+        19,
+        19,
+        19,
+        19,
+        19,
+        19,
+        5
+      ],
+      "server_encrypted_records_p50": 19.0,
+      "server_unique_tcp_payload_p50": 38340.5,
+      "server_rst_packets": 0,
+      "client_rst_packets": 0,
+      "feature_hashes": [
+        "c94627acebf3a22b24b9ff9db6b8b33a1dc3cdca547bb09094bc8f283b51f360"
+      ]
+    },
+    "coalesced": {
+      "samples": 10,
+      "server_encrypted_record_counts": [
+        15,
+        14,
+        14,
+        14,
+        15,
+        15,
+        14,
+        15,
+        15,
+        15
+      ],
+      "server_encrypted_records_p50": 15.0,
+      "server_unique_tcp_payload_p50": 38251.0,
+      "server_rst_packets": 0,
+      "client_rst_packets": 0,
+      "feature_hashes": [
+        "c94627acebf3a22b24b9ff9db6b8b33a1dc3cdca547bb09094bc8f283b51f360"
+      ]
+    }
+  },
+  "concurrent": [
+    {
+      "worker": 0,
+      "exit_code": 0,
+      "bytes_each": 32768,
+      "failed": 0,
+      "p50_ms": 743.317,
+      "p95_ms": 3039.201,
+      "scope": "fresh TCP + TLS + authenticated tunnel + verified payload + N1 FIN + HTTP EOF + TLS shutdown; speed includes setup, verification and shutdown",
+      "success": 5
+    },
+    {
+      "worker": 1,
+      "exit_code": 0,
+      "bytes_each": 32768,
+      "failed": 0,
+      "p50_ms": 1871.095,
+      "p95_ms": 3239.785,
+      "scope": "fresh TCP + TLS + authenticated tunnel + verified payload + N1 FIN + HTTP EOF + TLS shutdown; speed includes setup, verification and shutdown",
+      "success": 5
+    },
+    {
+      "worker": 2,
+      "exit_code": 0,
+      "bytes_each": 32768,
+      "failed": 0,
+      "p50_ms": 880.045,
+      "p95_ms": 1793.303,
+      "scope": "fresh TCP + TLS + authenticated tunnel + verified payload + N1 FIN + HTTP EOF + TLS shutdown; speed includes setup, verification and shutdown",
+      "success": 5
+    },
+    {
+      "worker": 3,
+      "exit_code": 0,
+      "bytes_each": 32768,
+      "failed": 0,
+      "p50_ms": 915.806,
+      "p95_ms": 1070.424,
+      "scope": "fresh TCP + TLS + authenticated tunnel + verified payload + N1 FIN + HTTP EOF + TLS shutdown; speed includes setup, verification and shutdown",
+      "success": 5
+    }
+  ],
+  "promoted_entry": "zlhk.fastcat.ink:18461",
+  "emission": "coalesced",
+  "temporary_18463_stopped": true
+}

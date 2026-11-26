@@ -1,0 +1,11 @@
+{
+  "main.go": "c55575d1248e4bbbc3e226951a8e843c7a1ca7ddb84dfebac7397a5e4e8c9446",
+  "inspect.go": "0e8dbadf5b49cdd62bd7682dedac40befbdf5ee9bacf29c39ad8ef79cfbef794",
+  "main_test.go": "e3560c102874933f449a2e9676d50a6c78e2decc78160e08bafe0cabd39daaea",
+  "resource_test.go": "7aab418f78703146d62a03a151b470df59a520f2438a77e1820679395219cbc0",
+  "SPEC-0.1.md": "3f954cfae8951f454f0fcf828527d71937f122c2967b4dc763751b5385ca426b",
+  "go.mod": "692fdc80dfffcca8ce03282acdc360c9537f01759c277dd59df68a50ab4b4cca",
+  "artifacts/n1-linux-amd64": "573982c267a2612d1cd76fc980886554fb73d41b7ccd0d8015c6dabd63f6512e",
+  "artifacts/n1-android-systemdns-arm64": "0f691f954498a404aee4297803972c97b87b1e3e14c003a6b469103b5a4f4da6",
+  "artifacts/n1-macos-arm64": "b1b10609702125528f66bb6eedba8f11941560c485360bb023bcacd2a2cda154"
+}

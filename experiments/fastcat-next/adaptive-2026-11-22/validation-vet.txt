@@ -1,0 +1,1 @@
+go vet ./fastcatnext ./tools/fastcat-v3-compare ./tools/fastcat-next: PASS

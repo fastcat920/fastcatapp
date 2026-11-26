@@ -1,0 +1,2 @@
+{"bytes":8192,"cleanup_ms":0.116,"entry_ms":2342.109,"error_category":"truncated","error_stage":"headers","headers_ms":3669.249,"phase":"cold","protocol":"tuic","sample":1,"start_unix_ms":1795538107280,"success":false,"total_ms":3669.259}
+{"count":1,"elapsed_ms":3671.773,"event":"batch-ended","failed":1,"phase":"cold","protocol":"tuic","workers":1}

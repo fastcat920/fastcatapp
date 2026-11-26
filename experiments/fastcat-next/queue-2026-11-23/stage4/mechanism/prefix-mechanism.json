@@ -1,0 +1,18 @@
+{
+  "baseline": {
+    "foreground": 36,
+    "copies_used_before_reliable_read": 0,
+    "delivered_copy_bytes": 0,
+    "server_streams": 0,
+    "max_copy_bytes": 0,
+    "max_attempts": 0
+  },
+  "prefix": {
+    "foreground": 36,
+    "copies_used_before_reliable_read": 32,
+    "delivered_copy_bytes": 49935,
+    "server_streams": 42,
+    "max_copy_bytes": 8193,
+    "max_attempts": 11
+  }
+}

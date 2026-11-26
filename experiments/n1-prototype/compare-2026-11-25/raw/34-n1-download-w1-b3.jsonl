@@ -1,0 +1,2 @@
+{"bytes":4194304,"cleanup_ms":716.16,"entry_ms":11124.177,"error_category":"truncated","error_stage":"headers","headers_ms":13479.065,"n1_trace":null,"phase":"download","protocol":"n1","sample":1,"start_unix_ms":1795539055838,"success":false,"total_ms":13479.079}
+{"count":1,"elapsed_ms":14196.36,"event":"batch-ended","failed":1,"phase":"download","protocol":"n1","workers":1}

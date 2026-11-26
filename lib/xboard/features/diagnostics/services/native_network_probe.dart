@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'dart:io';
 
 /// A baseline that does not call Mihomo or use the system HTTP proxy.
 /// This deliberately does NOT claim to bypass VPN/TUN routes or system DNS.
 /// Only status and duration are retained; no response body or headers are read.
-Future<({bool ok, int elapsedMs})> probeNativeNetwork({
+Future<({bool ok, int elapsedMs, int? statusCode, bool timedOut})>
+    probeNativeNetwork({
   required Uri target,
   int expectedStatus = HttpStatus.noContent,
   Duration timeout = const Duration(seconds: 8),
@@ -20,11 +22,18 @@ Future<({bool ok, int elapsedMs})> probeNativeNetwork({
       return (
         ok: response.statusCode == expectedStatus,
         elapsedMs: clock.elapsedMilliseconds,
+        statusCode: response.statusCode,
+        timedOut: false,
       );
     })()
         .timeout(timeout);
-  } catch (_) {
-    return (ok: false, elapsedMs: clock.elapsedMilliseconds);
+  } catch (error) {
+    return (
+      ok: false,
+      elapsedMs: clock.elapsedMilliseconds,
+      statusCode: null,
+      timedOut: error is TimeoutException,
+    );
   } finally {
     client.close(force: true);
   }

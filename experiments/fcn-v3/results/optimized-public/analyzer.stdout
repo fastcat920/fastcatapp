@@ -1,0 +1,608 @@
+{
+  "summary": "experiments/fcn-v3/results/optimized-public/summary.json",
+  "metrics_pass": false,
+  "gates": {
+    "cold_p50": true,
+    "cold_p95": true,
+    "warm_p50": true,
+    "warm_p95": true,
+    "concurrent_p50": false,
+    "concurrent_p95": true,
+    "single_download_throughput": true,
+    "parallel_download_throughput": true,
+    "zero_failures": true,
+    "complete_evidence": true,
+    "minimum_latency_counts": true,
+    "six_paired_throughput_blocks": true
+  },
+  "comparisons": {
+    "cold": {
+      "first_byte_p50_ratio": 0.941530059110626,
+      "first_byte_p95_ratio": 0.9461737579511,
+      "total_p50_ratio": 1.096675079202147,
+      "total_p95_ratio": 0.7752857461205827,
+      "throughput_ratio": 0.9963718253384323,
+      "payload_throughput_ratio": 0.9965550312818344,
+      "block_median_first_byte_ratio": 0.8856758593165626,
+      "paired_blocks": [
+        {
+          "block": 1,
+          "fcnv3_first_byte_p50_ms": 369.7493075,
+          "tuic_first_byte_p50_ms": 349.3561925,
+          "first_byte_p50_ratio": 1.0583734178405897,
+          "first_byte_p95_ratio": 1.0262436524415095,
+          "total_p50_ratio": 0.8563992213161173,
+          "total_p95_ratio": 1.0643899679215703,
+          "fcnv3_aggregate_mbps": 0.4380912597378114,
+          "tuic_aggregate_mbps": 0.4449258098398399,
+          "throughput_ratio": 0.9846388994504751,
+          "payload_throughput_ratio": 0.9848124358419184,
+          "failed": 0
+        },
+        {
+          "block": 2,
+          "fcnv3_first_byte_p50_ms": 309.416346,
+          "tuic_first_byte_p50_ms": 420.706,
+          "first_byte_p50_ratio": 0.7354692968486305,
+          "first_byte_p95_ratio": 0.3872150228699959,
+          "total_p50_ratio": 0.8459278495965679,
+          "total_p95_ratio": 0.5188573814731806,
+          "fcnv3_aggregate_mbps": 0.34974583819816824,
+          "tuic_aggregate_mbps": 0.2348960638094168,
+          "throughput_ratio": 1.4889386928251591,
+          "payload_throughput_ratio": 1.4893093070686374,
+          "failed": 0
+        },
+        {
+          "block": 3,
+          "fcnv3_first_byte_p50_ms": 287.1302695,
+          "tuic_first_byte_p50_ms": 229.3676155,
+          "first_byte_p50_ratio": 1.251834392026454,
+          "first_byte_p95_ratio": 2.278754425109923,
+          "total_p50_ratio": 1.3812323017898795,
+          "total_p95_ratio": 1.6636995987556822,
+          "fcnv3_aggregate_mbps": 0.23630182844373748,
+          "tuic_aggregate_mbps": 0.3510193978832871,
+          "throughput_ratio": 0.6731873790129033,
+          "payload_throughput_ratio": 0.6731761953786983,
+          "failed": 0
+        }
+      ],
+      "paired_p50_ratios": {
+        "n": 3,
+        "p50": 1.0583734178405897,
+        "p95": 1.2324882946078677,
+        "mean": 1.015225702238558,
+        "min": 0.7354692968486305,
+        "max": 1.251834392026454
+      },
+      "paired_p95_ratios": {
+        "n": 3,
+        "p50": 1.0262436524415095,
+        "p95": 2.1535033478430816,
+        "mean": 1.2307377001404762,
+        "min": 0.3872150228699959,
+        "max": 2.278754425109923
+      },
+      "paired_throughput_ratios": {
+        "n": 3,
+        "p50": 0.9846388994504751,
+        "p95": 1.4385087134876906,
+        "mean": 1.0489216570961792,
+        "min": 0.6731873790129033,
+        "max": 1.4889386928251591
+      }
+    },
+    "concurrent": {
+      "first_byte_p50_ratio": 1.1734816906011836,
+      "first_byte_p95_ratio": 0.6952086225652482,
+      "total_p50_ratio": 0.39173206009826755,
+      "total_p95_ratio": 0.710593518459581,
+      "throughput_ratio": 2.481959818361066,
+      "payload_throughput_ratio": 2.4830459358019326,
+      "block_median_first_byte_ratio": 1.04464762253888,
+      "paired_blocks": [
+        {
+          "block": 1,
+          "fcnv3_first_byte_p50_ms": 113.816769,
+          "tuic_first_byte_p50_ms": 106.429192,
+          "first_byte_p50_ratio": 1.0694130704290228,
+          "first_byte_p95_ratio": 0.2811804456366444,
+          "total_p50_ratio": 0.36961345439591275,
+          "total_p95_ratio": 0.4723090319388378,
+          "fcnv3_aggregate_mbps": 10.19698005271803,
+          "tuic_aggregate_mbps": 4.108438814070524,
+          "throughput_ratio": 2.481959818361066,
+          "payload_throughput_ratio": 2.4830459358019326,
+          "failed": 0
+        },
+        {
+          "block": 2,
+          "fcnv3_first_byte_p50_ms": 210.089038,
+          "tuic_first_byte_p50_ms": 108.95230749999999,
+          "first_byte_p50_ratio": 1.9282660718314755,
+          "first_byte_p95_ratio": 1.270572397690745,
+          "total_p50_ratio": 2.2000076843832184,
+          "total_p95_ratio": 1.3679142708938812,
+          "fcnv3_aggregate_mbps": 5.315946794953075,
+          "tuic_aggregate_mbps": 8.886955295755776,
+          "throughput_ratio": 0.5981741347896574,
+          "payload_throughput_ratio": 0.5982282070989963,
+          "failed": 0
+        },
+        {
+          "block": 3,
+          "fcnv3_first_byte_p50_ms": 112.4379225,
+          "tuic_first_byte_p50_ms": 203.3513465,
+          "first_byte_p50_ratio": 0.5529244061336963,
+          "first_byte_p95_ratio": 0.5098494547146581,
+          "total_p50_ratio": 0.1770795861923858,
+          "total_p95_ratio": 0.4132712756670224,
+          "fcnv3_aggregate_mbps": 10.450493601005086,
+          "tuic_aggregate_mbps": 3.0359683446050365,
+          "throughput_ratio": 3.4422274591814426,
+          "payload_throughput_ratio": 3.442748323840318,
+          "failed": 0
+        }
+      ],
+      "paired_p50_ratios": {
+        "n": 3,
+        "p50": 1.0694130704290228,
+        "p95": 1.8423807716912302,
+        "mean": 1.1835345161313982,
+        "min": 0.5529244061336963,
+        "max": 1.9282660718314755
+      },
+      "paired_p95_ratios": {
+        "n": 3,
+        "p50": 0.5098494547146581,
+        "p95": 1.1945001033931364,
+        "mean": 0.6872007660140158,
+        "min": 0.2811804456366444,
+        "max": 1.270572397690745
+      },
+      "paired_throughput_ratios": {
+        "n": 3,
+        "p50": 2.481959818361066,
+        "p95": 3.3462006950994048,
+        "mean": 2.1741204707773885,
+        "min": 0.5981741347896574,
+        "max": 3.4422274591814426
+      }
+    },
+    "parallel_download": {
+      "first_byte_p50_ratio": 0.7404511131457109,
+      "first_byte_p95_ratio": 1.8474561985776194,
+      "total_p50_ratio": 0.6885645734714826,
+      "total_p95_ratio": 1.2082104172008852,
+      "throughput_ratio": 1.8221381067634888,
+      "payload_throughput_ratio": 1.8224270724127145,
+      "block_median_first_byte_ratio": 0.7427538409150505,
+      "paired_blocks": [
+        {
+          "block": 1,
+          "fcnv3_first_byte_p50_ms": 341.845731,
+          "tuic_first_byte_p50_ms": 213.824923,
+          "first_byte_p50_ratio": 1.5987178959489208,
+          "first_byte_p95_ratio": 1.972707552472182,
+          "total_p50_ratio": 0.7554370561812477,
+          "total_p95_ratio": 0.7478672466958382,
+          "fcnv3_aggregate_mbps": 5.271091043989024,
+          "tuic_aggregate_mbps": 3.931584344331291,
+          "throughput_ratio": 1.3407040476160927,
+          "payload_throughput_ratio": 1.3408161526518465,
+          "failed": 0
+        },
+        {
+          "block": 2,
+          "fcnv3_first_byte_p50_ms": 372.3981155,
+          "tuic_first_byte_p50_ms": 389.0804615,
+          "first_byte_p50_ratio": 0.9571236603974266,
+          "first_byte_p95_ratio": 1.136326463987411,
+          "total_p50_ratio": 0.9679193407042406,
+          "total_p95_ratio": 0.9546310894354476,
+          "fcnv3_aggregate_mbps": 21.524483993800743,
+          "tuic_aggregate_mbps": 20.48997023893039,
+          "throughput_ratio": 1.050488787577876,
+          "payload_throughput_ratio": 1.0513528167282136,
+          "failed": 0
+        },
+        {
+          "block": 3,
+          "fcnv3_first_byte_p50_ms": 1690.403077,
+          "tuic_first_byte_p50_ms": 729.2961155,
+          "first_byte_p50_ratio": 2.317855588523287,
+          "first_byte_p95_ratio": 2.546920576326661,
+          "total_p50_ratio": 5.409323230676521,
+          "total_p95_ratio": 5.222794640709741,
+          "fcnv3_aggregate_mbps": 3.1945483467871383,
+          "tuic_aggregate_mbps": 16.58121834690729,
+          "throughput_ratio": 0.19266065254987624,
+          "payload_throughput_ratio": 0.19256521299164422,
+          "failed": 0
+        },
+        {
+          "block": 4,
+          "fcnv3_first_byte_p50_ms": 302.5267305,
+          "tuic_first_byte_p50_ms": 368.7135765,
+          "first_byte_p50_ratio": 0.8204925171774899,
+          "first_byte_p95_ratio": 0.6971206976607653,
+          "total_p50_ratio": 0.24281301458575133,
+          "total_p95_ratio": 0.243171308331761,
+          "fcnv3_aggregate_mbps": 20.026584844659425,
+          "tuic_aggregate_mbps": 4.8745574978702555,
+          "throughput_ratio": 4.108390321256698,
+          "payload_throughput_ratio": 4.111241412310736,
+          "failed": 0
+        },
+        {
+          "block": 5,
+          "fcnv3_first_byte_p50_ms": 348.5702695,
+          "tuic_first_byte_p50_ms": 581.5888845,
+          "first_byte_p50_ratio": 0.5993413539869674,
+          "first_byte_p95_ratio": 0.5583028284276148,
+          "total_p50_ratio": 0.8379559554981588,
+          "total_p95_ratio": 0.8504557218284795,
+          "fcnv3_aggregate_mbps": 4.585362351118399,
+          "tuic_aggregate_mbps": 3.8994446432909506,
+          "throughput_ratio": 1.1759013835489573,
+          "payload_throughput_ratio": 1.1757289148355201,
+          "failed": 0
+        },
+        {
+          "block": 6,
+          "fcnv3_first_byte_p50_ms": 1192.371385,
+          "tuic_first_byte_p50_ms": 917.5281540000001,
+          "first_byte_p50_ratio": 1.2995474632596395,
+          "first_byte_p95_ratio": 1.299649171594048,
+          "total_p50_ratio": 0.38969858148478626,
+          "total_p95_ratio": 0.40034898200062585,
+          "fcnv3_aggregate_mbps": 13.553459464496704,
+          "tuic_aggregate_mbps": 5.456465402431303,
+          "throughput_ratio": 2.4839265833991226,
+          "payload_throughput_ratio": 2.484428681031905,
+          "failed": 0
+        }
+      ],
+      "paired_p50_ratios": {
+        "n": 6,
+        "p50": 1.1283355618285331,
+        "p95": 2.1380711653796958,
+        "mean": 1.2655130798822887,
+        "min": 0.5993413539869674,
+        "max": 2.317855588523287
+      },
+      "paired_p95_ratios": {
+        "n": 6,
+        "p50": 1.2179878177907295,
+        "p95": 2.4033673203630412,
+        "mean": 1.368504548411447,
+        "min": 0.5583028284276148,
+        "max": 2.546920576326661
+      },
+      "paired_throughput_ratios": {
+        "n": 6,
+        "p50": 1.258302715582525,
+        "p95": 3.702274386792304,
+        "mean": 1.725345295991437,
+        "min": 0.19266065254987624,
+        "max": 4.108390321256698
+      }
+    },
+    "single_download": {
+      "first_byte_p50_ratio": 1.1732284600480103,
+      "first_byte_p95_ratio": 1.1245185348748465,
+      "total_p50_ratio": 0.5181646490440833,
+      "total_p95_ratio": 0.9099159939392415,
+      "throughput_ratio": 2.181746065371211,
+      "payload_throughput_ratio": 2.1828206626854256,
+      "block_median_first_byte_ratio": 1.1732284600480103,
+      "paired_blocks": [
+        {
+          "block": 1,
+          "fcnv3_first_byte_p50_ms": 267.117231,
+          "tuic_first_byte_p50_ms": 254.376308,
+          "first_byte_p50_ratio": 1.050086909037142,
+          "first_byte_p95_ratio": 1.050086909037142,
+          "total_p50_ratio": 0.29548642129693886,
+          "total_p95_ratio": 0.29548642129693886,
+          "fcnv3_aggregate_mbps": 19.6930224695456,
+          "tuic_aggregate_mbps": 5.824207912284957,
+          "throughput_ratio": 3.3812361725630122,
+          "payload_throughput_ratio": 3.384250152069872,
+          "failed": 0
+        },
+        {
+          "block": 2,
+          "fcnv3_first_byte_p50_ms": 353.52,
+          "tuic_first_byte_p50_ms": 329.426769,
+          "first_byte_p50_ratio": 1.0731368342443355,
+          "first_byte_p95_ratio": 1.0731368342443355,
+          "total_p50_ratio": 0.9192790204129979,
+          "total_p95_ratio": 0.9192790204129979,
+          "fcnv3_aggregate_mbps": 4.423215974385861,
+          "tuic_aggregate_mbps": 4.066418462630751,
+          "throughput_ratio": 1.0877424483077625,
+          "payload_throughput_ratio": 1.0878089968629248,
+          "failed": 0
+        },
+        {
+          "block": 3,
+          "fcnv3_first_byte_p50_ms": 242.851924,
+          "tuic_first_byte_p50_ms": 221.390231,
+          "first_byte_p50_ratio": 1.096940560127967,
+          "first_byte_p95_ratio": 1.096940560127967,
+          "total_p50_ratio": 0.3438474147738224,
+          "total_p95_ratio": 0.3438474147738224,
+          "fcnv3_aggregate_mbps": 18.963962972828657,
+          "tuic_aggregate_mbps": 6.524859737491697,
+          "throughput_ratio": 2.906416955426973,
+          "payload_throughput_ratio": 2.9082665325263926,
+          "failed": 0
+        },
+        {
+          "block": 4,
+          "fcnv3_first_byte_p50_ms": 455.744616,
+          "tuic_first_byte_p50_ms": 358.441769,
+          "first_byte_p50_ratio": 1.2714606818046363,
+          "first_byte_p95_ratio": 1.2714606818046363,
+          "total_p50_ratio": 0.9625335061476145,
+          "total_p95_ratio": 0.9625335061476145,
+          "fcnv3_aggregate_mbps": 6.696507966134482,
+          "tuic_aggregate_mbps": 6.445731991957494,
+          "throughput_ratio": 1.0389057401843402,
+          "payload_throughput_ratio": 1.0389248847294177,
+          "failed": 0
+        },
+        {
+          "block": 5,
+          "fcnv3_first_byte_p50_ms": 578.378231,
+          "tuic_first_byte_p50_ms": 231.681846,
+          "first_byte_p50_ratio": 2.4964331085310847,
+          "first_byte_p95_ratio": 2.4964331085310847,
+          "total_p50_ratio": 2.0579221493986135,
+          "total_p95_ratio": 2.0579221493986135,
+          "fcnv3_aggregate_mbps": 9.334574498433485,
+          "tuic_aggregate_mbps": 19.203437365767886,
+          "throughput_ratio": 0.486088730920295,
+          "payload_throughput_ratio": 0.4859270225320004,
+          "failed": 0
+        },
+        {
+          "block": 6,
+          "fcnv3_first_byte_p50_ms": 331.414385,
+          "tuic_first_byte_p50_ms": 529.94677,
+          "first_byte_p50_ratio": 0.6253729690625343,
+          "first_byte_p95_ratio": 0.6253729690625343,
+          "total_p50_ratio": 0.7871811359567654,
+          "total_p95_ratio": 0.7871811359567654,
+          "fcnv3_aggregate_mbps": 21.314589589532776,
+          "tuic_aggregate_mbps": 16.77847631524842,
+          "throughput_ratio": 1.2703531112751818,
+          "payload_throughput_ratio": 1.2703554991115975,
+          "failed": 0
+        }
+      ],
+      "paired_p50_ratios": {
+        "n": 6,
+        "p50": 1.0850386971861512,
+        "p95": 2.190190001849473,
+        "mean": 1.2689051771346167,
+        "min": 0.6253729690625343,
+        "max": 2.4964331085310847
+      },
+      "paired_p95_ratios": {
+        "n": 6,
+        "p50": 1.0850386971861512,
+        "p95": 2.190190001849473,
+        "mean": 1.2689051771346167,
+        "min": 0.6253729690625343,
+        "max": 2.4964331085310847
+      },
+      "paired_throughput_ratios": {
+        "n": 6,
+        "p50": 1.179047779791472,
+        "p95": 3.2625313682790025,
+        "mean": 1.6951238597795941,
+        "min": 0.486088730920295,
+        "max": 3.3812361725630122
+      }
+    },
+    "upload": {
+      "first_byte_p50_ratio": 0.9109874201077292,
+      "first_byte_p95_ratio": 0.9272388441629799,
+      "total_p50_ratio": 0.9109887190780475,
+      "total_p95_ratio": 0.9272395687221633,
+      "throughput_ratio": 1.079877009227052,
+      "payload_throughput_ratio": 1.080246905695802,
+      "block_median_first_byte_ratio": 0.9109874201077292,
+      "paired_blocks": [
+        {
+          "block": 1,
+          "fcnv3_first_byte_p50_ms": 837.819693,
+          "tuic_first_byte_p50_ms": 1607.220385,
+          "first_byte_p50_ratio": 0.5212848846488467,
+          "first_byte_p95_ratio": 0.5212848846488467,
+          "total_p50_ratio": 0.5212881401127942,
+          "total_p95_ratio": 0.5212881401127942,
+          "fcnv3_aggregate_mbps": 9.99214149064689,
+          "tuic_aggregate_mbps": 5.213432875852249,
+          "throughput_ratio": 1.9166145855504966,
+          "payload_throughput_ratio": 1.9183248566185105,
+          "failed": 0
+        },
+        {
+          "block": 2,
+          "fcnv3_first_byte_p50_ms": 988.877307,
+          "tuic_first_byte_p50_ms": 986.383307,
+          "first_byte_p50_ratio": 1.0025284288392768,
+          "first_byte_p95_ratio": 1.0025284288392768,
+          "total_p50_ratio": 1.0025283223834738,
+          "total_p95_ratio": 1.0025283223834738,
+          "fcnv3_aggregate_mbps": 8.467445779681313,
+          "tuic_aggregate_mbps": 8.488928192435793,
+          "throughput_ratio": 0.9974693609997052,
+          "payload_throughput_ratio": 0.9974778341468571,
+          "failed": 0
+        },
+        {
+          "block": 3,
+          "fcnv3_first_byte_p50_ms": 1111.050385,
+          "tuic_first_byte_p50_ms": 1714.57477,
+          "first_byte_p50_ratio": 0.6480034609397641,
+          "first_byte_p95_ratio": 0.6480034609397641,
+          "total_p50_ratio": 0.6480057799054024,
+          "total_p95_ratio": 0.6480057799054024,
+          "fcnv3_aggregate_mbps": 7.535778187506467,
+          "tuic_aggregate_mbps": 4.888311056412148,
+          "throughput_ratio": 1.5415913800373966,
+          "payload_throughput_ratio": 1.5431962149092007,
+          "failed": 0
+        },
+        {
+          "block": 4,
+          "fcnv3_first_byte_p50_ms": 1197.332308,
+          "tuic_first_byte_p50_ms": 1008.86977,
+          "first_byte_p50_ratio": 1.1868056151588326,
+          "first_byte_p95_ratio": 1.1868056151588326,
+          "total_p50_ratio": 1.1868033403824916,
+          "total_p95_ratio": 1.1868033403824916,
+          "fcnv3_aggregate_mbps": 6.992261905038264,
+          "tuic_aggregate_mbps": 8.297304461703416,
+          "throughput_ratio": 0.8427148765374786,
+          "payload_throughput_ratio": 0.8425997574790709,
+          "failed": 0
+        },
+        {
+          "block": 5,
+          "fcnv3_first_byte_p50_ms": 1012.257231,
+          "tuic_first_byte_p50_ms": 1321.906231,
+          "first_byte_p50_ratio": 0.7657556998080298,
+          "first_byte_p95_ratio": 0.7657556998080298,
+          "total_p50_ratio": 0.7657586928845179,
+          "total_p95_ratio": 0.7657586928845179,
+          "fcnv3_aggregate_mbps": 8.268474066936475,
+          "tuic_aggregate_mbps": 6.337929106011133,
+          "throughput_ratio": 1.3046018547437428,
+          "payload_throughput_ratio": 1.3058944488969209,
+          "failed": 0
+        },
+        {
+          "block": 6,
+          "fcnv3_first_byte_p50_ms": 1687.468616,
+          "tuic_first_byte_p50_ms": 893.330384,
+          "first_byte_p50_ratio": 1.888963642369518,
+          "first_byte_p95_ratio": 1.888963642369518,
+          "total_p50_ratio": 1.8889550011666434,
+          "total_p95_ratio": 1.8889550011666434,
+          "fcnv3_aggregate_mbps": 4.964735467770146,
+          "tuic_aggregate_mbps": 9.372866404239918,
+          "throughput_ratio": 0.5296923324890552,
+          "payload_throughput_ratio": 0.5293932885199159,
+          "failed": 0
+        }
+      ],
+      "paired_p50_ratios": {
+        "n": 6,
+        "p50": 0.8841420643236533,
+        "p95": 1.7134241355668467,
+        "mean": 1.0022236219607112,
+        "min": 0.5212848846488467,
+        "max": 1.888963642369518
+      },
+      "paired_p95_ratios": {
+        "n": 6,
+        "p50": 0.8841420643236533,
+        "p95": 1.7134241355668467,
+        "mean": 1.0022236219607112,
+        "min": 0.5212848846488467,
+        "max": 1.888963642369518
+      },
+      "paired_throughput_ratios": {
+        "n": 6,
+        "p50": 1.1510356078717239,
+        "p95": 1.8228587841722215,
+        "mean": 1.1887807317263124,
+        "min": 0.5296923324890552,
+        "max": 1.9166145855504966
+      }
+    },
+    "warm": {
+      "first_byte_p50_ratio": 1.0257102866875818,
+      "first_byte_p95_ratio": 1.0537808087728546,
+      "total_p50_ratio": 1.0234661344441494,
+      "total_p95_ratio": 1.0960970410661595,
+      "throughput_ratio": 0.8542472202258771,
+      "payload_throughput_ratio": 0.8542403671783938,
+      "block_median_first_byte_ratio": 1.030341352812508,
+      "paired_blocks": [
+        {
+          "block": 1,
+          "fcnv3_first_byte_p50_ms": 199.314769,
+          "tuic_first_byte_p50_ms": 102.335615,
+          "first_byte_p50_ratio": 1.9476578999403091,
+          "first_byte_p95_ratio": 1.4366166750516056,
+          "total_p50_ratio": 1.0156634573621828,
+          "total_p95_ratio": 1.088376610717934,
+          "fcnv3_aggregate_mbps": 0.4847120927831885,
+          "tuic_aggregate_mbps": 0.5337901838067262,
+          "throughput_ratio": 0.9080573369230264,
+          "payload_throughput_ratio": 0.908087562546111,
+          "failed": 0
+        },
+        {
+          "block": 2,
+          "fcnv3_first_byte_p50_ms": 105.440616,
+          "tuic_first_byte_p50_ms": 103.412231,
+          "first_byte_p50_ratio": 1.0196145560383472,
+          "first_byte_p95_ratio": 1.7079572980362638,
+          "total_p50_ratio": 1.2598261880703898,
+          "total_p95_ratio": 0.9311896374497184,
+          "fcnv3_aggregate_mbps": 1.2668815378668339,
+          "tuic_aggregate_mbps": 1.3355219000799958,
+          "throughput_ratio": 0.9486040908733504,
+          "payload_throughput_ratio": 0.9484393311844976,
+          "failed": 0
+        },
+        {
+          "block": 3,
+          "fcnv3_first_byte_p50_ms": 101.74,
+          "tuic_first_byte_p50_ms": 99.865461,
+          "first_byte_p50_ratio": 1.0187706438365112,
+          "first_byte_p95_ratio": 1.7954227986027713,
+          "total_p50_ratio": 1.22829691735798,
+          "total_p95_ratio": 1.4317964928649656,
+          "fcnv3_aggregate_mbps": 1.140865870694118,
+          "tuic_aggregate_mbps": 1.356378328979251,
+          "throughput_ratio": 0.8411118390196355,
+          "payload_throughput_ratio": 0.8411197100355124,
+          "failed": 0
+        }
+      ],
+      "paired_p50_ratios": {
+        "n": 3,
+        "p50": 1.0196145560383472,
+        "p95": 1.8548535655501128,
+        "mean": 1.3286810332717225,
+        "min": 1.0187706438365112,
+        "max": 1.9476578999403091
+      },
+      "paired_p95_ratios": {
+        "n": 3,
+        "p50": 1.7079572980362638,
+        "p95": 1.7866762485461205,
+        "mean": 1.646665590563547,
+        "min": 1.4366166750516056,
+        "max": 1.7954227986027713
+      },
+      "paired_throughput_ratios": {
+        "n": 3,
+        "p50": 0.9080573369230264,
+        "p95": 0.9445494154783179,
+        "mean": 0.8992577556053374,
+        "min": 0.8411118390196355,
+        "max": 0.9486040908733504
+      }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+goos: darwin
+goarch: arm64
+pkg: core/fastcatv3
+cpu: Apple M2
+BenchmarkIndependentLightWrite/1KiB-8         	37049643	        28.97 ns/op	35344.60 MB/s	       0 B/op	       0 allocs/op
+BenchmarkIndependentLightWrite/1KiB-8         	42466351	        28.11 ns/op	36431.67 MB/s	       0 B/op	       0 allocs/op
+BenchmarkIndependentLightWrite/1KiB-8         	43183588	        28.10 ns/op	36446.28 MB/s	       0 B/op	       0 allocs/op
+BenchmarkIndependentLightWrite/16KiB-8        	 4580340	       265.5 ns/op	61557.81 MB/s	       0 B/op	       0 allocs/op
+BenchmarkIndependentLightWrite/16KiB-8        	 4742577	       248.3 ns/op	65821.66 MB/s	       0 B/op	       0 allocs/op
+BenchmarkIndependentLightWrite/16KiB-8        	 4534262	       270.9 ns/op	60344.66 MB/s	       0 B/op	       0 allocs/op
+PASS
+ok  	core/fastcatv3	10.345s

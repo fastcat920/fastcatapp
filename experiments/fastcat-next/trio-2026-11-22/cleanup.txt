@@ -1,0 +1,1 @@
+Verified: Android VPN CONNECTED; stay_on_while_plugged_in=0. Lab ports19451/19454/19458 no longer listening. No fc-opt runtime dirs or binaries remain. Production TCP/UDP443 and18447 listening. Temporary phone test files and private configs removed by Lab context cleanup. No production app update, no default change.

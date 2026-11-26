@@ -1,0 +1,3 @@
+# fastcat/n1prototype [fastcat/n1prototype.test]
+./main.go:22:2: "os" imported and not used
+FAIL	fastcat/n1prototype [build failed]

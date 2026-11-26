@@ -1,0 +1,22 @@
+Running as unit: fc-opt-backend-1795367655.service; invocation ID: 05586a18a3ab442c941a2e1a3d43439f
+Running as unit: fc-opt-next-1795367655.service; invocation ID: c6e080399666472082a84d98a5db050d
+/tmp/fc-next-ecn-fixed/compare: 1 file pushed, 0 skipped. 32.7 MB/s (38889369 bytes in 1.133s)
+/tmp/fc-next-ecn-fixed/client-1795367655.json: 1 file pushed, 0 skipped. 3.6 MB/s (432 bytes in 0.000s)
+/etc/ssl/cert.pem: 1 file pushed, 0 skipped. 302.5 MB/s (333483 bytes in 0.001s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+/tmp/fc-next-ecn-fixed/ecn-client-1795367655.json: 1 file pushed, 0 skipped. 4.8 MB/s (609 bytes in 0.000s)
+COMPLETE android-default-b1-p1
+COMPLETE android-noecn-b1-p2
+COMPLETE android-noecn-b2-p1
+COMPLETE android-default-b2-p2
+COMPLETE android-default-b3-p1
+COMPLETE android-noecn-b3-p2
+COMPLETE android-noecn-b4-p1
+COMPLETE android-default-b4-p2
+COMPLETE android-default-b5-p1
+COMPLETE android-noecn-b5-p2
+COMPLETE android-noecn-b6-p1
+COMPLETE android-default-b6-p2
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+VPN restored: True
+ECN FIXED COMPLETE

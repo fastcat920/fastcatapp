@@ -1,0 +1,58 @@
+Running as unit: fc-opt-backend-1795364189.service; invocation ID: 5b678076b7be4a69bbacbb0463020f7e
+Running as unit: fc-opt-next-1795364189.service; invocation ID: 751a41dab28545859bd186a2fd278bc1
+/tmp/fc-next-reply/compare: 1 file pushed, 0 skipped. 30.1 MB/s (38888558 bytes in 1.233s)
+/tmp/fc-next-reply/client-1795364189.json: 1 file pushed, 0 skipped. 3.6 MB/s (432 bytes in 0.000s)
+/etc/ssl/cert.pem: 1 file pushed, 0 skipped. 126.6 MB/s (333483 bytes in 0.003s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+/tmp/fc-next-reply/reply-client-1795364189.json: 1 file pushed, 0 skipped. 5.5 MB/s (609 bytes in 0.000s)
+COMPLETE latency-baseline-b1-p1
+COMPLETE latency-coalesce5-b1-p2
+COMPLETE latency-coalesce5-b2-p1
+COMPLETE latency-baseline-b2-p2
+COMPLETE latency-baseline-b3-p1
+COMPLETE latency-coalesce5-b3-p2
+COMPLETE mixed-baseline-b1-p1
+COMPLETE mixed-coalesce5-b1-p2
+COMPLETE mixed-coalesce5-b2-p1
+COMPLETE mixed-baseline-b2-p2
+COMPLETE mixed-baseline-b3-p1
+COMPLETE mixed-coalesce5-b3-p2
+COMPLETE mixed-coalesce5-b4-p1
+COMPLETE mixed-baseline-b4-p2
+COMPLETE mixed-baseline-b5-p1
+COMPLETE mixed-coalesce5-b5-p2
+COMPLETE mixed-coalesce5-b6-p1
+COMPLETE mixed-baseline-b6-p2
+COMPLETE parallel-baseline-b1-p1
+COMPLETE parallel-coalesce5-b1-p2
+COMPLETE parallel-coalesce5-b2-p1
+COMPLETE parallel-baseline-b2-p2
+COMPLETE parallel-baseline-b3-p1
+COMPLETE parallel-coalesce5-b3-p2
+COMPLETE parallel-coalesce5-b4-p1
+COMPLETE parallel-baseline-b4-p2
+COMPLETE parallel-baseline-b5-p1
+COMPLETE parallel-coalesce5-b5-p2
+COMPLETE parallel-coalesce5-b6-p1
+COMPLETE parallel-baseline-b6-p2
+COMPLETE rolling-baseline-b1-p1
+COMPLETE rolling-coalesce5-b1-p2
+COMPLETE rolling-coalesce5-b2-p1
+COMPLETE rolling-baseline-b2-p2
+COMPLETE rolling-baseline-b3-p1
+COMPLETE rolling-coalesce5-b3-p2
+COMPLETE rolling-coalesce5-b4-p1
+COMPLETE rolling-baseline-b4-p2
+COMPLETE rolling-baseline-b5-p1
+COMPLETE rolling-coalesce5-b5-p2
+COMPLETE rolling-coalesce5-b6-p1
+COMPLETE rolling-baseline-b6-p2
+COMPLETE latency-baseline-b1-p1
+COMPLETE latency-coalesce5-b1-p2
+COMPLETE latency-coalesce5-b2-p1
+COMPLETE latency-baseline-b2-p2
+COMPLETE latency-baseline-b3-p1
+COMPLETE latency-coalesce5-b3-p2
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+VPN restored: True
+REPLY TESTS COMPLETE

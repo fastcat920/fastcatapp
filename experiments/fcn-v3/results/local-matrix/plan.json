@@ -1,0 +1,553 @@
+{
+  "jobs": [
+    {
+      "id": "cold-01-tuic",
+      "protocol": "tuic",
+      "phase": "cold",
+      "category": "cold",
+      "block": 1,
+      "bytes": 32768,
+      "count": 10,
+      "workers": 1
+    },
+    {
+      "id": "cold-01-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "cold",
+      "category": "cold",
+      "block": 1,
+      "bytes": 32768,
+      "count": 10,
+      "workers": 1
+    },
+    {
+      "id": "cold-02-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "cold",
+      "category": "cold",
+      "block": 2,
+      "bytes": 32768,
+      "count": 10,
+      "workers": 1
+    },
+    {
+      "id": "cold-02-tuic",
+      "protocol": "tuic",
+      "phase": "cold",
+      "category": "cold",
+      "block": 2,
+      "bytes": 32768,
+      "count": 10,
+      "workers": 1
+    },
+    {
+      "id": "cold-03-tuic",
+      "protocol": "tuic",
+      "phase": "cold",
+      "category": "cold",
+      "block": 3,
+      "bytes": 32768,
+      "count": 10,
+      "workers": 1
+    },
+    {
+      "id": "cold-03-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "cold",
+      "category": "cold",
+      "block": 3,
+      "bytes": 32768,
+      "count": 10,
+      "workers": 1
+    },
+    {
+      "id": "warm-01-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "warm",
+      "category": "warm",
+      "block": 1,
+      "bytes": 32768,
+      "count": 20,
+      "workers": 1
+    },
+    {
+      "id": "warm-01-tuic",
+      "protocol": "tuic",
+      "phase": "warm",
+      "category": "warm",
+      "block": 1,
+      "bytes": 32768,
+      "count": 20,
+      "workers": 1
+    },
+    {
+      "id": "warm-02-tuic",
+      "protocol": "tuic",
+      "phase": "warm",
+      "category": "warm",
+      "block": 2,
+      "bytes": 32768,
+      "count": 20,
+      "workers": 1
+    },
+    {
+      "id": "warm-02-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "warm",
+      "category": "warm",
+      "block": 2,
+      "bytes": 32768,
+      "count": 20,
+      "workers": 1
+    },
+    {
+      "id": "warm-03-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "warm",
+      "category": "warm",
+      "block": 3,
+      "bytes": 32768,
+      "count": 20,
+      "workers": 1
+    },
+    {
+      "id": "warm-03-tuic",
+      "protocol": "tuic",
+      "phase": "warm",
+      "category": "warm",
+      "block": 3,
+      "bytes": 32768,
+      "count": 20,
+      "workers": 1
+    },
+    {
+      "id": "concurrent-01-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "concurrent",
+      "category": "concurrent",
+      "block": 1,
+      "bytes": 131072,
+      "count": 16,
+      "workers": 4
+    },
+    {
+      "id": "concurrent-01-tuic",
+      "protocol": "tuic",
+      "phase": "concurrent",
+      "category": "concurrent",
+      "block": 1,
+      "bytes": 131072,
+      "count": 16,
+      "workers": 4
+    },
+    {
+      "id": "concurrent-02-tuic",
+      "protocol": "tuic",
+      "phase": "concurrent",
+      "category": "concurrent",
+      "block": 2,
+      "bytes": 131072,
+      "count": 16,
+      "workers": 4
+    },
+    {
+      "id": "concurrent-02-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "concurrent",
+      "category": "concurrent",
+      "block": 2,
+      "bytes": 131072,
+      "count": 16,
+      "workers": 4
+    },
+    {
+      "id": "concurrent-03-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "concurrent",
+      "category": "concurrent",
+      "block": 3,
+      "bytes": 131072,
+      "count": 16,
+      "workers": 4
+    },
+    {
+      "id": "concurrent-03-tuic",
+      "protocol": "tuic",
+      "phase": "concurrent",
+      "category": "concurrent",
+      "block": 3,
+      "bytes": 131072,
+      "count": 16,
+      "workers": 4
+    },
+    {
+      "id": "single_download-01-tuic",
+      "protocol": "tuic",
+      "phase": "download",
+      "category": "single_download",
+      "block": 1,
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "single_download-01-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "download",
+      "category": "single_download",
+      "block": 1,
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "single_download-02-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "download",
+      "category": "single_download",
+      "block": 2,
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "single_download-02-tuic",
+      "protocol": "tuic",
+      "phase": "download",
+      "category": "single_download",
+      "block": 2,
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "single_download-03-tuic",
+      "protocol": "tuic",
+      "phase": "download",
+      "category": "single_download",
+      "block": 3,
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "single_download-03-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "download",
+      "category": "single_download",
+      "block": 3,
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "single_download-04-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "download",
+      "category": "single_download",
+      "block": 4,
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "single_download-04-tuic",
+      "protocol": "tuic",
+      "phase": "download",
+      "category": "single_download",
+      "block": 4,
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "single_download-05-tuic",
+      "protocol": "tuic",
+      "phase": "download",
+      "category": "single_download",
+      "block": 5,
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "single_download-05-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "download",
+      "category": "single_download",
+      "block": 5,
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "single_download-06-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "download",
+      "category": "single_download",
+      "block": 6,
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "single_download-06-tuic",
+      "protocol": "tuic",
+      "phase": "download",
+      "category": "single_download",
+      "block": 6,
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "parallel_download-01-tuic",
+      "protocol": "tuic",
+      "phase": "download",
+      "category": "parallel_download",
+      "block": 1,
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4
+    },
+    {
+      "id": "parallel_download-01-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "download",
+      "category": "parallel_download",
+      "block": 1,
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4
+    },
+    {
+      "id": "parallel_download-02-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "download",
+      "category": "parallel_download",
+      "block": 2,
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4
+    },
+    {
+      "id": "parallel_download-02-tuic",
+      "protocol": "tuic",
+      "phase": "download",
+      "category": "parallel_download",
+      "block": 2,
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4
+    },
+    {
+      "id": "parallel_download-03-tuic",
+      "protocol": "tuic",
+      "phase": "download",
+      "category": "parallel_download",
+      "block": 3,
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4
+    },
+    {
+      "id": "parallel_download-03-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "download",
+      "category": "parallel_download",
+      "block": 3,
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4
+    },
+    {
+      "id": "parallel_download-04-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "download",
+      "category": "parallel_download",
+      "block": 4,
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4
+    },
+    {
+      "id": "parallel_download-04-tuic",
+      "protocol": "tuic",
+      "phase": "download",
+      "category": "parallel_download",
+      "block": 4,
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4
+    },
+    {
+      "id": "parallel_download-05-tuic",
+      "protocol": "tuic",
+      "phase": "download",
+      "category": "parallel_download",
+      "block": 5,
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4
+    },
+    {
+      "id": "parallel_download-05-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "download",
+      "category": "parallel_download",
+      "block": 5,
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4
+    },
+    {
+      "id": "parallel_download-06-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "download",
+      "category": "parallel_download",
+      "block": 6,
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4
+    },
+    {
+      "id": "parallel_download-06-tuic",
+      "protocol": "tuic",
+      "phase": "download",
+      "category": "parallel_download",
+      "block": 6,
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4
+    },
+    {
+      "id": "upload-01-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "upload",
+      "category": "upload",
+      "block": 1,
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "upload-01-tuic",
+      "protocol": "tuic",
+      "phase": "upload",
+      "category": "upload",
+      "block": 1,
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "upload-02-tuic",
+      "protocol": "tuic",
+      "phase": "upload",
+      "category": "upload",
+      "block": 2,
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "upload-02-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "upload",
+      "category": "upload",
+      "block": 2,
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "upload-03-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "upload",
+      "category": "upload",
+      "block": 3,
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "upload-03-tuic",
+      "protocol": "tuic",
+      "phase": "upload",
+      "category": "upload",
+      "block": 3,
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "upload-04-tuic",
+      "protocol": "tuic",
+      "phase": "upload",
+      "category": "upload",
+      "block": 4,
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "upload-04-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "upload",
+      "category": "upload",
+      "block": 4,
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "upload-05-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "upload",
+      "category": "upload",
+      "block": 5,
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "upload-05-tuic",
+      "protocol": "tuic",
+      "phase": "upload",
+      "category": "upload",
+      "block": 5,
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "upload-06-tuic",
+      "protocol": "tuic",
+      "phase": "upload",
+      "category": "upload",
+      "block": 6,
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "id": "upload-06-fcnv3",
+      "protocol": "fcnv3",
+      "phase": "upload",
+      "category": "upload",
+      "block": 6,
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1
+    }
+  ],
+  "name": "FCN v3 Phase 1",
+  "network": "macOS IPv4 loopback",
+  "endpoint_name": "zlhk.fastcat.lol",
+  "seed": 20261125,
+  "gates": {
+    "p50_max": 1.1,
+    "p95_max": 1.15,
+    "download_min": 0.9
+  }
+}

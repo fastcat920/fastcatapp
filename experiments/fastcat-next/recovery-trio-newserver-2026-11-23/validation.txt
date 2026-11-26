@@ -1,0 +1,7 @@
+PASS: 183 measured cases + 6 preflight cases; unique timeline names. Original rolling only3blocks, separate small rolling6blocks.
+PASS: expected cold/warm/batch counts; single,4way,8way,small rolling complete files; all mixed/web foreground and background completed; echo and idle successful.
+RETAINED FAILURES: original large rolling contains partial Next downloads and two TUIC180s harness deadlines with no final completion observation; unknown bytes credited0, wait retained. No replacement reruns.
+PASS:3 direct HTTPS controls matched full4MiB expected SHA256.
+PASS: all three frozen binary SHA256 unchanged; protocol core .go source unchanged. Measurement comparator prior race/vet logs included.
+PASS: VPS test listeners/units/files removed, temporary cert/key and hosts mapping deleted; Android test dirs gone, VPN CONNECTED, keepawake restored0.
+SCOPE: same Android native Wi-Fi core, not full App/TUN, multiple networks or battery. Common bandwidth changed mid-run; cohorts not pooled.

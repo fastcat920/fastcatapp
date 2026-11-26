@@ -1,0 +1,343 @@
+package main
+
+import (
+	"bufio"
+	"context"
+	"crypto/rand"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"net/url"
+	"os"
+	"strconv"
+	"time"
+)
+
+type workload struct {
+	N     int `json:"n"`
+	Chunk int `json:"chunk"`
+	GapMS int `json:"gap_ms"`
+}
+
+func (w workload) validate() error {
+	return w.validateLimit(1048576)
+}
+func (w workload) validateLimit(limit int) error {
+	if w.N < 1 || w.N > limit || w.Chunk < 1 || w.Chunk > 16384 || w.GapMS < 0 || w.GapMS > 50 || int64((w.N+w.Chunk-1)/w.Chunk-1)*int64(w.GapMS) > 3000 {
+		return fmt.Errorf("invalid bounded workload")
+	}
+	return nil
+}
+func parseWorkload(q url.Values) (workload, error) {
+	return parseWorkloadLimit(q, 1048576)
+}
+func parseWorkloadLimit(q url.Values, limit int) (workload, error) {
+	w := workload{N: 32768, Chunk: 16384}
+	for key, dst := range map[string]*int{"n": &w.N, "chunk": &w.Chunk, "gap_ms": &w.GapMS} {
+		if s := q.Get(key); s != "" {
+			v, e := strconv.Atoi(s)
+			if e != nil {
+				return w, e
+			}
+			*dst = v
+		}
+	}
+	return w, w.validateLimit(limit)
+}
+func servePattern(w http.ResponseWriter, r *http.Request, s workload, stream bool) error {
+	w.Header().Set("Content-Type", "application/octet-stream")
+	if !stream {
+		w.Header().Set("Content-Length", strconv.Itoa(s.N))
+	}
+	b := make([]byte, s.Chunk)
+	offset := 0
+	for offset < s.N {
+		n := s.N - offset
+		if n > len(b) {
+			n = len(b)
+		}
+		for i := 0; i < n; i++ {
+			b[i] = byte((offset + i) % 251)
+		}
+		if _, e := w.Write(b[:n]); e != nil {
+			return e
+		}
+		offset += n
+		if stream || s.GapMS > 0 {
+			if e := http.NewResponseController(w).Flush(); e != nil {
+				return e
+			}
+		}
+		if s.GapMS > 0 && offset < s.N {
+			timer := time.NewTimer(time.Duration(s.GapMS) * time.Millisecond)
+			select {
+			case <-r.Context().Done():
+				timer.Stop()
+				return r.Context().Err()
+			case <-timer.C:
+			}
+		}
+	}
+	return nil
+}
+func publicRPC(w http.ResponseWriter, r *http.Request) {
+	if r.Method != "POST" {
+		unavailable(w, r)
+		return
+	}
+	rc := http.NewResponseController(w)
+	if e := rc.EnableFullDuplex(); e != nil {
+		http.Error(w, "Unavailable", 503)
+		return
+	}
+	rc.SetReadDeadline(time.Now().Add(5 * time.Second))
+	rc.SetWriteDeadline(time.Now().Add(30 * time.Second))
+	w.Header().Set("Content-Type", "application/octet-stream")
+	w.WriteHeader(200)
+	rc.Flush()
+	var s workload
+	r.Body = http.MaxBytesReader(w, r.Body, 512)
+	if e := json.NewDecoder(r.Body).Decode(&s); e != nil || s.validate() != nil {
+		return
+	}
+	if _, e := io.Copy(io.Discard, r.Body); e != nil {
+		return
+	}
+	rc.SetReadDeadline(time.Time{})
+	servePattern(w, r, s, true)
+}
+func verifyPattern(r io.Reader, size int, first ...func()) error {
+	b := make([]byte, 8192)
+	offset := 0
+	limited := io.LimitReader(r, int64(size)+1)
+	for {
+		n, e := limited.Read(b)
+		if offset == 0 && n > 0 && len(first) > 0 {
+			first[0]()
+		}
+		for i := 0; i < n; i++ {
+			if offset+i >= size || b[i] != byte((offset+i)%251) {
+				return fmt.Errorf("payload mismatch at byte %d", offset+i)
+			}
+		}
+		offset += n
+		if e == io.EOF {
+			break
+		}
+		if e != nil {
+			return e
+		}
+	}
+	if offset != size {
+		return fmt.Errorf("payload length %d expected %d", offset, size)
+	}
+	return nil
+}
+func observeTLSClose(c interface {
+	CloseWrite() error
+	Read([]byte) (int, error)
+}) error {
+	if e := c.CloseWrite(); e != nil {
+		return e
+	}
+	var extra [1]byte
+	if n, e := io.ReadFull(c, extra[:]); n != 0 || e != io.EOF {
+		return endingError("TLS ending", n, e)
+	}
+	return nil
+}
+func runWorkload(cfg settings, target, kind string, s workload) error {
+	row, err := executeWorkload(cfg, target, kind, s, 30*time.Second)
+	if row != nil {
+		json.NewEncoder(os.Stdout).Encode(row)
+	}
+	return err
+}
+func executeWorkload(cfg settings, target, kind string, s workload, budget time.Duration) (map[string]any, error) {
+	limit := 1048576
+	if kind == "n1" || kind == "matched-n1" {
+		limit = 32 * 1048576
+	}
+	if e := s.validateLimit(limit); e != nil {
+		return nil, e
+	}
+	started := time.Now()
+	deadline := started.Add(budget)
+	ctx, cancel := context.WithDeadline(context.Background(), deadline)
+	defer cancel()
+	trace := newEntryTrace()
+	ctx = context.WithValue(ctx, traceContextKey{}, trace)
+	var response *http.Response
+	var e error
+	var tunnelClient *tunnel
+	var responseReader *bufio.Reader
+	row := map[string]any{"kind": kind, "bytes": s.N, "chunk": s.Chunk, "gap_ms": s.GapMS}
+	row["header_kind"] = "application-response"
+	if kind == "rpc" {
+		row["header_kind"] = "early-rpc-ack"
+	}
+	firstPayload := func() { row["first_payload_ms"] = float64(time.Since(started).Microseconds()) / 1000 }
+	if kind == "matched-n1" {
+		kind = "n1"
+		cfg.ClientEmission = "coalesced"
+		row["kind"] = "matched-n1"
+	}
+	if kind == "n1" {
+		var observe func(writeEvent)
+		if row["kind"] == "matched-n1" {
+			var writes []writeEvent
+			observe = func(v writeEvent) { writes = append(writes, v); row["request_writes"] = writes }
+		}
+		tunnelClient, e = dialObserved(ctx, cfg, target, observe)
+		if e == nil {
+			defer tunnelClient.Close()
+			tunnelClient.deadline = deadline
+			tunnelClient.conn.SetDeadline(deadline)
+			trace.begin("target_request")
+			request := fmt.Sprintf("GET /bytes?n=%d&chunk=%d&gap_ms=%d HTTP/1.1\r\nHost: origin\r\nConnection: close\r\n\r\n", s.N, s.Chunk, s.GapMS)
+			_, e = io.WriteString(tunnelClient, request)
+			if e == nil {
+				responseReader = bufio.NewReader(tunnelClient)
+				trace.begin("target_headers")
+				response, e = http.ReadResponse(responseReader, nil)
+			}
+		}
+	} else if kind == "get" || kind == "rpc" {
+		c, _, _, err := connectTLS(ctx, cfg, trace)
+		e = err
+		if e == nil {
+			defer c.Close()
+			c.SetDeadline(deadline)
+			var cookie [72]byte
+			if _, e = rand.Read(cookie[:]); e != nil {
+				return nil, e
+			}
+			responseReader = bufio.NewReader(c)
+			if kind == "get" {
+				request := fmt.Sprintf("GET /assets/sample.bin?n=%d&chunk=%d&gap_ms=%d&stream=1 HTTP/1.1\r\nHost: %s\r\nUser-Agent: Go-http-client/1.1\r\nCookie: session=%s\r\nConnection: close\r\n\r\n", s.N, s.Chunk, s.GapMS, cfg.Name, base64.RawURLEncoding.EncodeToString(cookie[:]))
+				_, e = io.WriteString(c, request)
+				if e == nil {
+					response, e = http.ReadResponse(responseReader, nil)
+				}
+				row["first_response_headers_ms"] = float64(time.Since(started).Microseconds()) / 1000
+			} else {
+				reader, writer := io.Pipe()
+				defer writer.Close()
+				request, _ := http.NewRequest("POST", "https://"+cfg.Name+"/api/sample-stream", reader)
+				request.Header.Set("Content-Type", "application/octet-stream")
+				request.AddCookie(&http.Cookie{Name: "session", Value: base64.RawURLEncoding.EncodeToString(cookie[:])})
+				done := make(chan error, 1)
+				go func() {
+					err := request.Write(c)
+					if err != nil {
+						writer.CloseWithError(err)
+						c.Close()
+					}
+					done <- err
+				}()
+				response, e = http.ReadResponse(responseReader, request)
+				row["first_response_headers_ms"] = float64(time.Since(started).Microseconds()) / 1000
+				if e == nil {
+					e = json.NewEncoder(writer).Encode(s)
+					writer.CloseWithError(e)
+					if end := <-done; e == nil {
+						e = end
+					}
+				}
+			}
+			if e == nil {
+				if response.StatusCode != 200 {
+					e = fmt.Errorf("HTTP %d", response.StatusCode)
+				} else {
+					trace.begin("body")
+					response.Body = &progressReadCloser{ReadCloser: response.Body, t: trace}
+					bodyStarted := time.Now()
+					e = verifyPattern(response.Body, s.N, firstPayload)
+					bodyMS := float64(time.Since(bodyStarted).Microseconds()) / 1000
+					row["payload_read_ms"] = bodyMS
+					if e == nil && bodyMS > 0 {
+						row["payload_read_mbps"] = float64(s.N) * 8 / (bodyMS * 1000)
+					}
+				}
+				if e == nil {
+					row["payload_verified"] = true
+				}
+				response.Body.Close()
+			}
+			if e == nil {
+				trace.begin("tls_close")
+				e = observeTLSClose(c)
+			}
+		}
+	} else {
+		return nil, fmt.Errorf("unknown workload kind")
+	}
+	if kind == "n1" {
+		row["first_response_headers_ms"] = float64(time.Since(started).Microseconds()) / 1000
+		if e == nil {
+			if response.StatusCode != 200 {
+				e = fmt.Errorf("HTTP %d", response.StatusCode)
+			} else {
+				trace.begin("body")
+				response.Body = &progressReadCloser{ReadCloser: response.Body, t: trace}
+				bodyStarted := time.Now()
+				e = verifyPattern(response.Body, s.N, firstPayload)
+				bodyMS := float64(time.Since(bodyStarted).Microseconds()) / 1000
+				row["payload_read_ms"] = bodyMS
+				if e == nil && bodyMS > 0 {
+					row["payload_read_mbps"] = float64(s.N) * 8 / (bodyMS * 1000)
+				}
+			}
+			if e == nil {
+				row["payload_verified"] = true
+			}
+			response.Body.Close()
+		}
+		if e != nil {
+			trace.fail()
+		}
+		if e == nil {
+			trace.begin("upload_fin")
+			e = tunnelClient.CloseWrite()
+			if e == nil {
+				row["upload_fin_written"] = true
+			}
+		}
+		if e == nil {
+			trace.begin("download_fin")
+			var extra [1]byte
+			if n, end := io.ReadFull(responseReader, extra[:]); n != 0 || end != io.EOF {
+				e = endingError("N1 FIN", n, end)
+			} else {
+				row["stream_fin_verified"] = true
+			}
+		}
+		if e != nil {
+			trace.fail()
+		}
+		if tunnelClient != nil {
+			trace.begin("outer_http_tls_close")
+			if end := tunnelClient.Close(); e == nil {
+				e = end
+			}
+		}
+	}
+	if tunnelClient != nil {
+		row["outer_http_eof_verified"] = tunnelClient.outerVerified
+		row["shutdown_eof_observed"] = tunnelClient.tlsEOF
+	}
+	row["full_lifecycle_verified"] = e == nil
+	row["full_request_ms"] = float64(time.Since(started).Microseconds()) / 1000
+	if e != nil {
+		trace.fail()
+		row["error"] = e.Error()
+		row["error_category"] = errorCategory(e)
+	} else {
+		row["payload_verified"] = true
+		row["shutdown_eof_observed"] = true
+	}
+	row["trace"] = trace.snapshot()
+	return row, e
+}

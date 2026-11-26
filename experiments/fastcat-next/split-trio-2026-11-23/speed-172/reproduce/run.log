@@ -1,0 +1,192 @@
+Running as unit: fc-opt-backend-1795427914.service; invocation ID: 014d276cb9034f378ee8494d74bf5154
+/tmp/fc-split-speed/compare: 1 file pushed, 0 skipped. 28.4 MB/s (38898266 bytes in 1.305s)
+/tmp/fc-split-speed/client-1795427914.json: 1 file pushed, 0 skipped. 0.4 MB/s (422 bytes in 0.001s)
+/tmp/fc-split-speed/ca.pem: 1 file pushed, 0 skipped. 168.7 MB/s (334634 bytes in 0.002s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+/tmp/fc-split-speed/pilot-ports1-1795427914.json: 1 file pushed, 0 skipped. 6.1 MB/s (747 bytes in 0.000s)
+COMPLETE pilot-ports1
+/tmp/fc-split-speed/pilot-ports2-1795427914.json: 1 file pushed, 0 skipped. 8.8 MB/s (747 bytes in 0.000s)
+COMPLETE pilot-ports2
+/tmp/fc-split-speed/single64-b1-p1-next-opt-1795427914.json: 1 file pushed, 0 skipped. 7.6 MB/s (747 bytes in 0.000s)
+COMPLETE single64-b1-p1-next-opt
+/tmp/fc-split-speed/single64-b1-p2-next-base-1795427914.json: 1 file pushed, 0 skipped. 6.2 MB/s (747 bytes in 0.000s)
+COMPLETE single64-b1-p2-next-base
+/tmp/fc-split-speed/single64-b1-p3-tuic-1795427914.json: 1 file pushed, 0 skipped. 6.9 MB/s (747 bytes in 0.000s)
+COMPLETE single64-b1-p3-tuic
+/tmp/fc-split-speed/single64-b2-p1-next-opt-1795427914.json: 1 file pushed, 0 skipped. 6.4 MB/s (747 bytes in 0.000s)
+COMPLETE single64-b2-p1-next-opt
+/tmp/fc-split-speed/single64-b2-p2-tuic-1795427914.json: 1 file pushed, 0 skipped. 7.0 MB/s (747 bytes in 0.000s)
+COMPLETE single64-b2-p2-tuic
+/tmp/fc-split-speed/single64-b2-p3-next-base-1795427914.json: 1 file pushed, 0 skipped. 6.1 MB/s (747 bytes in 0.000s)
+COMPLETE single64-b2-p3-next-base
+/tmp/fc-split-speed/single64-b3-p1-next-base-1795427914.json: 1 file pushed, 0 skipped. 7.0 MB/s (747 bytes in 0.000s)
+COMPLETE single64-b3-p1-next-base
+/tmp/fc-split-speed/single64-b3-p2-next-opt-1795427914.json: 1 file pushed, 0 skipped. 6.6 MB/s (747 bytes in 0.000s)
+COMPLETE single64-b3-p2-next-opt
+/tmp/fc-split-speed/single64-b3-p3-tuic-1795427914.json: 1 file pushed, 0 skipped. 5.4 MB/s (747 bytes in 0.000s)
+COMPLETE single64-b3-p3-tuic
+/tmp/fc-split-speed/single64-b4-p1-next-base-1795427914.json: 1 file pushed, 0 skipped. 5.5 MB/s (747 bytes in 0.000s)
+COMPLETE single64-b4-p1-next-base
+/tmp/fc-split-speed/single64-b4-p2-tuic-1795427914.json: 1 file pushed, 0 skipped. 4.3 MB/s (747 bytes in 0.000s)
+COMPLETE single64-b4-p2-tuic
+/tmp/fc-split-speed/single64-b4-p3-next-opt-1795427914.json: 1 file pushed, 0 skipped. 6.7 MB/s (747 bytes in 0.000s)
+COMPLETE single64-b4-p3-next-opt
+/tmp/fc-split-speed/single64-b5-p1-tuic-1795427914.json: 1 file pushed, 0 skipped. 5.8 MB/s (747 bytes in 0.000s)
+COMPLETE single64-b5-p1-tuic
+/tmp/fc-split-speed/single64-b5-p2-next-opt-1795427914.json: 1 file pushed, 0 skipped. 5.8 MB/s (747 bytes in 0.000s)
+COMPLETE single64-b5-p2-next-opt
+/tmp/fc-split-speed/single64-b5-p3-next-base-1795427914.json: 1 file pushed, 0 skipped. 5.5 MB/s (747 bytes in 0.000s)
+COMPLETE single64-b5-p3-next-base
+/tmp/fc-split-speed/single64-b6-p1-tuic-1795427914.json: 1 file pushed, 0 skipped. 6.4 MB/s (747 bytes in 0.000s)
+COMPLETE single64-b6-p1-tuic
+/tmp/fc-split-speed/single64-b6-p2-next-base-1795427914.json: 1 file pushed, 0 skipped. 6.3 MB/s (747 bytes in 0.000s)
+COMPLETE single64-b6-p2-next-base
+/tmp/fc-split-speed/single64-b6-p3-next-opt-1795427914.json: 1 file pushed, 0 skipped. 5.0 MB/s (747 bytes in 0.000s)
+COMPLETE single64-b6-p3-next-opt
+/tmp/fc-split-speed/parallel4-b1-p1-next-opt-1795427914.json: 1 file pushed, 0 skipped. 7.5 MB/s (747 bytes in 0.000s)
+COMPLETE parallel4-b1-p1-next-opt
+/tmp/fc-split-speed/parallel4-b1-p2-next-base-1795427914.json: 1 file pushed, 0 skipped. 6.0 MB/s (747 bytes in 0.000s)
+COMPLETE parallel4-b1-p2-next-base
+/tmp/fc-split-speed/parallel4-b1-p3-tuic-1795427914.json: 1 file pushed, 0 skipped. 6.7 MB/s (747 bytes in 0.000s)
+COMPLETE parallel4-b1-p3-tuic
+/tmp/fc-split-speed/parallel4-b2-p1-next-opt-1795427914.json: 1 file pushed, 0 skipped. 6.8 MB/s (747 bytes in 0.000s)
+COMPLETE parallel4-b2-p1-next-opt
+/tmp/fc-split-speed/parallel4-b2-p2-tuic-1795427914.json: 1 file pushed, 0 skipped. 6.3 MB/s (747 bytes in 0.000s)
+COMPLETE parallel4-b2-p2-tuic
+/tmp/fc-split-speed/parallel4-b2-p3-next-base-1795427914.json: 1 file pushed, 0 skipped. 5.6 MB/s (747 bytes in 0.000s)
+COMPLETE parallel4-b2-p3-next-base
+/tmp/fc-split-speed/parallel4-b3-p1-next-base-1795427914.json: 1 file pushed, 0 skipped. 5.6 MB/s (747 bytes in 0.000s)
+COMPLETE parallel4-b3-p1-next-base
+/tmp/fc-split-speed/parallel4-b3-p2-next-opt-1795427914.json: 1 file pushed, 0 skipped. 6.3 MB/s (747 bytes in 0.000s)
+COMPLETE parallel4-b3-p2-next-opt
+/tmp/fc-split-speed/parallel4-b3-p3-tuic-1795427914.json: 1 file pushed, 0 skipped. 5.1 MB/s (747 bytes in 0.000s)
+COMPLETE parallel4-b3-p3-tuic
+/tmp/fc-split-speed/parallel4-b4-p1-next-base-1795427914.json: 1 file pushed, 0 skipped. 11.9 MB/s (747 bytes in 0.000s)
+COMPLETE parallel4-b4-p1-next-base
+/tmp/fc-split-speed/parallel4-b4-p2-tuic-1795427914.json: 1 file pushed, 0 skipped. 6.9 MB/s (747 bytes in 0.000s)
+COMPLETE parallel4-b4-p2-tuic
+/tmp/fc-split-speed/parallel4-b4-p3-next-opt-1795427914.json: 1 file pushed, 0 skipped. 5.9 MB/s (747 bytes in 0.000s)
+COMPLETE parallel4-b4-p3-next-opt
+/tmp/fc-split-speed/parallel4-b5-p1-tuic-1795427914.json: 1 file pushed, 0 skipped. 8.0 MB/s (747 bytes in 0.000s)
+COMPLETE parallel4-b5-p1-tuic
+/tmp/fc-split-speed/parallel4-b5-p2-next-opt-1795427914.json: 1 file pushed, 0 skipped. 5.8 MB/s (747 bytes in 0.000s)
+COMPLETE parallel4-b5-p2-next-opt
+/tmp/fc-split-speed/parallel4-b5-p3-next-base-1795427914.json: 1 file pushed, 0 skipped. 6.8 MB/s (747 bytes in 0.000s)
+COMPLETE parallel4-b5-p3-next-base
+/tmp/fc-split-speed/parallel4-b6-p1-tuic-1795427914.json: 1 file pushed, 0 skipped. 6.9 MB/s (747 bytes in 0.000s)
+COMPLETE parallel4-b6-p1-tuic
+/tmp/fc-split-speed/parallel4-b6-p2-next-base-1795427914.json: 1 file pushed, 0 skipped. 7.4 MB/s (747 bytes in 0.000s)
+COMPLETE parallel4-b6-p2-next-base
+/tmp/fc-split-speed/parallel4-b6-p3-next-opt-1795427914.json: 1 file pushed, 0 skipped. 6.0 MB/s (747 bytes in 0.000s)
+COMPLETE parallel4-b6-p3-next-opt
+/tmp/fc-split-speed/parallel8-b1-p1-next-opt-1795427914.json: 1 file pushed, 0 skipped. 6.4 MB/s (747 bytes in 0.000s)
+COMPLETE parallel8-b1-p1-next-opt
+/tmp/fc-split-speed/parallel8-b1-p2-next-base-1795427914.json: 1 file pushed, 0 skipped. 6.1 MB/s (747 bytes in 0.000s)
+COMPLETE parallel8-b1-p2-next-base
+/tmp/fc-split-speed/parallel8-b1-p3-tuic-1795427914.json: 1 file pushed, 0 skipped. 6.3 MB/s (747 bytes in 0.000s)
+COMPLETE parallel8-b1-p3-tuic
+/tmp/fc-split-speed/parallel8-b2-p1-next-opt-1795427914.json: 1 file pushed, 0 skipped. 7.4 MB/s (747 bytes in 0.000s)
+COMPLETE parallel8-b2-p1-next-opt
+/tmp/fc-split-speed/parallel8-b2-p2-tuic-1795427914.json: 1 file pushed, 0 skipped. 6.3 MB/s (747 bytes in 0.000s)
+COMPLETE parallel8-b2-p2-tuic
+/tmp/fc-split-speed/parallel8-b2-p3-next-base-1795427914.json: 1 file pushed, 0 skipped. 6.0 MB/s (747 bytes in 0.000s)
+COMPLETE parallel8-b2-p3-next-base
+/tmp/fc-split-speed/parallel8-b3-p1-next-base-1795427914.json: 1 file pushed, 0 skipped. 6.0 MB/s (747 bytes in 0.000s)
+COMPLETE parallel8-b3-p1-next-base
+/tmp/fc-split-speed/parallel8-b3-p2-next-opt-1795427914.json: 1 file pushed, 0 skipped. 5.6 MB/s (747 bytes in 0.000s)
+COMPLETE parallel8-b3-p2-next-opt
+/tmp/fc-split-speed/parallel8-b3-p3-tuic-1795427914.json: 1 file pushed, 0 skipped. 5.5 MB/s (747 bytes in 0.000s)
+COMPLETE parallel8-b3-p3-tuic
+/tmp/fc-split-speed/parallel8-b4-p1-next-base-1795427914.json: 1 file pushed, 0 skipped. 6.4 MB/s (747 bytes in 0.000s)
+COMPLETE parallel8-b4-p1-next-base
+/tmp/fc-split-speed/parallel8-b4-p2-tuic-1795427914.json: 1 file pushed, 0 skipped. 5.9 MB/s (747 bytes in 0.000s)
+COMPLETE parallel8-b4-p2-tuic
+/tmp/fc-split-speed/parallel8-b4-p3-next-opt-1795427914.json: 1 file pushed, 0 skipped. 5.4 MB/s (747 bytes in 0.000s)
+COMPLETE parallel8-b4-p3-next-opt
+/tmp/fc-split-speed/parallel8-b5-p1-tuic-1795427914.json: 1 file pushed, 0 skipped. 6.1 MB/s (747 bytes in 0.000s)
+COMPLETE parallel8-b5-p1-tuic
+/tmp/fc-split-speed/parallel8-b5-p2-next-opt-1795427914.json: 1 file pushed, 0 skipped. 5.1 MB/s (747 bytes in 0.000s)
+COMPLETE parallel8-b5-p2-next-opt
+/tmp/fc-split-speed/parallel8-b5-p3-next-base-1795427914.json: 1 file pushed, 0 skipped. 8.6 MB/s (747 bytes in 0.000s)
+COMPLETE parallel8-b5-p3-next-base
+/tmp/fc-split-speed/parallel8-b6-p1-tuic-1795427914.json: 1 file pushed, 0 skipped. 6.1 MB/s (747 bytes in 0.000s)
+COMPLETE parallel8-b6-p1-tuic
+/tmp/fc-split-speed/parallel8-b6-p2-next-base-1795427914.json: 1 file pushed, 0 skipped. 6.3 MB/s (747 bytes in 0.000s)
+COMPLETE parallel8-b6-p2-next-base
+/tmp/fc-split-speed/parallel8-b6-p3-next-opt-1795427914.json: 1 file pushed, 0 skipped. 6.5 MB/s (747 bytes in 0.000s)
+COMPLETE parallel8-b6-p3-next-opt
+/tmp/fc-split-speed/rolling-b1-p1-next-opt-1795427914.json: 1 file pushed, 0 skipped. 5.4 MB/s (747 bytes in 0.000s)
+COMPLETE rolling-b1-p1-next-opt
+/tmp/fc-split-speed/rolling-b1-p2-next-base-1795427914.json: 1 file pushed, 0 skipped. 5.5 MB/s (747 bytes in 0.000s)
+COMPLETE rolling-b1-p2-next-base
+/tmp/fc-split-speed/rolling-b1-p3-tuic-1795427914.json: 1 file pushed, 0 skipped. 6.8 MB/s (747 bytes in 0.000s)
+COMPLETE rolling-b1-p3-tuic
+/tmp/fc-split-speed/rolling-b2-p1-next-opt-1795427914.json: 1 file pushed, 0 skipped. 6.5 MB/s (747 bytes in 0.000s)
+COMPLETE rolling-b2-p1-next-opt
+/tmp/fc-split-speed/rolling-b2-p2-tuic-1795427914.json: 1 file pushed, 0 skipped. 6.5 MB/s (747 bytes in 0.000s)
+COMPLETE rolling-b2-p2-tuic
+/tmp/fc-split-speed/rolling-b2-p3-next-base-1795427914.json: 1 file pushed, 0 skipped. 8.6 MB/s (747 bytes in 0.000s)
+COMPLETE rolling-b2-p3-next-base
+/tmp/fc-split-speed/rolling-b3-p1-next-base-1795427914.json: 1 file pushed, 0 skipped. 5.9 MB/s (747 bytes in 0.000s)
+COMPLETE rolling-b3-p1-next-base
+/tmp/fc-split-speed/rolling-b3-p2-next-opt-1795427914.json: 1 file pushed, 0 skipped. 6.2 MB/s (747 bytes in 0.000s)
+COMPLETE rolling-b3-p2-next-opt
+/tmp/fc-split-speed/rolling-b3-p3-tuic-1795427914.json: 1 file pushed, 0 skipped. 6.3 MB/s (747 bytes in 0.000s)
+COMPLETE rolling-b3-p3-tuic
+/tmp/fc-split-speed/rolling-b4-p1-next-base-1795427914.json: 1 file pushed, 0 skipped. 6.7 MB/s (747 bytes in 0.000s)
+COMPLETE rolling-b4-p1-next-base
+/tmp/fc-split-speed/rolling-b4-p2-tuic-1795427914.json: 1 file pushed, 0 skipped. 5.6 MB/s (747 bytes in 0.000s)
+COMPLETE rolling-b4-p2-tuic
+/tmp/fc-split-speed/rolling-b4-p3-next-opt-1795427914.json: 1 file pushed, 0 skipped. 6.2 MB/s (747 bytes in 0.000s)
+COMPLETE rolling-b4-p3-next-opt
+/tmp/fc-split-speed/rolling-b5-p1-tuic-1795427914.json: 1 file pushed, 0 skipped. 5.7 MB/s (747 bytes in 0.000s)
+COMPLETE rolling-b5-p1-tuic
+/tmp/fc-split-speed/rolling-b5-p2-next-opt-1795427914.json: 1 file pushed, 0 skipped. 6.8 MB/s (747 bytes in 0.000s)
+COMPLETE rolling-b5-p2-next-opt
+/tmp/fc-split-speed/rolling-b5-p3-next-base-1795427914.json: 1 file pushed, 0 skipped. 5.9 MB/s (747 bytes in 0.000s)
+COMPLETE rolling-b5-p3-next-base
+/tmp/fc-split-speed/rolling-b6-p1-tuic-1795427914.json: 1 file pushed, 0 skipped. 6.5 MB/s (747 bytes in 0.000s)
+COMPLETE rolling-b6-p1-tuic
+/tmp/fc-split-speed/rolling-b6-p2-next-base-1795427914.json: 1 file pushed, 0 skipped. 10.3 MB/s (747 bytes in 0.000s)
+COMPLETE rolling-b6-p2-next-base
+/tmp/fc-split-speed/rolling-b6-p3-next-opt-1795427914.json: 1 file pushed, 0 skipped. 7.2 MB/s (747 bytes in 0.000s)
+COMPLETE rolling-b6-p3-next-opt
+/tmp/fc-split-speed/echo-b1-p1-next-opt-1795427914.json: 1 file pushed, 0 skipped. 5.5 MB/s (747 bytes in 0.000s)
+COMPLETE echo-b1-p1-next-opt
+/tmp/fc-split-speed/echo-b1-p2-next-base-1795427914.json: 1 file pushed, 0 skipped. 11.2 MB/s (747 bytes in 0.000s)
+COMPLETE echo-b1-p2-next-base
+/tmp/fc-split-speed/echo-b1-p3-tuic-1795427914.json: 1 file pushed, 0 skipped. 7.1 MB/s (747 bytes in 0.000s)
+COMPLETE echo-b1-p3-tuic
+/tmp/fc-split-speed/echo-b2-p1-next-opt-1795427914.json: 1 file pushed, 0 skipped. 5.3 MB/s (747 bytes in 0.000s)
+COMPLETE echo-b2-p1-next-opt
+/tmp/fc-split-speed/echo-b2-p2-tuic-1795427914.json: 1 file pushed, 0 skipped. 6.4 MB/s (747 bytes in 0.000s)
+COMPLETE echo-b2-p2-tuic
+/tmp/fc-split-speed/echo-b2-p3-next-base-1795427914.json: 1 file pushed, 0 skipped. 4.9 MB/s (747 bytes in 0.000s)
+COMPLETE echo-b2-p3-next-base
+/tmp/fc-split-speed/echo-b3-p1-next-base-1795427914.json: 1 file pushed, 0 skipped. 4.8 MB/s (747 bytes in 0.000s)
+COMPLETE echo-b3-p1-next-base
+/tmp/fc-split-speed/echo-b3-p2-next-opt-1795427914.json: 1 file pushed, 0 skipped. 6.1 MB/s (747 bytes in 0.000s)
+COMPLETE echo-b3-p2-next-opt
+/tmp/fc-split-speed/echo-b3-p3-tuic-1795427914.json: 1 file pushed, 0 skipped. 5.7 MB/s (747 bytes in 0.000s)
+COMPLETE echo-b3-p3-tuic
+/tmp/fc-split-speed/echo-b4-p1-next-base-1795427914.json: 1 file pushed, 0 skipped. 5.8 MB/s (747 bytes in 0.000s)
+COMPLETE echo-b4-p1-next-base
+/tmp/fc-split-speed/echo-b4-p2-tuic-1795427914.json: 1 file pushed, 0 skipped. 7.4 MB/s (747 bytes in 0.000s)
+COMPLETE echo-b4-p2-tuic
+/tmp/fc-split-speed/echo-b4-p3-next-opt-1795427914.json: 1 file pushed, 0 skipped. 5.5 MB/s (747 bytes in 0.000s)
+COMPLETE echo-b4-p3-next-opt
+/tmp/fc-split-speed/echo-b5-p1-tuic-1795427914.json: 1 file pushed, 0 skipped. 5.1 MB/s (747 bytes in 0.000s)
+COMPLETE echo-b5-p1-tuic
+/tmp/fc-split-speed/echo-b5-p2-next-opt-1795427914.json: 1 file pushed, 0 skipped. 3.7 MB/s (747 bytes in 0.000s)
+COMPLETE echo-b5-p2-next-opt
+/tmp/fc-split-speed/echo-b5-p3-next-base-1795427914.json: 1 file pushed, 0 skipped. 4.5 MB/s (747 bytes in 0.000s)
+COMPLETE echo-b5-p3-next-base
+/tmp/fc-split-speed/echo-b6-p1-tuic-1795427914.json: 1 file pushed, 0 skipped. 6.6 MB/s (747 bytes in 0.000s)
+COMPLETE echo-b6-p1-tuic
+/tmp/fc-split-speed/echo-b6-p2-next-base-1795427914.json: 1 file pushed, 0 skipped. 5.6 MB/s (747 bytes in 0.000s)
+COMPLETE echo-b6-p2-next-base
+/tmp/fc-split-speed/echo-b6-p3-next-opt-1795427914.json: 1 file pushed, 0 skipped. 7.1 MB/s (747 bytes in 0.000s)
+COMPLETE echo-b6-p3-next-opt
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+VPN restored: True
+RECOVERY TRIO COMPLETE

@@ -1,0 +1,338 @@
+[
+  {
+    "name": "mixed-baseline-b1-p1",
+    "variant": "baseline",
+    "metric": "mixed",
+    "block": 1,
+    "start": 1795367983.1986282,
+    "end": 1795368002.457349
+  },
+  {
+    "name": "mixed-noecn-b1-p2",
+    "variant": "noecn",
+    "metric": "mixed",
+    "block": 1,
+    "start": 1795368008.6512141,
+    "end": 1795368026.337802
+  },
+  {
+    "name": "mixed-noecn-b2-p1",
+    "variant": "noecn",
+    "metric": "mixed",
+    "block": 2,
+    "start": 1795368032.310951,
+    "end": 1795368059.43753
+  },
+  {
+    "name": "mixed-baseline-b2-p2",
+    "variant": "baseline",
+    "metric": "mixed",
+    "block": 2,
+    "start": 1795368065.590772,
+    "end": 1795368074.093222
+  },
+  {
+    "name": "mixed-baseline-b3-p1",
+    "variant": "baseline",
+    "metric": "mixed",
+    "block": 3,
+    "start": 1795368080.067908,
+    "end": 1795368088.530118
+  },
+  {
+    "name": "mixed-noecn-b3-p2",
+    "variant": "noecn",
+    "metric": "mixed",
+    "block": 3,
+    "start": 1795368095.0801249,
+    "end": 1795368113.7366989
+  },
+  {
+    "name": "mixed-noecn-b4-p1",
+    "variant": "noecn",
+    "metric": "mixed",
+    "block": 4,
+    "start": 1795368119.9760242,
+    "end": 1795368142.900963
+  },
+  {
+    "name": "mixed-baseline-b4-p2",
+    "variant": "baseline",
+    "metric": "mixed",
+    "block": 4,
+    "start": 1795368149.128403,
+    "end": 1795368170.960942
+  },
+  {
+    "name": "mixed-baseline-b5-p1",
+    "variant": "baseline",
+    "metric": "mixed",
+    "block": 5,
+    "start": 1795368177.136975,
+    "end": 1795368199.1882958
+  },
+  {
+    "name": "mixed-noecn-b5-p2",
+    "variant": "noecn",
+    "metric": "mixed",
+    "block": 5,
+    "start": 1795368205.1166668,
+    "end": 1795368221.923116
+  },
+  {
+    "name": "mixed-noecn-b6-p1",
+    "variant": "noecn",
+    "metric": "mixed",
+    "block": 6,
+    "start": 1795368227.8735309,
+    "end": 1795368249.330942
+  },
+  {
+    "name": "mixed-baseline-b6-p2",
+    "variant": "baseline",
+    "metric": "mixed",
+    "block": 6,
+    "start": 1795368255.4613209,
+    "end": 1795368272.869528
+  },
+  {
+    "name": "parallel-baseline-b1-p1",
+    "variant": "baseline",
+    "metric": "parallel",
+    "block": 1,
+    "start": 1795368278.668962,
+    "end": 1795368283.435702
+  },
+  {
+    "name": "parallel-noecn-b1-p2",
+    "variant": "noecn",
+    "metric": "parallel",
+    "block": 1,
+    "start": 1795368289.994454,
+    "end": 1795368295.729731
+  },
+  {
+    "name": "parallel-noecn-b2-p1",
+    "variant": "noecn",
+    "metric": "parallel",
+    "block": 2,
+    "start": 1795368301.671793,
+    "end": 1795368319.552738
+  },
+  {
+    "name": "parallel-baseline-b2-p2",
+    "variant": "baseline",
+    "metric": "parallel",
+    "block": 2,
+    "start": 1795368326.249334,
+    "end": 1795368347.768683
+  },
+  {
+    "name": "parallel-baseline-b3-p1",
+    "variant": "baseline",
+    "metric": "parallel",
+    "block": 3,
+    "start": 1795368354.041753,
+    "end": 1795368368.152355
+  },
+  {
+    "name": "parallel-noecn-b3-p2",
+    "variant": "noecn",
+    "metric": "parallel",
+    "block": 3,
+    "start": 1795368374.0676758,
+    "end": 1795368386.941566
+  },
+  {
+    "name": "parallel-noecn-b4-p1",
+    "variant": "noecn",
+    "metric": "parallel",
+    "block": 4,
+    "start": 1795368393.203773,
+    "end": 1795368397.9646919
+  },
+  {
+    "name": "parallel-baseline-b4-p2",
+    "variant": "baseline",
+    "metric": "parallel",
+    "block": 4,
+    "start": 1795368404.165401,
+    "end": 1795368417.6682749
+  },
+  {
+    "name": "parallel-baseline-b5-p1",
+    "variant": "baseline",
+    "metric": "parallel",
+    "block": 5,
+    "start": 1795368423.830492,
+    "end": 1795368429.128845
+  },
+  {
+    "name": "parallel-noecn-b5-p2",
+    "variant": "noecn",
+    "metric": "parallel",
+    "block": 5,
+    "start": 1795368435.3838232,
+    "end": 1795368450.7489128
+  },
+  {
+    "name": "parallel-noecn-b6-p1",
+    "variant": "noecn",
+    "metric": "parallel",
+    "block": 6,
+    "start": 1795368456.987335,
+    "end": 1795368466.387237
+  },
+  {
+    "name": "parallel-baseline-b6-p2",
+    "variant": "baseline",
+    "metric": "parallel",
+    "block": 6,
+    "start": 1795368472.531623,
+    "end": 1795368485.256635
+  },
+  {
+    "name": "rolling-baseline-b1-p1",
+    "variant": "baseline",
+    "metric": "rolling",
+    "block": 1,
+    "start": 1795368491.529633,
+    "end": 1795368506.457072
+  },
+  {
+    "name": "rolling-noecn-b1-p2",
+    "variant": "noecn",
+    "metric": "rolling",
+    "block": 1,
+    "start": 1795368512.285155,
+    "end": 1795368528.521583
+  },
+  {
+    "name": "rolling-noecn-b2-p1",
+    "variant": "noecn",
+    "metric": "rolling",
+    "block": 2,
+    "start": 1795368535.104689,
+    "end": 1795368552.84227
+  },
+  {
+    "name": "rolling-baseline-b2-p2",
+    "variant": "baseline",
+    "metric": "rolling",
+    "block": 2,
+    "start": 1795368558.6526132,
+    "end": 1795368571.816319
+  },
+  {
+    "name": "rolling-baseline-b3-p1",
+    "variant": "baseline",
+    "metric": "rolling",
+    "block": 3,
+    "start": 1795368577.614042,
+    "end": 1795368591.995477
+  },
+  {
+    "name": "rolling-noecn-b3-p2",
+    "variant": "noecn",
+    "metric": "rolling",
+    "block": 3,
+    "start": 1795368598.2829812,
+    "end": 1795368611.007693
+  },
+  {
+    "name": "rolling-noecn-b4-p1",
+    "variant": "noecn",
+    "metric": "rolling",
+    "block": 4,
+    "start": 1795368617.6762931,
+    "end": 1795368634.9944372
+  },
+  {
+    "name": "rolling-baseline-b4-p2",
+    "variant": "baseline",
+    "metric": "rolling",
+    "block": 4,
+    "start": 1795368640.804509,
+    "end": 1795368657.9386182
+  },
+  {
+    "name": "rolling-baseline-b5-p1",
+    "variant": "baseline",
+    "metric": "rolling",
+    "block": 5,
+    "start": 1795368664.570815,
+    "end": 1795368697.386097
+  },
+  {
+    "name": "rolling-noecn-b5-p2",
+    "variant": "noecn",
+    "metric": "rolling",
+    "block": 5,
+    "start": 1795368703.630163,
+    "end": 1795368719.421067
+  },
+  {
+    "name": "rolling-noecn-b6-p1",
+    "variant": "noecn",
+    "metric": "rolling",
+    "block": 6,
+    "start": 1795368725.362643,
+    "end": 1795368738.11901
+  },
+  {
+    "name": "rolling-baseline-b6-p2",
+    "variant": "baseline",
+    "metric": "rolling",
+    "block": 6,
+    "start": 1795368744.954914,
+    "end": 1795368772.5831192
+  },
+  {
+    "name": "latency-baseline-b1-p1",
+    "variant": "baseline",
+    "metric": "latency",
+    "block": 1,
+    "start": 1795368779.471134,
+    "end": 1795368799.406003
+  },
+  {
+    "name": "latency-noecn-b1-p2",
+    "variant": "noecn",
+    "metric": "latency",
+    "block": 1,
+    "start": 1795368806.096427,
+    "end": 1795368829.4775949
+  },
+  {
+    "name": "latency-noecn-b2-p1",
+    "variant": "noecn",
+    "metric": "latency",
+    "block": 2,
+    "start": 1795368835.9203782,
+    "end": 1795368855.663445
+  },
+  {
+    "name": "latency-baseline-b2-p2",
+    "variant": "baseline",
+    "metric": "latency",
+    "block": 2,
+    "start": 1795368861.48558,
+    "end": 1795368878.33265
+  },
+  {
+    "name": "latency-baseline-b3-p1",
+    "variant": "baseline",
+    "metric": "latency",
+    "block": 3,
+    "start": 1795368884.6280909,
+    "end": 1795368897.786965
+  },
+  {
+    "name": "latency-noecn-b3-p2",
+    "variant": "noecn",
+    "metric": "latency",
+    "block": 3,
+    "start": 1795368904.380932,
+    "end": 1795368919.8698409
+  }
+]

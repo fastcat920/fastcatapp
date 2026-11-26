@@ -1,0 +1,40 @@
+{
+  "reason": "primary baseline 1MiB burst body-read rates 0.50 vs 9.83 Mbps; follow-up predeclared after seeing anomaly, not independent holdout",
+  "plan": [
+    {
+      "repeat": 1,
+      "arms": [
+        "baseline",
+        "capped"
+      ]
+    },
+    {
+      "repeat": 2,
+      "arms": [
+        "capped",
+        "baseline"
+      ]
+    },
+    {
+      "repeat": 3,
+      "arms": [
+        "capped",
+        "baseline"
+      ]
+    },
+    {
+      "repeat": 4,
+      "arms": [
+        "capped",
+        "baseline"
+      ]
+    }
+  ],
+  "size": 1048576,
+  "source_chunk": 16384,
+  "gap_ms": 0,
+  "ports": {
+    "baseline": 18463,
+    "capped": 18465
+  }
+}

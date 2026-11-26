@@ -1,0 +1,120 @@
+{"elapsed_us":104458,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":1}
+{"elapsed_us":1001283,"error":"read fcn-datagram: deadline exceeded","mode":"fcn-quic","ok":false,"payload_bytes":32,"round":1}
+{"elapsed_us":115044,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":1}
+{"elapsed_us":138763,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":1}
+{"elapsed_us":102269,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":2}
+{"elapsed_us":1000682,"error":"read udp 192.168.31.15:34353-\u003e191.223.214.8:19456: i/o timeout","mode":"direct-udp","ok":false,"payload_bytes":32,"round":2}
+{"elapsed_us":132880,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":2}
+{"elapsed_us":1000395,"error":"read udp 192.168.31.15:34353-\u003e191.223.214.8:19456: i/o timeout","mode":"direct-udp","ok":false,"payload_bytes":1100,"round":2}
+{"elapsed_us":127843,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":3}
+{"elapsed_us":1001310,"error":"read fcn-datagram: deadline exceeded","mode":"fcn-quic","ok":false,"payload_bytes":32,"round":3}
+{"elapsed_us":133134,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":3}
+{"elapsed_us":1001328,"error":"read fcn-datagram: deadline exceeded","mode":"fcn-quic","ok":false,"payload_bytes":1100,"round":3}
+{"elapsed_us":129141,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":4}
+{"elapsed_us":1000299,"error":"read udp 192.168.31.15:34353-\u003e191.223.214.8:19456: i/o timeout","mode":"direct-udp","ok":false,"payload_bytes":32,"round":4}
+{"elapsed_us":130721,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":4}
+{"elapsed_us":106697,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":4}
+{"elapsed_us":104900,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":5}
+{"elapsed_us":104539,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":5}
+{"elapsed_us":1000875,"error":"read udp 192.168.31.15:34353-\u003e191.223.214.8:19456: i/o timeout","mode":"direct-udp","ok":false,"payload_bytes":1100,"round":5}
+{"elapsed_us":129737,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":5}
+{"elapsed_us":103925,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":6}
+{"elapsed_us":104846,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":6}
+{"elapsed_us":103509,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":6}
+{"elapsed_us":105524,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":6}
+{"elapsed_us":113124,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":7}
+{"elapsed_us":103235,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":7}
+{"elapsed_us":143766,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":7}
+{"elapsed_us":103674,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":7}
+{"elapsed_us":103009,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":8}
+{"elapsed_us":105172,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":8}
+{"elapsed_us":103092,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":8}
+{"elapsed_us":1000211,"error":"read udp 192.168.31.15:34353-\u003e191.223.214.8:19456: i/o timeout","mode":"direct-udp","ok":false,"payload_bytes":1100,"round":8}
+{"elapsed_us":125322,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":9}
+{"elapsed_us":158610,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":9}
+{"elapsed_us":104967,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":9}
+{"elapsed_us":103745,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":9}
+{"elapsed_us":103233,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":10}
+{"elapsed_us":108235,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":10}
+{"elapsed_us":104159,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":10}
+{"elapsed_us":1000812,"error":"read udp 192.168.31.15:34353-\u003e191.223.214.8:19456: i/o timeout","mode":"direct-udp","ok":false,"payload_bytes":1100,"round":10}
+{"elapsed_us":1000914,"error":"read udp 192.168.31.15:34353-\u003e191.223.214.8:19456: i/o timeout","mode":"direct-udp","ok":false,"payload_bytes":32,"round":11}
+{"elapsed_us":103033,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":11}
+{"elapsed_us":107940,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":11}
+{"elapsed_us":103430,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":11}
+{"elapsed_us":103958,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":12}
+{"elapsed_us":150184,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":12}
+{"elapsed_us":1000388,"error":"read fcn-datagram: deadline exceeded","mode":"fcn-quic","ok":false,"payload_bytes":1100,"round":12}
+{"elapsed_us":125803,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":12}
+{"elapsed_us":105336,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":13}
+{"elapsed_us":102802,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":13}
+{"elapsed_us":105582,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":13}
+{"elapsed_us":1001020,"error":"read fcn-datagram: deadline exceeded","mode":"fcn-quic","ok":false,"payload_bytes":1100,"round":13}
+{"elapsed_us":128524,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":14}
+{"elapsed_us":104996,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":14}
+{"elapsed_us":103537,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":14}
+{"elapsed_us":105816,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":14}
+{"elapsed_us":114622,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":15}
+{"elapsed_us":102598,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":15}
+{"elapsed_us":1000521,"error":"read udp 192.168.31.15:34353-\u003e191.223.214.8:19456: i/o timeout","mode":"direct-udp","ok":false,"payload_bytes":1100,"round":15}
+{"elapsed_us":193846,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":15}
+{"elapsed_us":101926,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":16}
+{"elapsed_us":104650,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":16}
+{"elapsed_us":104288,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":16}
+{"elapsed_us":106526,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":16}
+{"elapsed_us":106825,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":17}
+{"elapsed_us":102813,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":17}
+{"elapsed_us":1001233,"error":"read udp 192.168.31.15:34353-\u003e191.223.214.8:19456: i/o timeout","mode":"direct-udp","ok":false,"payload_bytes":1100,"round":17}
+{"elapsed_us":1000813,"error":"read fcn-datagram: deadline exceeded","mode":"fcn-quic","ok":false,"payload_bytes":1100,"round":17}
+{"elapsed_us":129600,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":18}
+{"elapsed_us":1000392,"error":"read udp 192.168.31.15:34353-\u003e191.223.214.8:19456: i/o timeout","mode":"direct-udp","ok":false,"payload_bytes":32,"round":18}
+{"elapsed_us":129757,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":18}
+{"elapsed_us":105134,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":18}
+{"elapsed_us":104215,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":19}
+{"elapsed_us":102368,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":19}
+{"elapsed_us":105339,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":19}
+{"elapsed_us":110507,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":19}
+{"elapsed_us":102764,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":20}
+{"elapsed_us":1001279,"error":"read udp 192.168.31.15:34353-\u003e191.223.214.8:19456: i/o timeout","mode":"direct-udp","ok":false,"payload_bytes":32,"round":20}
+{"elapsed_us":129275,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":20}
+{"elapsed_us":1001029,"error":"read udp 192.168.31.15:34353-\u003e191.223.214.8:19456: i/o timeout","mode":"direct-udp","ok":false,"payload_bytes":1100,"round":20}
+{"elapsed_us":121616,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":21}
+{"elapsed_us":102410,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":21}
+{"elapsed_us":105344,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":21}
+{"elapsed_us":1001214,"error":"read fcn-datagram: deadline exceeded","mode":"fcn-quic","ok":false,"payload_bytes":1100,"round":21}
+{"elapsed_us":102781,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":22}
+{"elapsed_us":104713,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":22}
+{"elapsed_us":131525,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":22}
+{"elapsed_us":105070,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":22}
+{"elapsed_us":104281,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":23}
+{"elapsed_us":103295,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":23}
+{"elapsed_us":105152,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":23}
+{"elapsed_us":1000335,"error":"read fcn-datagram: deadline exceeded","mode":"fcn-quic","ok":false,"payload_bytes":1100,"round":23}
+{"elapsed_us":102727,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":24}
+{"elapsed_us":104537,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":24}
+{"elapsed_us":1001123,"error":"read fcn-datagram: deadline exceeded","mode":"fcn-quic","ok":false,"payload_bytes":1100,"round":24}
+{"elapsed_us":130894,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":24}
+{"elapsed_us":104763,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":25}
+{"elapsed_us":105516,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":25}
+{"elapsed_us":1001027,"error":"read udp 192.168.31.15:34353-\u003e191.223.214.8:19456: i/o timeout","mode":"direct-udp","ok":false,"payload_bytes":1100,"round":25}
+{"elapsed_us":201250,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":25}
+{"elapsed_us":102687,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":26}
+{"elapsed_us":1000754,"error":"read udp 192.168.31.15:34353-\u003e191.223.214.8:19456: i/o timeout","mode":"direct-udp","ok":false,"payload_bytes":32,"round":26}
+{"elapsed_us":104854,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":26}
+{"elapsed_us":105183,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":26}
+{"elapsed_us":104904,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":27}
+{"elapsed_us":103493,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":27}
+{"elapsed_us":104780,"mode":"direct-udp","ok":true,"payload_bytes":1100,"round":27}
+{"elapsed_us":177796,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":27}
+{"elapsed_us":107051,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":28}
+{"elapsed_us":105539,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":28}
+{"elapsed_us":104162,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":28}
+{"elapsed_us":1000301,"error":"read udp 192.168.31.15:34353-\u003e191.223.214.8:19456: i/o timeout","mode":"direct-udp","ok":false,"payload_bytes":1100,"round":28}
+{"elapsed_us":110630,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":29}
+{"elapsed_us":180201,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":29}
+{"elapsed_us":1001151,"error":"read udp 192.168.31.15:34353-\u003e191.223.214.8:19456: i/o timeout","mode":"direct-udp","ok":false,"payload_bytes":1100,"round":29}
+{"elapsed_us":119453,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":29}
+{"elapsed_us":103268,"mode":"fcn-quic","ok":true,"payload_bytes":32,"round":30}
+{"elapsed_us":154905,"mode":"direct-udp","ok":true,"payload_bytes":32,"round":30}
+{"elapsed_us":103241,"mode":"fcn-quic","ok":true,"payload_bytes":1100,"round":30}
+{"elapsed_us":1000444,"error":"read udp 192.168.31.15:34353-\u003e191.223.214.8:19456: i/o timeout","mode":"direct-udp","ok":false,"payload_bytes":1100,"round":30}

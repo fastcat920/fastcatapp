@@ -75,6 +75,136 @@ class AppLocalizations {
     );
   }
 
+  /// `Download speed test`
+  String get xboardNetworkDiagnosticsDownloadSpeed {
+    return Intl.message(
+      'Download speed test',
+      name: 'xboardNetworkDiagnosticsDownloadSpeed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Diagnostics include a download speed test through the current node and may use up to 100 MB of data in 10 seconds.`
+  String get xboardNetworkDiagnosticsDownloadTrafficNote {
+    return Intl.message(
+      'Diagnostics include a download speed test through the current node and may use up to 100 MB of data in 10 seconds.',
+      name: 'xboardNetworkDiagnosticsDownloadTrafficNote',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Measuring download speed…`
+  String get xboardNetworkDiagnosticsDownloadRunning {
+    return Intl.message(
+      'Measuring download speed…',
+      name: 'xboardNetworkDiagnosticsDownloadRunning',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Stop speed test`
+  String get xboardNetworkDiagnosticsDownloadCancel {
+    return Intl.message(
+      'Stop speed test',
+      name: 'xboardNetworkDiagnosticsDownloadCancel',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Speed test stopped`
+  String get xboardNetworkDiagnosticsDownloadCancelled {
+    return Intl.message(
+      'Speed test stopped',
+      name: 'xboardNetworkDiagnosticsDownloadCancelled',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Skipped · No eligible proxy node`
+  String get xboardNetworkDiagnosticsDownloadNoNode {
+    return Intl.message(
+      'Skipped · No eligible proxy node',
+      name: 'xboardNetworkDiagnosticsDownloadNoNode',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Could not measure download speed`
+  String get xboardNetworkDiagnosticsDownloadFailed {
+    return Intl.message(
+      'Could not measure download speed',
+      name: 'xboardNetworkDiagnosticsDownloadFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Tested via system routing. VPN may affect the result.`
+  String get xboardNetworkDiagnosticsNativeRouteNote {
+    return Intl.message(
+      'Tested via system routing. VPN may affect the result.',
+      name: 'xboardNetworkDiagnosticsNativeRouteNote',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Average download speed`
+  String get xboardNetworkDiagnosticsDownloadAverageSpeed {
+    return Intl.message(
+      'Average download speed',
+      name: 'xboardNetworkDiagnosticsDownloadAverageSpeed',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Sample duration`
+  String get xboardNetworkDiagnosticsDownloadSampleTime {
+    return Intl.message(
+      'Sample duration',
+      name: 'xboardNetworkDiagnosticsDownloadSampleTime',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Total downloaded`
+  String get xboardNetworkDiagnosticsDownloadTotalBytes {
+    return Intl.message(
+      'Total downloaded',
+      name: 'xboardNetworkDiagnosticsDownloadTotalBytes',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `s`
+  String get xboardNetworkDiagnosticsDownloadSecondsUnit {
+    return Intl.message(
+      's',
+      name: 'xboardNetworkDiagnosticsDownloadSecondsUnit',
+      desc: '',
+      args: [],
+    );
+  }
+
+  /// `Short sample`
+  String get xboardNetworkDiagnosticsDownloadShort {
+    return Intl.message(
+      'Short sample',
+      name: 'xboardNetworkDiagnosticsDownloadShort',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Actual proxy route (via local proxy port)`
   String get xboardNetworkDiagnosticsLocalProxy {
     return Intl.message(
@@ -8340,6 +8470,16 @@ class AppLocalizations {
     );
   }
 
+  /// `Latency test failed`
+  String get xboardLatencyTestFailed {
+    return Intl.message(
+      'Latency test failed',
+      name: 'xboardLatencyTestFailed',
+      desc: '',
+      args: [],
+    );
+  }
+
   /// `Closed`
   String get xboardTicketClosed {
     return Intl.message(
@@ -11315,26 +11455,6 @@ class AppLocalizations {
     return Intl.message(
       'Device HTTPS (independent of core test API)',
       name: 'xboardNetworkDiagnosticsDirectHttps',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Device request without the core test API; still uses system DNS and routing`
-  String get xboardNetworkDiagnosticsNativeDirectDetail {
-    return Intl.message(
-      'Device request without the core test API; still uses system DNS and routing',
-      name: 'xboardNetworkDiagnosticsNativeDirectDetail',
-      desc: '',
-      args: [],
-    );
-  }
-
-  /// `Device request without the core test API; VPN/TUN may affect system DNS and routing, so this does not independently verify the physical network`
-  String get xboardNetworkDiagnosticsNativeTunDetail {
-    return Intl.message(
-      'Device request without the core test API; VPN/TUN may affect system DNS and routing, so this does not independently verify the physical network',
-      name: 'xboardNetworkDiagnosticsNativeTunDetail',
       desc: '',
       args: [],
     );

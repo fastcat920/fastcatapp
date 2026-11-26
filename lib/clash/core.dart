@@ -160,6 +160,7 @@ class ClashCore {
     Map<String, String> headers = const {},
     bool followRedirects = true,
     bool phaseTiming = false,
+    bool downloadSpeed = false,
     Duration timeout = const Duration(seconds: 8),
     int maxBodySize = 256 * 1024,
   }) async {
@@ -172,6 +173,7 @@ class ClashCore {
       headers: headers,
       followRedirects: followRedirects,
       phaseTiming: phaseTiming,
+      downloadSpeed: downloadSpeed,
       timeout: timeout,
       maxBodySize: maxBodySize,
     );
@@ -262,11 +264,14 @@ class ClashCore {
   Future<Delay> getDelay(String url, String proxyName) async {
     final connected = globalState.isStart;
     final delay = await _measureDelay(url, proxyName);
-    commonPrint.log('[NodeLatency] ${jsonEncode({
+    final details = {
       'node': proxyName,
       'vpn': connected ? 'connected' : 'disconnected',
       'delay_ms': delay.value,
-    })}');
+      if (delay.effectiveFailureKind case final failure?)
+        'failure_kind': failure.name,
+    };
+    commonPrint.log('[NodeLatency] ${jsonEncode(details)}');
     return delay;
   }
 
@@ -288,13 +293,23 @@ class ClashCore {
         patchConfig: globalState.config.patchClashConfig,
       ));
       config['rules'] = config.remove('rule') ?? config['rules'] ?? [];
-      final data = await const MethodChannel('fastcat/latency')
-          .invokeMethod<String>('test', {
-        'home': await appPath.homeDirPath,
-        'config': json.encode(config),
-        'data': json.encode(
-            {'proxy-name': proxyName, 'test-url': url, 'timeout': 5000}),
-      }).timeout(const Duration(seconds: 20));
+      final String? data;
+      try {
+        data = await const MethodChannel('fastcat/latency')
+            .invokeMethod<String>('test', {
+          'home': await appPath.homeDirPath,
+          'config': json.encode(config),
+          'data': json.encode(
+              {'proxy-name': proxyName, 'test-url': url, 'timeout': 5000}),
+        }).timeout(const Duration(seconds: 20));
+      } on TimeoutException {
+        return Delay(
+          name: proxyName,
+          url: url,
+          value: -1,
+          failureKind: DelayFailureKind.timeout,
+        );
+      }
       if (data == null || data.isEmpty) {
         throw StateError('Latency core returned no result');
       }
@@ -305,7 +320,8 @@ class ClashCore {
       return Delay(name: proxyName, url: url, value: -1);
     }
     try {
-      return Delay.fromJson(json.decode(data));
+      final delay = Delay.fromJson(json.decode(data));
+      return delay.url.isEmpty ? delay.copyWith(url: url) : delay;
     } catch (_) {
       return Delay(name: proxyName, url: url, value: -1);
     }

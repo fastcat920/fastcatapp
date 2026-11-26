@@ -1,0 +1,49 @@
+{
+  "android-default": {
+    "warm_samples": 72,
+    "success": 72,
+    "p50_ms": 571.978,
+    "p95_ms": 1228.492,
+    "status_p95_ms": 381.052,
+    "client_drops": {},
+    "peer_tags": [
+      "edf6f8bfcdf5b4789a7061ab235397c0"
+    ],
+    "server_drops": {
+      "key_unavailable": 1
+    },
+    "server_ecn_states": {
+      "testing": 6,
+      "capable": 6
+    },
+    "server_sent_marks": {
+      "ECT(0)": 759
+    },
+    "client_received_marks": {
+      "ECT(0)": 530
+    }
+  },
+  "android-noecn": {
+    "warm_samples": 72,
+    "success": 72,
+    "p50_ms": 552.171,
+    "p95_ms": 1009.702,
+    "status_p95_ms": 245.078,
+    "client_drops": {
+      "key_unavailable": 1
+    },
+    "peer_tags": [
+      "edf6f8bfcdf5b4789a7061ab235397c0"
+    ],
+    "server_drops": {
+      "key_unavailable": 2
+    },
+    "server_ecn_states": {},
+    "server_sent_marks": {
+      "unsupported": 712
+    },
+    "client_received_marks": {
+      "unsupported": 526
+    }
+  }
+}

@@ -1,0 +1,2494 @@
+{
+  "stages": {
+    "A": {
+      "run_id": "fcn3crossa",
+      "directory": "experiments/fcn-v3/results/stall-udp-crossover-2026-11-25/download-a",
+      "ports": {
+        "current": 18532,
+        "adaptive": 18534,
+        "tuic": 18533
+      },
+      "port_source": "declared default mapping",
+      "start_unix_ms": 1795595099640,
+      "end_unix_ms": 1795595274351,
+      "arms": {
+        "current": {
+          "planned": 24,
+          "valid_rows": 24,
+          "verified": 24,
+          "verified_bytes": 25165824,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "first_byte_ms": {
+            "n": 24,
+            "p50": 417.2758465,
+            "p95": 1450.6827191,
+            "mean": 572.0795994166666,
+            "min": 256.418539,
+            "max": 1540.246154
+          },
+          "max_body_no_progress_ms": {
+            "success": {
+              "n": 24,
+              "p50": 148.3748455,
+              "p95": 381.4302305999999,
+              "mean": 198.413025625,
+              "min": 118.194077,
+              "max": 485.701538
+            },
+            "failure": {
+              "n": 0,
+              "p50": null,
+              "p95": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            }
+          },
+          "effective_batch_mbps": {
+            "n": 6,
+            "p50": 18.07764679924864,
+            "p95": 20.216789866159417,
+            "mean": 16.501080047380263,
+            "min": 5.152577669996419,
+            "max": 20.328463279497843
+          },
+          "failure_stages": {},
+          "failed_origin_states": {},
+          "network_stable_rounds": 6,
+          "port": 18532,
+          "start_unix_ms": 1795595099640,
+          "end_unix_ms": 1795595274351,
+          "failures": []
+        },
+        "adaptive": {
+          "planned": 24,
+          "valid_rows": 24,
+          "verified": 24,
+          "verified_bytes": 25165824,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "first_byte_ms": {
+            "n": 24,
+            "p50": 439.8581155,
+            "p95": 1276.1062575,
+            "mean": 537.7767211666667,
+            "min": 337.384384,
+            "max": 1276.700077
+          },
+          "max_body_no_progress_ms": {
+            "success": {
+              "n": 24,
+              "p50": 290.98449949999997,
+              "p95": 557.5949385499999,
+              "mean": 312.09807370833335,
+              "min": 123.873769,
+              "max": 760.288538
+            },
+            "failure": {
+              "n": 0,
+              "p50": null,
+              "p95": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            }
+          },
+          "effective_batch_mbps": {
+            "n": 6,
+            "p50": 8.983707662724878,
+            "p95": 19.19807561867359,
+            "mean": 11.172477674648329,
+            "min": 4.513635416420294,
+            "max": 19.262247430541326
+          },
+          "failure_stages": {},
+          "failed_origin_states": {},
+          "network_stable_rounds": 6,
+          "port": 18534,
+          "start_unix_ms": 1795595101918,
+          "end_unix_ms": 1795595272239,
+          "failures": []
+        },
+        "tuic": {
+          "planned": 24,
+          "valid_rows": 24,
+          "verified": 24,
+          "verified_bytes": 25165824,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "first_byte_ms": {
+            "n": 24,
+            "p50": 362.2274235,
+            "p95": 887.98863135,
+            "mean": 451.726109125,
+            "min": 294.327,
+            "max": 983.354461
+          },
+          "max_body_no_progress_ms": {
+            "success": {
+              "n": 24,
+              "p50": 355.7424615,
+              "p95": 1192.51223125,
+              "mean": 461.17253216666666,
+              "min": 128.715693,
+              "max": 1246.781615
+            },
+            "failure": {
+              "n": 0,
+              "p50": null,
+              "p95": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            }
+          },
+          "effective_batch_mbps": {
+            "n": 6,
+            "p50": 8.786658303927126,
+            "p95": 18.598986838448994,
+            "mean": 9.350102052046308,
+            "min": 1.4831556058491053,
+            "max": 20.56039610565572
+          },
+          "failure_stages": {},
+          "failed_origin_states": {},
+          "network_stable_rounds": 6,
+          "port": 18533,
+          "start_unix_ms": 1795595109663,
+          "end_unix_ms": 1795595268890,
+          "failures": []
+        }
+      },
+      "paired_rounds": [
+        {
+          "round": 1,
+          "order": [
+            "current",
+            "adaptive",
+            "tuic"
+          ],
+          "arms": {
+            "current": {
+              "position": 1,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 510.21092350000004,
+                "p95": 589.3508537499999,
+                "mean": 529.4102115000001,
+                "min": 494.130153,
+                "max": 603.088846
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 131.6700385,
+                  "p95": 141.7746307,
+                  "mean": 130.9817885,
+                  "min": 118.194077,
+                  "max": 142.393
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 17.51205904425797,
+              "start_unix_ms": 1795595099640,
+              "end_unix_ms": 1795595101738,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "adaptive": {
+              "position": 2,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 1275.974577,
+                "p95": 1276.61946925,
+                "mean": 1252.7955385,
+                "min": 1182.532923,
+                "max": 1276.700077
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 389.8802305,
+                  "p95": 507.40025779999996,
+                  "mean": 396.073346,
+                  "min": 284.814769,
+                  "max": 519.718154
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 4.513635416420294,
+              "start_unix_ms": 1795595101918,
+              "end_unix_ms": 1795595109508,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "tuic": {
+              "position": 3,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 356.424269,
+                "p95": 451.1663542499999,
+                "mean": 381.48359600000003,
+                "min": 345.571384,
+                "max": 467.514462
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 132.8677695,
+                  "p95": 139.8574309,
+                  "mean": 133.86059649999999,
+                  "min": 128.715693,
+                  "max": 140.991154
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 20.56039610565572,
+              "start_unix_ms": 1795595109663,
+              "end_unix_ms": 1795595111487,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            }
+          },
+          "adaptive_over_current": 0.25774441514918656,
+          "comparable": true,
+          "comparability_issues": []
+        },
+        {
+          "round": 2,
+          "order": [
+            "current",
+            "tuic",
+            "adaptive"
+          ],
+          "arms": {
+            "current": {
+              "position": 1,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 349.596192,
+                "p95": 350.76481935000004,
+                "mean": 347.375173,
+                "min": 339.501154,
+                "max": 350.807154
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 260.6846155,
+                  "p95": 369.3831189,
+                  "mean": 281.32675,
+                  "min": 216.807077,
+                  "max": 387.130692
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 19.881769626144134,
+              "start_unix_ms": 1795595141760,
+              "end_unix_ms": 1795595143631,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "adaptive": {
+              "position": 3,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 439.8581155,
+                "p95": 440.13076945,
+                "mean": 415.80763475000003,
+                "min": 343.374077,
+                "max": 440.140231
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 464.1911155,
+                  "p95": 730.88711885,
+                  "mean": 497.06653850000004,
+                  "min": 299.595385,
+                  "max": 760.288538
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 6.286007692408215,
+              "start_unix_ms": 1795595166793,
+              "end_unix_ms": 1795595172284,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "tuic": {
+              "position": 2,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 365.43246150000004,
+                "p95": 372.27308045,
+                "mean": 366.4060385,
+                "min": 361.762539,
+                "max": 372.996692
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 1168.9798465,
+                  "p95": 1240.1540036000001,
+                  "mean": 1109.11269225,
+                  "min": 851.709461,
+                  "max": 1246.781615
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 1.4831556058491053,
+              "start_unix_ms": 1795595143796,
+              "end_unix_ms": 1795595166607,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            }
+          },
+          "adaptive_over_current": 0.31616942609284837,
+          "comparable": true,
+          "comparability_issues": []
+        },
+        {
+          "round": 3,
+          "order": [
+            "adaptive",
+            "current",
+            "tuic"
+          ],
+          "arms": {
+            "current": {
+              "position": 2,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 1448.3794229999999,
+                "p95": 1526.9597078,
+                "mean": 1464.8617115,
+                "min": 1422.441846,
+                "max": 1540.246154
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 311.578116,
+                  "p95": 465.21544969999997,
+                  "mean": 339.2058465,
+                  "min": 247.965616,
+                  "max": 485.701538
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 5.152577669996419,
+              "start_unix_ms": 1795595174576,
+              "end_unix_ms": 1795595181253,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "adaptive": {
+              "position": 1,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 353.139154,
+                "p95": 362.9481966,
+                "mean": 354.66819250000003,
+                "min": 348.192923,
+                "max": 364.201539
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 145.2163075,
+                  "p95": 155.37700005,
+                  "mean": 142.8471345,
+                  "min": 123.873769,
+                  "max": 157.082154
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 19.005560183070386,
+              "start_unix_ms": 1795595172446,
+              "end_unix_ms": 1795595174408,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "tuic": {
+              "position": 3,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 303.0220385,
+                "p95": 304.6897998,
+                "mean": 301.28023075,
+                "min": 294.327,
+                "max": 304.749846
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 322.080731,
+                  "p95": 456.0461731,
+                  "mean": 341.8576925,
+                  "min": 247.885308,
+                  "max": 475.384
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 7.154422863657301,
+              "start_unix_ms": 1795595181406,
+              "end_unix_ms": 1795595186225,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            }
+          },
+          "adaptive_over_current": 3.6885538463088503,
+          "comparable": true,
+          "comparability_issues": []
+        },
+        {
+          "round": 4,
+          "order": [
+            "adaptive",
+            "tuic",
+            "current"
+          ],
+          "arms": {
+            "current": {
+              "position": 3,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 260.8963075,
+                "p95": 271.35550754999997,
+                "mean": 262.78725,
+                "min": 256.418539,
+                "max": 272.937846
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 153.2174225,
+                  "p95": 167.4477386,
+                  "mean": 150.08363425000002,
+                  "min": 125.066461,
+                  "max": 168.833231
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 20.328463279497843,
+              "start_unix_ms": 1795595228760,
+              "end_unix_ms": 1795595230605,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "adaptive": {
+              "position": 1,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 443.333654,
+                "p95": 445.9757119,
+                "mean": 443.35167325,
+                "min": 440.747,
+                "max": 445.992385
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 367.150077,
+                  "p95": 443.09821135,
+                  "mean": 357.99240375,
+                  "min": 253.520846,
+                  "max": 444.148615
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 6.653509806288098,
+              "start_unix_ms": 1795595220390,
+              "end_unix_ms": 1795595225598,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "tuic": {
+              "position": 2,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 362.792154,
+                "p95": 459.02010755,
+                "mean": 389.5195195,
+                "min": 357.215924,
+                "max": 475.277846
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 213.4070385,
+                  "p95": 239.4068497,
+                  "mean": 218.87228825,
+                  "min": 205.929538,
+                  "max": 242.745538
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 12.71475903682882,
+              "start_unix_ms": 1795595225764,
+              "end_unix_ms": 1795595228585,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            }
+          },
+          "adaptive_over_current": 0.32730018569571157,
+          "comparable": true,
+          "comparability_issues": []
+        },
+        {
+          "round": 5,
+          "order": [
+            "tuic",
+            "current",
+            "adaptive"
+          ],
+          "arms": {
+            "current": {
+              "position": 2,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 472.502116,
+                "p95": 472.79417295,
+                "mean": 471.07284649999997,
+                "min": 466.460385,
+                "max": 472.826769
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 147.5664615,
+                  "p95": 159.61480005,
+                  "mean": 147.85561525,
+                  "min": 134.962384,
+                  "max": 161.327154
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 17.48837611014591,
+              "start_unix_ms": 1795595234301,
+              "end_unix_ms": 1795595236386,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "adaptive": {
+              "position": 3,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 347.8690385,
+                "p95": 351.25174185,
+                "mean": 346.23423049999997,
+                "min": 337.384384,
+                "max": 351.814461
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 199.116462,
+                  "p95": 249.56255405,
+                  "mean": 195.0615195,
+                  "min": 132.314077,
+                  "max": 249.699077
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 19.262247430541326,
+              "start_unix_ms": 1795595236541,
+              "end_unix_ms": 1795595238426,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "tuic": {
+              "position": 1,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 361.23123150000004,
+                "p95": 370.3695931,
+                "mean": 361.705866,
+                "min": 353.429231,
+                "max": 370.93177
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 417.597077,
+                  "p95": 479.71677719999997,
+                  "mean": 390.5054425,
+                  "min": 237.743385,
+                  "max": 489.084231
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 10.418893744196952,
+              "start_unix_ms": 1795595230769,
+              "end_unix_ms": 1795595234138,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            }
+          },
+          "adaptive_over_current": 1.1014314484788728,
+          "comparable": true,
+          "comparability_issues": []
+        },
+        {
+          "round": 6,
+          "order": [
+            "tuic",
+            "adaptive",
+            "current"
+          ],
+          "arms": {
+            "current": {
+              "position": 3,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 355.4011155,
+                "p95": 366.33342335000003,
+                "mean": 356.97040400000003,
+                "min": 348.988077,
+                "max": 368.091308
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 140.5566155,
+                  "p95": 142.8557377,
+                  "mean": 141.02451925,
+                  "min": 139.79777,
+                  "max": 143.187076
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 18.643234554239307,
+              "start_unix_ms": 1795595272385,
+              "end_unix_ms": 1795595274351,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "adaptive": {
+              "position": 2,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 414.7199615,
+                "p95": 462.9967231,
+                "mean": 413.8030575,
+                "min": 362.748307,
+                "max": 463.024
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 286.531154,
+                  "p95": 336.84275755,
+                  "mean": 283.5475,
+                  "min": 221.405846,
+                  "max": 339.721846
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 11.313905519161658,
+              "start_unix_ms": 1795595269095,
+              "end_unix_ms": 1795595272239,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "tuic": {
+              "position": 1,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 887.6340005,
+                "p95": 969.07238425,
+                "mean": 909.961404,
+                "min": 881.223154,
+                "max": 983.354461
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 515.1663464999999,
+                  "p95": 840.1644235499998,
+                  "mean": 572.826481,
+                  "min": 365.019769,
+                  "max": 895.953462
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 3.768984956089957,
+              "start_unix_ms": 1795595259817,
+              "end_unix_ms": 1795595268890,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            }
+          },
+          "adaptive_over_current": 0.6068638725885137,
+          "comparable": true,
+          "comparability_issues": []
+        }
+      ],
+      "comparable_rounds": 6,
+      "adaptive_over_current_comparable_rounds": {
+        "n": 6,
+        "p50": 0.4670820291421126,
+        "p95": 3.0417732468513563,
+        "mean": 1.0496771990523306,
+        "min": 0.25774441514918656,
+        "max": 3.6885538463088503
+      },
+      "input_issues": []
+    },
+    "B": {
+      "run_id": "fcn3crossb",
+      "directory": "experiments/fcn-v3/results/stall-udp-crossover-2026-11-25/download-b",
+      "ports": {
+        "current": 18534,
+        "adaptive": 18532,
+        "tuic": 18533
+      },
+      "port_source": "declared default mapping",
+      "start_unix_ms": 1795595113055,
+      "end_unix_ms": 1795595258430,
+      "arms": {
+        "current": {
+          "planned": 24,
+          "valid_rows": 24,
+          "verified": 24,
+          "verified_bytes": 25165824,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "first_byte_ms": {
+            "n": 24,
+            "p50": 456.22119250000003,
+            "p95": 4638.3430956,
+            "mean": 1143.6234039166666,
+            "min": 227.025539,
+            "max": 4646.410154
+          },
+          "max_body_no_progress_ms": {
+            "success": {
+              "n": 24,
+              "p50": 310.68449999999996,
+              "p95": 552.9791698499998,
+              "mean": 303.767346125,
+              "min": 132.531692,
+              "max": 584.577846
+            },
+            "failure": {
+              "n": 0,
+              "p50": null,
+              "p95": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            }
+          },
+          "effective_batch_mbps": {
+            "n": 6,
+            "p50": 8.29337380313842,
+            "p95": 20.47774493229186,
+            "mean": 11.282635839774434,
+            "min": 3.622347457317027,
+            "max": 21.030315899995834
+          },
+          "failure_stages": {},
+          "failed_origin_states": {},
+          "network_stable_rounds": 6,
+          "port": 18534,
+          "start_unix_ms": 1795595113055,
+          "end_unix_ms": 1795595258430,
+          "failures": []
+        },
+        "adaptive": {
+          "planned": 24,
+          "valid_rows": 24,
+          "verified": 24,
+          "verified_bytes": 25165824,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "first_byte_ms": {
+            "n": 24,
+            "p50": 580.9420769999999,
+            "p95": 1091.4085695499998,
+            "mean": 618.1566572083333,
+            "min": 244.079692,
+            "max": 1094.466231
+          },
+          "max_body_no_progress_ms": {
+            "success": {
+              "n": 24,
+              "p50": 276.643423,
+              "p95": 563.4203927499998,
+              "mean": 284.74383020833335,
+              "min": 124.04223,
+              "max": 599.278077
+            },
+            "failure": {
+              "n": 0,
+              "p50": null,
+              "p95": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            }
+          },
+          "effective_batch_mbps": {
+            "n": 6,
+            "p50": 7.199516633425997,
+            "p95": 20.993868394558266,
+            "mean": 10.432236089517257,
+            "min": 3.571352355896355,
+            "max": 22.107662525825564
+          },
+          "failure_stages": {},
+          "failed_origin_states": {},
+          "network_stable_rounds": 6,
+          "port": 18532,
+          "start_unix_ms": 1795595114973,
+          "end_unix_ms": 1795595256358,
+          "failures": []
+        },
+        "tuic": {
+          "planned": 24,
+          "valid_rows": 24,
+          "verified": 24,
+          "verified_bytes": 25165824,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "first_byte_ms": {
+            "n": 24,
+            "p50": 363.1009235,
+            "p95": 447.32769644999985,
+            "mean": 373.66873408333333,
+            "min": 299.963307,
+            "max": 817.083693
+          },
+          "max_body_no_progress_ms": {
+            "success": {
+              "n": 24,
+              "p50": 156.630654,
+              "p95": 485.2401076499999,
+              "mean": 211.85015066666668,
+              "min": 126.34,
+              "max": 595.077769
+            },
+            "failure": {
+              "n": 0,
+              "p50": null,
+              "p95": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            }
+          },
+          "effective_batch_mbps": {
+            "n": 6,
+            "p50": 19.303292016049745,
+            "p95": 20.107761685974648,
+            "mean": 16.869739992267846,
+            "min": 3.6229773351331485,
+            "max": 20.246011944045954
+          },
+          "failure_stages": {},
+          "failed_origin_states": {},
+          "network_stable_rounds": 6,
+          "port": 18533,
+          "start_unix_ms": 1795595122194,
+          "end_unix_ms": 1795595254542,
+          "failures": []
+        }
+      },
+      "paired_rounds": [
+        {
+          "round": 1,
+          "order": [
+            "current",
+            "adaptive",
+            "tuic"
+          ],
+          "arms": {
+            "current": {
+              "position": 1,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 373.5375385,
+                "p95": 380.6864461,
+                "mean": 371.83721175,
+                "min": 359.084847,
+                "max": 381.188923
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 144.51326899999998,
+                  "p95": 146.87810755,
+                  "mean": 142.173019,
+                  "min": 132.531692,
+                  "max": 147.133846
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 21.030315899995834,
+              "start_unix_ms": 1795595113055,
+              "end_unix_ms": 1795595114808,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "adaptive": {
+              "position": 2,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 1045.517308,
+                "p95": 1094.42079255,
+                "mean": 1044.32442325,
+                "min": 991.796846,
+                "max": 1094.466231
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 334.769731,
+                  "p95": 390.98718049999997,
+                  "mean": 338.21125,
+                  "min": 284.545923,
+                  "max": 398.759615
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 4.862882387773263,
+              "start_unix_ms": 1795595114973,
+              "end_unix_ms": 1795595122015,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "tuic": {
+              "position": 3,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 308.4755775,
+                "p95": 311.16753815000004,
+                "mean": 307.06100000000004,
+                "min": 299.963307,
+                "max": 311.329538
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 147.784269,
+                  "p95": 180.56844585,
+                  "mean": 151.761846,
+                  "min": 128.070231,
+                  "max": 183.408615
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 20.246011944045954,
+              "start_unix_ms": 1795595122194,
+              "end_unix_ms": 1795595123993,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            }
+          },
+          "adaptive_over_current": 0.23123201814454086,
+          "comparable": true,
+          "comparability_issues": []
+        },
+        {
+          "round": 2,
+          "order": [
+            "current",
+            "tuic",
+            "adaptive"
+          ],
+          "arms": {
+            "current": {
+              "position": 1,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 652.3596924999999,
+                "p95": 733.5951497,
+                "mean": 674.80990375,
+                "min": 647.443692,
+                "max": 747.076538
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 364.12449949999996,
+                  "p95": 534.5601852,
+                  "mean": 380.181923,
+                  "min": 228.479923,
+                  "max": 563.99877
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 7.6363720458769615,
+              "start_unix_ms": 1795595124150,
+              "end_unix_ms": 1795595128719,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "adaptive": {
+              "position": 3,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 250.9456155,
+                "p95": 252.54424605,
+                "mean": 249.79905775,
+                "min": 244.513231,
+                "max": 252.791769
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 525.4990775,
+                  "p95": 596.3372232,
+                  "mean": 526.712058,
+                  "min": 456.572,
+                  "max": 599.278077
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 3.571352355896355,
+              "start_unix_ms": 1795595130941,
+              "end_unix_ms": 1795595140456,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "tuic": {
+              "position": 2,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 369.90380749999997,
+                "p95": 374.75573479999997,
+                "mean": 371.06380775,
+                "min": 368.863385,
+                "max": 375.584231
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 135.342577,
+                  "p95": 192.14944594999997,
+                  "mean": 151.72253849999998,
+                  "min": 134.217308,
+                  "max": 201.987692
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 19.55031107710833,
+              "start_unix_ms": 1795595128884,
+              "end_unix_ms": 1795595130776,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            }
+          },
+          "adaptive_over_current": 0.4676765791976576,
+          "comparable": true,
+          "comparability_issues": []
+        },
+        {
+          "round": 3,
+          "order": [
+            "adaptive",
+            "current",
+            "tuic"
+          ],
+          "arms": {
+            "current": {
+              "position": 2,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 233.1013455,
+                "p95": 233.71499615,
+                "mean": 231.75157675,
+                "min": 227.025539,
+                "max": 233.778077
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 317.085539,
+                  "p95": 545.3162461499999,
+                  "mean": 363.3975965,
+                  "min": 234.841462,
+                  "max": 584.577846
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 8.724599194319717,
+              "start_unix_ms": 1795595189611,
+              "end_unix_ms": 1795595193649,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "adaptive": {
+              "position": 1,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 596.7001155,
+                "p95": 600.9094192,
+                "mean": 597.7423845000001,
+                "min": 595.988384,
+                "max": 601.580923
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 142.6461545,
+                  "p95": 142.76323035,
+                  "mean": 142.604058,
+                  "min": 142.356539,
+                  "max": 142.767384
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 17.65248600075637,
+              "start_unix_ms": 1795595187399,
+              "end_unix_ms": 1795595189447,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "tuic": {
+              "position": 3,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 366.45038450000004,
+                "p95": 372.92512675,
+                "mean": 367.97573075,
+                "min": 365.003385,
+                "max": 373.998769
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 155.68384600000002,
+                  "p95": 231.74211199999996,
+                  "mean": 170.0837885,
+                  "min": 126.34,
+                  "max": 242.627462
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 19.056272954991158,
+              "start_unix_ms": 1795595193813,
+              "end_unix_ms": 1795595195759,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            }
+          },
+          "adaptive_over_current": 2.0233005101540122,
+          "comparable": true,
+          "comparability_issues": []
+        },
+        {
+          "round": 4,
+          "order": [
+            "adaptive",
+            "tuic",
+            "current"
+          ],
+          "arms": {
+            "current": {
+              "position": 3,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 4638.2562689999995,
+                "p95": 4645.20567695,
+                "mean": 4612.786577,
+                "min": 4528.223616,
+                "max": 4646.410154
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 399.0884235,
+                  "p95": 450.81812269999995,
+                  "mean": 383.9373655,
+                  "min": 280.786154,
+                  "max": 456.786461
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 3.622347457317027,
+              "start_unix_ms": 1795595209633,
+              "end_unix_ms": 1795595219041,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "adaptive": {
+              "position": 1,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 525.8692315000001,
+                "p95": 565.8674199999999,
+                "mean": 495.45580825,
+                "min": 364.189,
+                "max": 565.89577
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 287.47226950000004,
+                  "p95": 329.184981,
+                  "mean": 280.5078655,
+                  "min": 216.234692,
+                  "max": 330.852231
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 8.853642327231567,
+              "start_unix_ms": 1795595195957,
+              "end_unix_ms": 1795595199887,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "tuic": {
+              "position": 2,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 416.695039,
+                "p95": 763.5193852499999,
+                "mean": 504.53813525,
+                "min": 367.67877,
+                "max": 817.083693
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 474.5585385,
+                  "p95": 579.2887920999999,
+                  "mean": 467.13824999999997,
+                  "min": 324.358154,
+                  "max": 595.077769
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 3.6229773351331485,
+              "start_unix_ms": 1795595200041,
+              "end_unix_ms": 1795595209458,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            }
+          },
+          "adaptive_over_current": 2.4441725791233777,
+          "comparable": true,
+          "comparability_issues": []
+        },
+        {
+          "round": 5,
+          "order": [
+            "tuic",
+            "current",
+            "adaptive"
+          ],
+          "arms": {
+            "current": {
+              "position": 2,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 631.6873845,
+                "p95": 640.69613885,
+                "mean": 608.8744425,
+                "min": 531.253462,
+                "max": 640.869539
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 342.50019199999997,
+                  "p95": 472.5531843499999,
+                  "mean": 371.3917305,
+                  "min": 310.031769,
+                  "max": 490.534769
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 7.862148411957123,
+              "start_unix_ms": 1795595241675,
+              "end_unix_ms": 1795595246119,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "adaptive": {
+              "position": 3,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 1073.3014229999999,
+                "p95": 1075.46933105,
+                "mean": 1073.582154,
+                "min": 1071.927385,
+                "max": 1075.798385
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 299.57046149999996,
+                  "p95": 336.36863454999997,
+                  "mean": 289.5510385,
+                  "min": 221.641308,
+                  "max": 337.421923
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 5.545390939620428,
+              "start_unix_ms": 1795595246287,
+              "end_unix_ms": 1795595252502,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "tuic": {
+              "position": 1,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 354.647577,
+                "p95": 360.3889696,
+                "mean": 354.5118655,
+                "min": 347.553846,
+                "max": 361.198462
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 156.630654,
+                  "p95": 259.56777685,
+                  "mean": 182.912827,
+                  "min": 141.101154,
+                  "max": 277.288846
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 19.04985573056776,
+              "start_unix_ms": 1795595239651,
+              "end_unix_ms": 1795595241511,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            }
+          },
+          "adaptive_over_current": 0.7053276851384207,
+          "comparable": true,
+          "comparability_issues": []
+        },
+        {
+          "round": 6,
+          "order": [
+            "tuic",
+            "adaptive",
+            "current"
+          ],
+          "arms": {
+            "current": {
+              "position": 3,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 362.7414235,
+                "p95": 365.5698152,
+                "mean": 361.68071175,
+                "min": 355.193231,
+                "max": 366.046769
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 159.180269,
+                  "p95": 256.3657078,
+                  "mean": 181.52244225,
+                  "min": 135.623077,
+                  "max": 272.106154
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 18.820032029179938,
+              "start_unix_ms": 1795595256501,
+              "end_unix_ms": 1795595258430,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "adaptive": {
+              "position": 2,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 248.2793465,
+                "p95": 251.08521165,
+                "mean": 248.0361155,
+                "min": 244.079692,
+                "max": 251.506077
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 128.718923,
+                  "p95": 140.5333114,
+                  "mean": 130.87671125,
+                  "min": 124.04223,
+                  "max": 142.026769
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 22.107662525825564,
+              "start_unix_ms": 1795595254695,
+              "end_unix_ms": 1795595256358,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            },
+            "tuic": {
+              "position": 1,
+              "planned": 4,
+              "valid_rows": 4,
+              "verified": 4,
+              "failed": 0,
+              "missing": 0,
+              "invalid": 0,
+              "first_byte_ms": {
+                "n": 4,
+                "p50": 336.382654,
+                "p95": 341.3012345,
+                "mean": 336.86186525,
+                "min": 332.626384,
+                "max": 342.055769
+              },
+              "max_body_no_progress_ms": {
+                "success": {
+                  "n": 4,
+                  "p50": 140.138923,
+                  "p95": 172.48144659999997,
+                  "mean": 147.481654,
+                  "min": 132.598231,
+                  "max": 177.050539
+                },
+                "failure": {
+                  "n": 0,
+                  "p50": null,
+                  "p95": null,
+                  "mean": null,
+                  "min": null,
+                  "max": null
+                }
+              },
+              "effective_batch_mbps": 19.69301091176073,
+              "start_unix_ms": 1795595252658,
+              "end_unix_ms": 1795595254542,
+              "default_net_id": 359,
+              "exit_code": 0,
+              "process_status": "exited"
+            }
+          },
+          "adaptive_over_current": 1.1746878268617316,
+          "comparable": true,
+          "comparability_issues": []
+        }
+      ],
+      "comparable_rounds": 6,
+      "adaptive_over_current_comparable_rounds": {
+        "n": 6,
+        "p50": 0.9400077560000761,
+        "p95": 2.338954561881036,
+        "mean": 1.1743995331032901,
+        "min": 0.23123201814454086,
+        "max": 2.4441725791233777
+      },
+      "input_issues": []
+    }
+  },
+  "design": {
+    "declared_fcn_ports_crossed": true,
+    "declared_tuic_port_unchanged": true,
+    "distinct_run_ids": true,
+    "b_starts_after_a_ends": false
+  },
+  "comparison_panel": {
+    "same_port_across_stages": {
+      "18532": {
+        "A": [
+          {
+            "run_id": "fcn3crossa",
+            "arm": "current",
+            "port": 18532,
+            "start_unix_ms": 1795595099640,
+            "end_unix_ms": 1795595274351,
+            "planned": 24,
+            "valid_rows": 24,
+            "verified": 24,
+            "missing": 0,
+            "invalid": 0,
+            "failed": 0,
+            "first_byte_ms": {
+              "n": 24,
+              "p50": 417.2758465,
+              "p95": 1450.6827191,
+              "mean": 572.0795994166666,
+              "min": 256.418539,
+              "max": 1540.246154
+            },
+            "max_body_no_progress_ms": {
+              "success": {
+                "n": 24,
+                "p50": 148.3748455,
+                "p95": 381.4302305999999,
+                "mean": 198.413025625,
+                "min": 118.194077,
+                "max": 485.701538
+              },
+              "failure": {
+                "n": 0,
+                "p50": null,
+                "p95": null,
+                "mean": null,
+                "min": null,
+                "max": null
+              }
+            },
+            "effective_batch_mbps": {
+              "n": 6,
+              "p50": 18.07764679924864,
+              "p95": 20.216789866159417,
+              "mean": 16.501080047380263,
+              "min": 5.152577669996419,
+              "max": 20.328463279497843
+            }
+          }
+        ],
+        "B": [
+          {
+            "run_id": "fcn3crossb",
+            "arm": "adaptive",
+            "port": 18532,
+            "start_unix_ms": 1795595114973,
+            "end_unix_ms": 1795595256358,
+            "planned": 24,
+            "valid_rows": 24,
+            "verified": 24,
+            "missing": 0,
+            "invalid": 0,
+            "failed": 0,
+            "first_byte_ms": {
+              "n": 24,
+              "p50": 580.9420769999999,
+              "p95": 1091.4085695499998,
+              "mean": 618.1566572083333,
+              "min": 244.079692,
+              "max": 1094.466231
+            },
+            "max_body_no_progress_ms": {
+              "success": {
+                "n": 24,
+                "p50": 276.643423,
+                "p95": 563.4203927499998,
+                "mean": 284.74383020833335,
+                "min": 124.04223,
+                "max": 599.278077
+              },
+              "failure": {
+                "n": 0,
+                "p50": null,
+                "p95": null,
+                "mean": null,
+                "min": null,
+                "max": null
+              }
+            },
+            "effective_batch_mbps": {
+              "n": 6,
+              "p50": 7.199516633425997,
+              "p95": 20.993868394558266,
+              "mean": 10.432236089517257,
+              "min": 3.571352355896355,
+              "max": 22.107662525825564
+            }
+          }
+        ]
+      },
+      "18534": {
+        "A": [
+          {
+            "run_id": "fcn3crossa",
+            "arm": "adaptive",
+            "port": 18534,
+            "start_unix_ms": 1795595101918,
+            "end_unix_ms": 1795595272239,
+            "planned": 24,
+            "valid_rows": 24,
+            "verified": 24,
+            "missing": 0,
+            "invalid": 0,
+            "failed": 0,
+            "first_byte_ms": {
+              "n": 24,
+              "p50": 439.8581155,
+              "p95": 1276.1062575,
+              "mean": 537.7767211666667,
+              "min": 337.384384,
+              "max": 1276.700077
+            },
+            "max_body_no_progress_ms": {
+              "success": {
+                "n": 24,
+                "p50": 290.98449949999997,
+                "p95": 557.5949385499999,
+                "mean": 312.09807370833335,
+                "min": 123.873769,
+                "max": 760.288538
+              },
+              "failure": {
+                "n": 0,
+                "p50": null,
+                "p95": null,
+                "mean": null,
+                "min": null,
+                "max": null
+              }
+            },
+            "effective_batch_mbps": {
+              "n": 6,
+              "p50": 8.983707662724878,
+              "p95": 19.19807561867359,
+              "mean": 11.172477674648329,
+              "min": 4.513635416420294,
+              "max": 19.262247430541326
+            }
+          }
+        ],
+        "B": [
+          {
+            "run_id": "fcn3crossb",
+            "arm": "current",
+            "port": 18534,
+            "start_unix_ms": 1795595113055,
+            "end_unix_ms": 1795595258430,
+            "planned": 24,
+            "valid_rows": 24,
+            "verified": 24,
+            "missing": 0,
+            "invalid": 0,
+            "failed": 0,
+            "first_byte_ms": {
+              "n": 24,
+              "p50": 456.22119250000003,
+              "p95": 4638.3430956,
+              "mean": 1143.6234039166666,
+              "min": 227.025539,
+              "max": 4646.410154
+            },
+            "max_body_no_progress_ms": {
+              "success": {
+                "n": 24,
+                "p50": 310.68449999999996,
+                "p95": 552.9791698499998,
+                "mean": 303.767346125,
+                "min": 132.531692,
+                "max": 584.577846
+              },
+              "failure": {
+                "n": 0,
+                "p50": null,
+                "p95": null,
+                "mean": null,
+                "min": null,
+                "max": null
+              }
+            },
+            "effective_batch_mbps": {
+              "n": 6,
+              "p50": 8.29337380313842,
+              "p95": 20.47774493229186,
+              "mean": 11.282635839774434,
+              "min": 3.622347457317027,
+              "max": 21.030315899995834
+            }
+          }
+        ]
+      }
+    },
+    "same_profile_across_stages": {
+      "current": {
+        "A": {
+          "run_id": "fcn3crossa",
+          "arm": "current",
+          "port": 18532,
+          "start_unix_ms": 1795595099640,
+          "end_unix_ms": 1795595274351,
+          "planned": 24,
+          "valid_rows": 24,
+          "verified": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "first_byte_ms": {
+            "n": 24,
+            "p50": 417.2758465,
+            "p95": 1450.6827191,
+            "mean": 572.0795994166666,
+            "min": 256.418539,
+            "max": 1540.246154
+          },
+          "max_body_no_progress_ms": {
+            "success": {
+              "n": 24,
+              "p50": 148.3748455,
+              "p95": 381.4302305999999,
+              "mean": 198.413025625,
+              "min": 118.194077,
+              "max": 485.701538
+            },
+            "failure": {
+              "n": 0,
+              "p50": null,
+              "p95": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            }
+          },
+          "effective_batch_mbps": {
+            "n": 6,
+            "p50": 18.07764679924864,
+            "p95": 20.216789866159417,
+            "mean": 16.501080047380263,
+            "min": 5.152577669996419,
+            "max": 20.328463279497843
+          }
+        },
+        "B": {
+          "run_id": "fcn3crossb",
+          "arm": "current",
+          "port": 18534,
+          "start_unix_ms": 1795595113055,
+          "end_unix_ms": 1795595258430,
+          "planned": 24,
+          "valid_rows": 24,
+          "verified": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "first_byte_ms": {
+            "n": 24,
+            "p50": 456.22119250000003,
+            "p95": 4638.3430956,
+            "mean": 1143.6234039166666,
+            "min": 227.025539,
+            "max": 4646.410154
+          },
+          "max_body_no_progress_ms": {
+            "success": {
+              "n": 24,
+              "p50": 310.68449999999996,
+              "p95": 552.9791698499998,
+              "mean": 303.767346125,
+              "min": 132.531692,
+              "max": 584.577846
+            },
+            "failure": {
+              "n": 0,
+              "p50": null,
+              "p95": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            }
+          },
+          "effective_batch_mbps": {
+            "n": 6,
+            "p50": 8.29337380313842,
+            "p95": 20.47774493229186,
+            "mean": 11.282635839774434,
+            "min": 3.622347457317027,
+            "max": 21.030315899995834
+          }
+        }
+      },
+      "adaptive": {
+        "A": {
+          "run_id": "fcn3crossa",
+          "arm": "adaptive",
+          "port": 18534,
+          "start_unix_ms": 1795595101918,
+          "end_unix_ms": 1795595272239,
+          "planned": 24,
+          "valid_rows": 24,
+          "verified": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "first_byte_ms": {
+            "n": 24,
+            "p50": 439.8581155,
+            "p95": 1276.1062575,
+            "mean": 537.7767211666667,
+            "min": 337.384384,
+            "max": 1276.700077
+          },
+          "max_body_no_progress_ms": {
+            "success": {
+              "n": 24,
+              "p50": 290.98449949999997,
+              "p95": 557.5949385499999,
+              "mean": 312.09807370833335,
+              "min": 123.873769,
+              "max": 760.288538
+            },
+            "failure": {
+              "n": 0,
+              "p50": null,
+              "p95": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            }
+          },
+          "effective_batch_mbps": {
+            "n": 6,
+            "p50": 8.983707662724878,
+            "p95": 19.19807561867359,
+            "mean": 11.172477674648329,
+            "min": 4.513635416420294,
+            "max": 19.262247430541326
+          }
+        },
+        "B": {
+          "run_id": "fcn3crossb",
+          "arm": "adaptive",
+          "port": 18532,
+          "start_unix_ms": 1795595114973,
+          "end_unix_ms": 1795595256358,
+          "planned": 24,
+          "valid_rows": 24,
+          "verified": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "first_byte_ms": {
+            "n": 24,
+            "p50": 580.9420769999999,
+            "p95": 1091.4085695499998,
+            "mean": 618.1566572083333,
+            "min": 244.079692,
+            "max": 1094.466231
+          },
+          "max_body_no_progress_ms": {
+            "success": {
+              "n": 24,
+              "p50": 276.643423,
+              "p95": 563.4203927499998,
+              "mean": 284.74383020833335,
+              "min": 124.04223,
+              "max": 599.278077
+            },
+            "failure": {
+              "n": 0,
+              "p50": null,
+              "p95": null,
+              "mean": null,
+              "min": null,
+              "max": null
+            }
+          },
+          "effective_batch_mbps": {
+            "n": 6,
+            "p50": 7.199516633425997,
+            "p95": 20.993868394558266,
+            "mean": 10.432236089517257,
+            "min": 3.571352355896355,
+            "max": 22.107662525825564
+          }
+        }
+      }
+    },
+    "tuic_reference_across_stages": {
+      "A": {
+        "run_id": "fcn3crossa",
+        "arm": "tuic",
+        "port": 18533,
+        "start_unix_ms": 1795595109663,
+        "end_unix_ms": 1795595268890,
+        "planned": 24,
+        "valid_rows": 24,
+        "verified": 24,
+        "missing": 0,
+        "invalid": 0,
+        "failed": 0,
+        "first_byte_ms": {
+          "n": 24,
+          "p50": 362.2274235,
+          "p95": 887.98863135,
+          "mean": 451.726109125,
+          "min": 294.327,
+          "max": 983.354461
+        },
+        "max_body_no_progress_ms": {
+          "success": {
+            "n": 24,
+            "p50": 355.7424615,
+            "p95": 1192.51223125,
+            "mean": 461.17253216666666,
+            "min": 128.715693,
+            "max": 1246.781615
+          },
+          "failure": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          }
+        },
+        "effective_batch_mbps": {
+          "n": 6,
+          "p50": 8.786658303927126,
+          "p95": 18.598986838448994,
+          "mean": 9.350102052046308,
+          "min": 1.4831556058491053,
+          "max": 20.56039610565572
+        }
+      },
+      "B": {
+        "run_id": "fcn3crossb",
+        "arm": "tuic",
+        "port": 18533,
+        "start_unix_ms": 1795595122194,
+        "end_unix_ms": 1795595254542,
+        "planned": 24,
+        "valid_rows": 24,
+        "verified": 24,
+        "missing": 0,
+        "invalid": 0,
+        "failed": 0,
+        "first_byte_ms": {
+          "n": 24,
+          "p50": 363.1009235,
+          "p95": 447.32769644999985,
+          "mean": 373.66873408333333,
+          "min": 299.963307,
+          "max": 817.083693
+        },
+        "max_body_no_progress_ms": {
+          "success": {
+            "n": 24,
+            "p50": 156.630654,
+            "p95": 485.2401076499999,
+            "mean": 211.85015066666668,
+            "min": 126.34,
+            "max": 595.077769
+          },
+          "failure": {
+            "n": 0,
+            "p50": null,
+            "p95": null,
+            "mean": null,
+            "min": null,
+            "max": null
+          }
+        },
+        "effective_batch_mbps": {
+          "n": 6,
+          "p50": 19.303292016049745,
+          "p95": 20.107761685974648,
+          "mean": 16.869739992267846,
+          "min": 3.6229773351331485,
+          "max": 20.246011944045954
+        }
+      }
+    }
+  },
+  "notes": [
+    "Stage and arm times are host Unix milliseconds. First-byte distributions use successful samples.",
+    "Effective batch throughput divides fully verified bytes by comparator batch elapsed time, including failed requests.",
+    "Comparable throughput pairs require complete request rows, the planned workload and order, and the same validated default network ID.",
+    "Same-port cells change profile and measurement time together. Same-profile cells change port and measurement time together. TUIC shows the reference at both times."
+  ]
+}

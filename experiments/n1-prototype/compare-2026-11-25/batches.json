@@ -1,0 +1,1460 @@
+[
+  {
+    "phase": "cold",
+    "bytes": 32768,
+    "count": 6,
+    "workers": 1,
+    "protocol": "tuic",
+    "block": 1,
+    "position": 1,
+    "phase_index": 0,
+    "elapsed_ms": 5640.596,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 1,
+    "start_unix": 1795538773.462539,
+    "end_unix": 1795538779.198832,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "cold",
+    "bytes": 32768,
+    "count": 6,
+    "workers": 1,
+    "protocol": "hysteria2",
+    "block": 1,
+    "position": 2,
+    "phase_index": 0,
+    "elapsed_ms": 4753.278,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 2,
+    "start_unix": 1795538779.509397,
+    "end_unix": 1795538784.350005,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "cold",
+    "bytes": 32768,
+    "count": 6,
+    "workers": 1,
+    "protocol": "n1",
+    "block": 1,
+    "position": 3,
+    "phase_index": 0,
+    "elapsed_ms": 15820.344,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 3,
+    "start_unix": 1795538784.683042,
+    "end_unix": 1795538800.599901,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "cold",
+    "bytes": 32768,
+    "count": 6,
+    "workers": 1,
+    "protocol": "hysteria2",
+    "block": 2,
+    "position": 1,
+    "phase_index": 0,
+    "elapsed_ms": 11806.157,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 4,
+    "start_unix": 1795538800.982291,
+    "end_unix": 1795538812.890707,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "cold",
+    "bytes": 32768,
+    "count": 6,
+    "workers": 1,
+    "protocol": "n1",
+    "block": 2,
+    "position": 2,
+    "phase_index": 0,
+    "elapsed_ms": 12113.684,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 5,
+    "start_unix": 1795538813.268356,
+    "end_unix": 1795538825.551245,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "cold",
+    "bytes": 32768,
+    "count": 6,
+    "workers": 1,
+    "protocol": "tuic",
+    "block": 2,
+    "position": 3,
+    "phase_index": 0,
+    "elapsed_ms": 4275.091,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 6,
+    "start_unix": 1795538825.9154198,
+    "end_unix": 1795538830.290137,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "cold",
+    "bytes": 32768,
+    "count": 6,
+    "workers": 1,
+    "protocol": "n1",
+    "block": 3,
+    "position": 1,
+    "phase_index": 0,
+    "elapsed_ms": 22564.601,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 7,
+    "start_unix": 1795538830.607902,
+    "end_unix": 1795538853.290005,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "cold",
+    "bytes": 32768,
+    "count": 6,
+    "workers": 1,
+    "protocol": "tuic",
+    "block": 3,
+    "position": 2,
+    "phase_index": 0,
+    "elapsed_ms": 9553.465,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 8,
+    "start_unix": 1795538853.676511,
+    "end_unix": 1795538863.331501,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "cold",
+    "bytes": 32768,
+    "count": 6,
+    "workers": 1,
+    "protocol": "hysteria2",
+    "block": 3,
+    "position": 3,
+    "phase_index": 0,
+    "elapsed_ms": 9536.359,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 9,
+    "start_unix": 1795538863.7245739,
+    "end_unix": 1795538873.368511,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "warm",
+    "bytes": 32768,
+    "count": 8,
+    "workers": 1,
+    "protocol": "tuic",
+    "block": 1,
+    "position": 1,
+    "phase_index": 1,
+    "elapsed_ms": 2213.109,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 10,
+    "start_unix": 1795538873.73398,
+    "end_unix": 1795538876.0585759,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "warm",
+    "bytes": 32768,
+    "count": 8,
+    "workers": 1,
+    "protocol": "n1",
+    "block": 1,
+    "position": 2,
+    "phase_index": 1,
+    "elapsed_ms": 25157.952,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 11,
+    "start_unix": 1795538876.387994,
+    "end_unix": 1795538901.648383,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "warm",
+    "bytes": 32768,
+    "count": 8,
+    "workers": 1,
+    "protocol": "hysteria2",
+    "block": 1,
+    "position": 3,
+    "phase_index": 1,
+    "elapsed_ms": 2956.421,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 12,
+    "start_unix": 1795538902.01968,
+    "end_unix": 1795538905.1026938,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "warm",
+    "bytes": 32768,
+    "count": 8,
+    "workers": 1,
+    "protocol": "n1",
+    "block": 2,
+    "position": 1,
+    "phase_index": 1,
+    "elapsed_ms": 14967.954,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 13,
+    "start_unix": 1795538905.431583,
+    "end_unix": 1795538920.495327,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "warm",
+    "bytes": 32768,
+    "count": 8,
+    "workers": 1,
+    "protocol": "hysteria2",
+    "block": 2,
+    "position": 2,
+    "phase_index": 1,
+    "elapsed_ms": 7657.073,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 14,
+    "start_unix": 1795538920.881118,
+    "end_unix": 1795538928.656945,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "warm",
+    "bytes": 32768,
+    "count": 8,
+    "workers": 1,
+    "protocol": "tuic",
+    "block": 2,
+    "position": 3,
+    "phase_index": 1,
+    "elapsed_ms": 2189.843,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 15,
+    "start_unix": 1795538929.049197,
+    "end_unix": 1795538931.35418,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "warm",
+    "bytes": 32768,
+    "count": 8,
+    "workers": 1,
+    "protocol": "hysteria2",
+    "block": 3,
+    "position": 1,
+    "phase_index": 1,
+    "elapsed_ms": 2406.956,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 16,
+    "start_unix": 1795538931.674677,
+    "end_unix": 1795538934.210353,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "warm",
+    "bytes": 32768,
+    "count": 8,
+    "workers": 1,
+    "protocol": "tuic",
+    "block": 3,
+    "position": 2,
+    "phase_index": 1,
+    "elapsed_ms": 2338.047,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 17,
+    "start_unix": 1795538934.530856,
+    "end_unix": 1795538936.985214,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "warm",
+    "bytes": 32768,
+    "count": 8,
+    "workers": 1,
+    "protocol": "n1",
+    "block": 3,
+    "position": 3,
+    "phase_index": 1,
+    "elapsed_ms": 34351.708,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 18,
+    "start_unix": 1795538937.2924118,
+    "end_unix": 1795538971.748966,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 8,
+    "workers": 4,
+    "protocol": "tuic",
+    "block": 1,
+    "position": 1,
+    "phase_index": 2,
+    "elapsed_ms": 3317.186,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 19,
+    "start_unix": 1795538972.096742,
+    "end_unix": 1795538975.532038,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 8,
+    "workers": 4,
+    "protocol": "hysteria2",
+    "block": 1,
+    "position": 2,
+    "phase_index": 2,
+    "elapsed_ms": 6280.364,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 20,
+    "start_unix": 1795538975.855937,
+    "end_unix": 1795538982.2631838,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 8,
+    "workers": 4,
+    "protocol": "n1",
+    "block": 1,
+    "position": 3,
+    "phase_index": 2,
+    "elapsed_ms": 6988.975,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 21,
+    "start_unix": 1795538982.584836,
+    "end_unix": 1795538989.67026,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 8,
+    "workers": 4,
+    "protocol": "hysteria2",
+    "block": 2,
+    "position": 1,
+    "phase_index": 2,
+    "elapsed_ms": 1448.515,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 22,
+    "start_unix": 1795538989.985875,
+    "end_unix": 1795538991.56095,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 8,
+    "workers": 4,
+    "protocol": "n1",
+    "block": 2,
+    "position": 2,
+    "phase_index": 2,
+    "elapsed_ms": 5692.753,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 23,
+    "start_unix": 1795538991.8852422,
+    "end_unix": 1795538997.676957,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 8,
+    "workers": 4,
+    "protocol": "tuic",
+    "block": 2,
+    "position": 3,
+    "phase_index": 2,
+    "elapsed_ms": 3837.299,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 24,
+    "start_unix": 1795538997.9909408,
+    "end_unix": 1795539001.966259,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 8,
+    "workers": 4,
+    "protocol": "n1",
+    "block": 3,
+    "position": 1,
+    "phase_index": 2,
+    "elapsed_ms": 5637.36,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 25,
+    "start_unix": 1795539002.283711,
+    "end_unix": 1795539008.019967,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 8,
+    "workers": 4,
+    "protocol": "tuic",
+    "block": 3,
+    "position": 2,
+    "phase_index": 2,
+    "elapsed_ms": 3444.155,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 26,
+    "start_unix": 1795539008.3456728,
+    "end_unix": 1795539011.9123268,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "concurrent",
+    "bytes": 131072,
+    "count": 8,
+    "workers": 4,
+    "protocol": "hysteria2",
+    "block": 3,
+    "position": 3,
+    "phase_index": 2,
+    "elapsed_ms": 3150.653,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 27,
+    "start_unix": 1795539012.240778,
+    "end_unix": 1795539015.503605,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "protocol": "tuic",
+    "block": 1,
+    "position": 1,
+    "phase_index": 3,
+    "elapsed_ms": 2356.209,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 28,
+    "start_unix": 1795539015.821362,
+    "end_unix": 1795539018.285492,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "protocol": "hysteria2",
+    "block": 1,
+    "position": 2,
+    "phase_index": 3,
+    "elapsed_ms": 2510.112,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 29,
+    "start_unix": 1795539018.620439,
+    "end_unix": 1795539021.269726,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "protocol": "n1",
+    "block": 1,
+    "position": 3,
+    "phase_index": 3,
+    "elapsed_ms": 8648.893,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 30,
+    "start_unix": 1795539021.596193,
+    "end_unix": 1795539030.3500512,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "protocol": "hysteria2",
+    "block": 2,
+    "position": 1,
+    "phase_index": 3,
+    "elapsed_ms": 8203.785,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 31,
+    "start_unix": 1795539030.757463,
+    "end_unix": 1795539039.0864289,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "protocol": "n1",
+    "block": 2,
+    "position": 2,
+    "phase_index": 3,
+    "elapsed_ms": 3714.717,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 32,
+    "start_unix": 1795539039.4543831,
+    "end_unix": 1795539043.267105,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "protocol": "tuic",
+    "block": 2,
+    "position": 3,
+    "phase_index": 3,
+    "elapsed_ms": 11321.752,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 33,
+    "start_unix": 1795539043.593497,
+    "end_unix": 1795539055.0295,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "protocol": "n1",
+    "block": 3,
+    "position": 1,
+    "phase_index": 3,
+    "elapsed_ms": 14196.36,
+    "event": "batch-ended",
+    "failed": 1,
+    "batch": 34,
+    "start_unix": 1795539055.3718898,
+    "end_unix": 1795539069.6635158,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 1
+  },
+  {
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "protocol": "tuic",
+    "block": 3,
+    "position": 2,
+    "phase_index": 3,
+    "elapsed_ms": 8406.409,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 35,
+    "start_unix": 1795539070.032834,
+    "end_unix": 1795539078.577489,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "download",
+    "bytes": 4194304,
+    "count": 1,
+    "workers": 1,
+    "protocol": "hysteria2",
+    "block": 3,
+    "position": 3,
+    "phase_index": 3,
+    "elapsed_ms": 2073.674,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 36,
+    "start_unix": 1795539078.969414,
+    "end_unix": 1795539081.165175,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "protocol": "tuic",
+    "block": 1,
+    "position": 1,
+    "phase_index": 4,
+    "elapsed_ms": 18771.073,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 37,
+    "start_unix": 1795539081.492396,
+    "end_unix": 1795539100.395812,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "protocol": "hysteria2",
+    "block": 1,
+    "position": 2,
+    "phase_index": 4,
+    "elapsed_ms": 2056.094,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 38,
+    "start_unix": 1795539100.789541,
+    "end_unix": 1795539102.9646301,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "protocol": "n1",
+    "block": 1,
+    "position": 3,
+    "phase_index": 4,
+    "elapsed_ms": 7554.497,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 39,
+    "start_unix": 1795539103.292802,
+    "end_unix": 1795539110.9460359,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "protocol": "hysteria2",
+    "block": 2,
+    "position": 1,
+    "phase_index": 4,
+    "elapsed_ms": 11625.704,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 40,
+    "start_unix": 1795539111.2814422,
+    "end_unix": 1795539123.022679,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "protocol": "n1",
+    "block": 2,
+    "position": 2,
+    "phase_index": 4,
+    "elapsed_ms": 20022.926,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 41,
+    "start_unix": 1795539123.376526,
+    "end_unix": 1795539143.503238,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "protocol": "tuic",
+    "block": 2,
+    "position": 3,
+    "phase_index": 4,
+    "elapsed_ms": 1862.661,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 42,
+    "start_unix": 1795539143.885855,
+    "end_unix": 1795539145.8661618,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "protocol": "n1",
+    "block": 3,
+    "position": 1,
+    "phase_index": 4,
+    "elapsed_ms": 11133.341,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 43,
+    "start_unix": 1795539146.1974988,
+    "end_unix": 1795539157.418876,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "protocol": "tuic",
+    "block": 3,
+    "position": 2,
+    "phase_index": 4,
+    "elapsed_ms": 1819.068,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 44,
+    "start_unix": 1795539157.807171,
+    "end_unix": 1795539159.7787662,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "download",
+    "bytes": 1048576,
+    "count": 4,
+    "workers": 4,
+    "protocol": "hysteria2",
+    "block": 3,
+    "position": 3,
+    "phase_index": 4,
+    "elapsed_ms": 1720.047,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 45,
+    "start_unix": 1795539160.10269,
+    "end_unix": 1795539161.9382029,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "upload",
+    "bytes": 1048576,
+    "count": 1,
+    "workers": 1,
+    "protocol": "n1",
+    "block": 1,
+    "position": 1,
+    "phase_index": 5,
+    "elapsed_ms": 4394.387,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 46,
+    "start_unix": 1795539162.2597,
+    "end_unix": 1795539166.748668,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "upload",
+    "bytes": 1048576,
+    "count": 1,
+    "workers": 1,
+    "protocol": "hysteria2",
+    "block": 1,
+    "position": 2,
+    "phase_index": 5,
+    "elapsed_ms": 1548.399,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 47,
+    "start_unix": 1795539167.0824928,
+    "end_unix": 1795539168.75148,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "upload",
+    "bytes": 1048576,
+    "count": 1,
+    "workers": 1,
+    "protocol": "tuic",
+    "block": 1,
+    "position": 3,
+    "phase_index": 5,
+    "elapsed_ms": 1132.387,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 48,
+    "start_unix": 1795539169.08159,
+    "end_unix": 1795539170.316576,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "upload",
+    "bytes": 1048576,
+    "count": 1,
+    "workers": 1,
+    "protocol": "hysteria2",
+    "block": 2,
+    "position": 1,
+    "phase_index": 5,
+    "elapsed_ms": 901.693,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 49,
+    "start_unix": 1795539170.650398,
+    "end_unix": 1795539171.685786,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "upload",
+    "bytes": 1048576,
+    "count": 1,
+    "workers": 1,
+    "protocol": "tuic",
+    "block": 2,
+    "position": 2,
+    "phase_index": 5,
+    "elapsed_ms": 1396.082,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 50,
+    "start_unix": 1795539172.0219562,
+    "end_unix": 1795539173.544259,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "upload",
+    "bytes": 1048576,
+    "count": 1,
+    "workers": 1,
+    "protocol": "n1",
+    "block": 2,
+    "position": 3,
+    "phase_index": 5,
+    "elapsed_ms": 12481.105,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 51,
+    "start_unix": 1795539173.859078,
+    "end_unix": 1795539186.4392161,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "upload",
+    "bytes": 1048576,
+    "count": 1,
+    "workers": 1,
+    "protocol": "tuic",
+    "block": 3,
+    "position": 1,
+    "phase_index": 5,
+    "elapsed_ms": 1193.235,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 52,
+    "start_unix": 1795539186.83024,
+    "end_unix": 1795539188.144741,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "upload",
+    "bytes": 1048576,
+    "count": 1,
+    "workers": 1,
+    "protocol": "n1",
+    "block": 3,
+    "position": 2,
+    "phase_index": 5,
+    "elapsed_ms": 3167.792,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 53,
+    "start_unix": 1795539188.465662,
+    "end_unix": 1795539191.7301571,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  },
+  {
+    "phase": "upload",
+    "bytes": 1048576,
+    "count": 1,
+    "workers": 1,
+    "protocol": "hysteria2",
+    "block": 3,
+    "position": 3,
+    "phase_index": 5,
+    "elapsed_ms": 1149.699,
+    "event": "batch-ended",
+    "failed": 0,
+    "batch": 54,
+    "start_unix": 1795539192.0563142,
+    "end_unix": 1795539193.32192,
+    "network_before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "network_after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "exit_code": 0
+  }
+]

@@ -1,0 +1,29 @@
+{
+  "status": "exited",
+  "exit_code": 0,
+  "start_unix_ms": 1795597187637,
+  "end_unix_ms": 1795597187646,
+  "elapsed_ms": 8.794529,
+  "stdout_bytes": 0,
+  "skip_reason": null,
+  "command": [
+    "ip",
+    "netns",
+    "exec",
+    "fcn3-lossserver",
+    "tc",
+    "qdisc",
+    "change",
+    "dev",
+    "fc3dl0",
+    "root",
+    "netem",
+    "delay",
+    "50ms",
+    "rate",
+    "20mbit",
+    "loss",
+    "random",
+    "0%"
+  ]
+}

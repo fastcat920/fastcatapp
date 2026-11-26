@@ -1,0 +1,29 @@
+{
+  "phase": "wifi",
+  "plan": [
+    {
+      "arm": "baseline",
+      "bytes": 32768,
+      "count": 8,
+      "workers": 1
+    },
+    {
+      "arm": "baseline",
+      "bytes": 1048576,
+      "count": 2,
+      "workers": 1
+    },
+    {
+      "arm": "capped",
+      "bytes": 32768,
+      "count": 8,
+      "workers": 1
+    },
+    {
+      "arm": "capped",
+      "bytes": 1048576,
+      "count": 2,
+      "workers": 1
+    }
+  ]
+}

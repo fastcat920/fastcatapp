@@ -1,0 +1,66 @@
+{
+  "latency_run_completed": true,
+  "initial_bulk_run_completed": false,
+  "fixed_size_run_completed": false,
+  "fixed_size_stop_reason": "Repeated 50-second deadlines; retained completed samples and switched to bounded-duration goodput. Final interrupted batch is not scored.",
+  "latency_samples_per_group": 20,
+  "prewarm_samples_per_group": 5,
+  "pools": 3,
+  "batch_workers": 4,
+  "device": "A3GMVB2110006859",
+  "client_go": "1.26.2",
+  "server_go": "1.27.3",
+  "sha256_latency_binaries": {
+    "v2": "c6d471e58d4fb162b54af40d56cfd8a88a803be22b33ffda05bbf212cb676668",
+    "v3": "2d8c68cc035fb883eb67458f78255c7f18ee65b30e992b75babf52d38e573f10",
+    "compare": "307b7e23b72abdcd5287d564d367ed7f98e62e2fd61532af89c563feaf16b71a"
+  },
+  "resource_run": {
+    "completed": true,
+    "kind": "10-second controlled echo verified receive goodput",
+    "rounds_per_group": 1,
+    "workers": [
+      1,
+      4
+    ],
+    "screens": [
+      "awake",
+      "locked"
+    ],
+    "client_go": "1.26.2",
+    "server_go": "1.27.3",
+    "sha256": {
+      "v2": "c6d471e58d4fb162b54af40d56cfd8a88a803be22b33ffda05bbf212cb676668",
+      "v3": "2d8c68cc035fb883eb67458f78255c7f18ee65b30e992b75babf52d38e573f10",
+      "compare": "734362cec31bc0934b6af9816a7413b43ae8477882f21d35dde1d554a1866f7f"
+    },
+    "default_network_before_and_after": 171,
+    "screen_stayon_setting_restored": 0,
+    "vpn_restored": true,
+    "test_ports_removed": [
+      19442,
+      19444,
+      19445
+    ]
+  },
+  "invalid_tool_run": {
+    "included_in_protocol_statistics": false,
+    "reason": "Initial timed tool wrote a period-4 pattern but checked period-251; discarded and corrected before final run. Local pipe boundary and corruption tests passed."
+  },
+  "source_sha256": {
+    "core/Clash.Meta/transport/fastcath2/client.go": "f3aeff27070705c1ea708d8159906cffe596fc7dbfb557249ccb89fa4afc4659",
+    "core/Clash.Meta/transport/fastcath2/health.go": "78f09ebf78a68d4a7c56cbbefdbf51e4d5cb120115c4626233b104f84beac188",
+    "core/Clash.Meta/transport/fastcath3/client.go": "d59d06939978e80086a403368223dee28247148fb5ed7458a321581d2ea52563",
+    "core/Clash.Meta/adapter/outbound/fastcat_auto.go": "8e9d9d395a893b9cae2bbcd78cd94dd3a00f2066dfa3ddffb09909d4c8ed5b8c",
+    "core/Clash.Meta/adapter/outbound/fastcat_routes.go": "f09b792186357ffb219f40c7d39ae7aa8dcb71e8eed1b13ae85d4c54bc5ff091",
+    "core/Clash.Meta/adapter/outbound/fastcat_h2.go": "12989afb1dc360b5400d84bb98a925821cff1c501395ae87c92c51986a6add1c",
+    "core/Clash.Meta/adapter/outbound/fastcat_h3.go": "eddf2c06693a3b408d4deb65a00f929d304a58bfd6f9cac1c2b0589b3f6c9824",
+    "core/fastcat_warm.go": "ed8c78187de70d7c3f59f9b11872a4490e133799eb4c0c64f08b1ee9b77a0df7",
+    "core/lib_android.go": "fda003836a1f87e21b93f731a496cfb652759e7fb5b4f4e1f5a29092b017b22d",
+    "core/hub.go": "c41b83515a60e75e22240ece05c9ec549d996c9a6a44e2f22c669088c7e9f083",
+    "core/tools/fastcat-v3-compare/main.go": "0ccd8c3a4bcc17fd3965fa537ece73645d38866f3e9f6456cf5a6fb9f74d631e",
+    "core/tools/fastcat-v3-compare/bulk.go": "a3ea210881dfe575f7831743d780ab3ada1aad18e0d4f3db4420ec68c15841e4",
+    "core/tools/fastcat-v3-compare/bulk_timed.go": "8b6edce69459c85722a3deab38d367ab32e34a01db1dc4fd2a74614d4c3a81e1"
+  },
+  "android_shared_core_sha256": "2d9d4385345bdca681c9a6467b6c1f32c8e1582add544b43fdec823a284a97a9"
+}

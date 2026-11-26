@@ -1,0 +1,7 @@
+4488078
+Nov 24 20:15:23 DMIT-QOrEYD7FvT systemd[1]: Stopping fastcat-n1-phase6-capture.service - [systemd-run] /usr/bin/tcpdump -U -B 4096 -i any -nn -s 0 -c 100000 -w /opt/fastcat-n1-lab/phase6.pcap tcp port 18461...
+Nov 24 20:15:23 DMIT-QOrEYD7FvT tcpdump[695823]: 5238 packets captured
+Nov 24 20:15:23 DMIT-QOrEYD7FvT tcpdump[695823]: 5238 packets received by filter
+Nov 24 20:15:23 DMIT-QOrEYD7FvT tcpdump[695823]: 0 packets dropped by kernel
+Nov 24 20:15:23 DMIT-QOrEYD7FvT systemd[1]: fastcat-n1-phase6-capture.service: Deactivated successfully.
+Nov 24 20:15:23 DMIT-QOrEYD7FvT systemd[1]: Stopped fastcat-n1-phase6-capture.service - [systemd-run] /usr/bin/tcpdump -U -B 4096 -i any -nn -s 0 -c 100000 -w /opt/fastcat-n1-lab/phase6.pcap tcp port 18461.

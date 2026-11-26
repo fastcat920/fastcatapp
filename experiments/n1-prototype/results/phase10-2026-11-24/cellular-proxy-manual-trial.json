@@ -1,0 +1,99 @@
+{
+  "label": "cellular-proxy",
+  "mode": "manual",
+  "start_unix": 1795535557.345036,
+  "network_before": {
+    "transport": "cellular",
+    "validated": true,
+    "sim": "ABSENT,LOADED"
+  },
+  "network_after": {
+    "transport": "cellular",
+    "validated": true,
+    "sim": "ABSENT,LOADED"
+  },
+  "settings_restored": true,
+  "result": {
+    "http_protocol": "HTTP/2.0",
+    "report": {
+      "label": "cellular-proxy",
+      "user_agent": "Mozilla/5.0 (Linux; Android 12; TFY-AN00) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/116.0.5845.114 HonorBrowser/3.10.1.303 Mobile Safari/537.36",
+      "rows": [
+        {
+          "bytes": 7001,
+          "received": 7001,
+          "ok": true,
+          "duration_ms": 501.60000002384186,
+          "first_byte_ms": 488.69999998807907,
+          "protocol": "h2",
+          "error": ""
+        },
+        {
+          "bytes": 33331,
+          "received": 33331,
+          "ok": true,
+          "duration_ms": 673.0999999642372,
+          "first_byte_ms": 405.0999999642372,
+          "protocol": "h2",
+          "error": ""
+        },
+        {
+          "bytes": 131101,
+          "received": 131101,
+          "ok": true,
+          "duration_ms": 841.5,
+          "first_byte_ms": 321.0999999642372,
+          "protocol": "h2",
+          "error": ""
+        },
+        {
+          "bytes": 65536,
+          "received": 65536,
+          "ok": true,
+          "duration_ms": 469.5,
+          "first_byte_ms": 458.5,
+          "protocol": "h2",
+          "error": ""
+        },
+        {
+          "bytes": 65536,
+          "received": 65536,
+          "ok": true,
+          "duration_ms": 1075.800000011921,
+          "first_byte_ms": 475.5,
+          "protocol": "h2",
+          "error": ""
+        },
+        {
+          "bytes": 65536,
+          "received": 65536,
+          "ok": true,
+          "duration_ms": 1073.8999999761581,
+          "first_byte_ms": 471.80000001192093,
+          "protocol": "h2",
+          "error": ""
+        },
+        {
+          "bytes": 65536,
+          "received": 65536,
+          "ok": true,
+          "duration_ms": 1078.2000000476837,
+          "first_byte_ms": 1073.2000000476837,
+          "protocol": "h2",
+          "error": ""
+        },
+        {
+          "bytes": 1048576,
+          "received": 1048576,
+          "ok": true,
+          "duration_ms": 4050,
+          "first_byte_ms": 570.1000000238419,
+          "protocol": "h2",
+          "error": ""
+        }
+      ]
+    },
+    "unix": 1795535576046,
+    "via_node": true
+  }
+}

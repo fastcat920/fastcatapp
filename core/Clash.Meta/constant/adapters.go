@@ -60,6 +60,7 @@ const (
 	FastCatAuto
 	FCNv1
 	FCNv2
+	FCNv3
 )
 
 const (
@@ -214,6 +215,8 @@ func (at AdapterType) String() string {
 		return "FCN v1"
 	case FCNv2:
 		return "FCN v2"
+	case FCNv3:
+		return "FCN v3"
 	case FastCatAuto:
 		return "FastCatAuto"
 	case FastCatH2:

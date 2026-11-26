@@ -1,0 +1,1 @@
+Initial service exited status2: deployment used -runtime-metrics instead of implemented -metrics-file. 8 failed TCP requests retained in deployment-argument-error/. Startup is now checked by listener after settling, not immediate is-active. No production service affected.

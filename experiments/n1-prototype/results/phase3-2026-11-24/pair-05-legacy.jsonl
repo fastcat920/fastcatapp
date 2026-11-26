@@ -1,0 +1,2 @@
+{"sample":1,"tcp_ms":212.011,"tls_ms":1793.658,"open_ms":1491.240,"first_response_headers_ms":3764.226,"full_request_ms":4170.063,"bytes":32768,"end_to_end_mbps":0.063,"stream_fin_verified":true,"outer_response_eof_verified":true,"tls_shutdown_eof_observed":true}
+{"bytes_each":32768,"failed":0,"p50_ms":4170.063,"p95_ms":4170.063,"scope":"fresh TCP + TLS + authenticated tunnel + verified payload + N1 FIN + HTTP EOF + TLS shutdown; speed includes setup, verification and shutdown","success":1}

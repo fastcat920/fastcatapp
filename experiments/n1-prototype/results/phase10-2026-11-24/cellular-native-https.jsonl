@@ -1,0 +1,4 @@
+{"bytes":32768,"first_response_headers_ms":593.452,"full_request_ms":734.102,"mode":"ordinary-https-32k","sample":1}
+{"bytes":32768,"first_response_headers_ms":480.932,"full_request_ms":1636.301,"mode":"ordinary-https-32k","sample":2}
+{"bytes":32768,"first_response_headers_ms":462.384,"full_request_ms":1272.275,"mode":"ordinary-https-32k","sample":3}
+{"bytes":32768,"first_response_headers_ms":958.198,"full_request_ms":1225.992,"mode":"ordinary-https-32k","sample":4}

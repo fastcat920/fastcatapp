@@ -1,0 +1,6 @@
+PASS: primary 174 measured cases + 2 pilots; supplementary 18 measured cases + 3 pilots.
+PASS: expected cold/warm/batch/download counts, all completion checks; supplement 72/72 strictly loaded foreground and 12/12 background per variant.
+PASS: measurement comparator race tests and go vet (logs in reproduce/steady-load).
+PASS: report internal links and images exist.
+Cleanup observed: no fc-opt files/units/binaries remain on VPS or Android; lab listeners gone; production TCP/UDP 443 and 18447 still listening. Android VPN CONNECTED, stay_on_while_plugged_in restored to 0.
+Scope: native core Wi-Fi comparison; no App/TUN, battery, DPI or multi-network conclusion.

@@ -1,0 +1,56 @@
+{
+  "phase": "upload",
+  "arm": "tuic",
+  "entry_port": 18533,
+  "round": 5,
+  "rounds": 5,
+  "position": 1,
+  "args": [
+    "./compare",
+    "-config",
+    "bench.json",
+    "-protocol",
+    "tuic",
+    "-phase",
+    "upload",
+    "-bytes",
+    "1048576",
+    "-count",
+    "1",
+    "-timeout",
+    "25s",
+    "-diagnostic-id",
+    "fcnfive04-upload-5-tuic"
+  ],
+  "planned": 1,
+  "diagnostic_id": "fcnfive04-upload-5-tuic",
+  "host_timeout_s": 40,
+  "before": {
+    "default_net_id": 361,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795610201238,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "after": {
+    "default_net_id": 361,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795610202395,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "network_stable": true,
+  "status": "exited",
+  "exit_code": 0,
+  "start_unix_ms": 1795610201238,
+  "end_unix_ms": 1795610202320,
+  "elapsed_ms": 1082.076791
+}

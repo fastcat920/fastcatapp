@@ -1,0 +1,104 @@
+{
+  "phase": "performance",
+  "summary": {
+    "baseline": {
+      "loaded_success": 72,
+      "loaded_total": 72,
+      "loaded_p50": 423.833,
+      "loaded_p95": 763.395,
+      "foreground_success": 72,
+      "foreground_total": 72,
+      "background_success": 12,
+      "background_total": 12,
+      "parallel": {
+        "groups": 6,
+        "success": 24,
+        "jobs": 24,
+        "aggregate_mbps": 7.470651675386842,
+        "median_mbps": 9.32370428728115
+      },
+      "rolling": {
+        "groups": 6,
+        "success": 72,
+        "jobs": 72,
+        "aggregate_mbps": 18.117536232536164,
+        "median_mbps": 18.06934787678646
+      },
+      "cold": {
+        "success": 36,
+        "total": 36,
+        "p50": 973.547,
+        "p95": 3012.11
+      },
+      "warm": {
+        "success": 36,
+        "total": 36,
+        "p50": 325.109,
+        "p95": 748.983
+      },
+      "batch": {
+        "success": 36,
+        "total": 36,
+        "p50": 413.079,
+        "p95": 613.605
+      }
+    },
+    "coalesce5": {
+      "loaded_success": 72,
+      "loaded_total": 72,
+      "loaded_p50": 438.234,
+      "loaded_p95": 1053.175,
+      "foreground_success": 72,
+      "foreground_total": 72,
+      "background_success": 11,
+      "background_total": 12,
+      "parallel": {
+        "groups": 6,
+        "success": 24,
+        "jobs": 24,
+        "aggregate_mbps": 11.948342972447662,
+        "median_mbps": 16.613701254189763
+      },
+      "rolling": {
+        "groups": 6,
+        "success": 72,
+        "jobs": 72,
+        "aggregate_mbps": 20.789253110747783,
+        "median_mbps": 25.37396821812697
+      },
+      "cold": {
+        "success": 36,
+        "total": 36,
+        "p50": 838.395,
+        "p95": 2175.149
+      },
+      "warm": {
+        "success": 36,
+        "total": 36,
+        "p50": 423.063,
+        "p95": 952.498
+      },
+      "batch": {
+        "success": 36,
+        "total": 36,
+        "p50": 396.054,
+        "p95": 730.517
+      }
+    }
+  },
+  "rows": 1698,
+  "gate": {
+    "passed": false,
+    "checks": {
+      "enough_loaded": true,
+      "loaded_p95": false,
+      "foreground_complete": true,
+      "background_complete": false,
+      "parallel_complete": true,
+      "parallel_throughput": true,
+      "rolling_complete": true,
+      "rolling_throughput": true,
+      "warm_not_regressed": false
+    }
+  }
+}

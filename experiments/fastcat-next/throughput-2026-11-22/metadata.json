@@ -1,0 +1,27 @@
+{
+  "client_go": "go version go1.26.2 darwin/arm64",
+  "server_go": "go1.27.3",
+  "device": "TFY-AN00 Android12 arm64",
+  "network": "Wi-Fi; phone VPN disabled for native core tests",
+  "server": "191.223.214.8",
+  "next_endpoint": "19458 both baseline and candidate",
+  "tuic_endpoint": 19451,
+  "candidate": {
+    "QUICLanes": 2,
+    "QUICProfile": "baseline",
+    "CoalesceOpen": false
+  },
+  "baseline": {
+    "QUICLanes": 1,
+    "QUICProfile": "baseline",
+    "CoalesceOpen": false
+  },
+  "Trace": false,
+  "production_deployed": false,
+  "sha256": {
+    "compare-lanes": "95944ec9e5e5eab35c97bcdc8d8ad8391d85136ee45b7bbb8b7c5b586edf821e",
+    "next-diagnostic": "4f6c8b46fcbc3f10726748df36e626c340e67953da5e192e342fa184bd32cf16"
+  },
+  "control_client_sha256": "0d1139a511befb267fd6a89a5498dbabea9c5f8bec94a6133f0f0de0ee450624",
+  "cleanup_verified": true
+}

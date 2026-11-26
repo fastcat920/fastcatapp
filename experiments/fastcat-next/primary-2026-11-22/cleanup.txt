@@ -1,0 +1,1 @@
+Final cleanup verified: Android VPN CONNECTED; stay_on_while_plugged_in=0. Temporary fc-opt services, binaries and runtime directories removed. Temporary private configs removed. Production TCP/UDP 443 and 18447 remain listening. No production app build deployed.

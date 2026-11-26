@@ -1,0 +1,88 @@
+{
+  "phase": "performance",
+  "variants": {
+    "baseline": "stage3 recovery-aware control; no prefix copies",
+    "prefix": "same recovery-aware control plus explicit kind2; 8193 payload bytes /12 DATAGRAM attempts max"
+  },
+  "sha256": {
+    "compare": "3d632e7b3679b8e2169ba675c213fad6d4bb97ab6ecf276a93c4e4a9875fa2c3",
+    "next-diagnostic": "5140bce7edf5934c9b12b4519921b35e7c571f22df6f0c930b0e62e7c1c43f7f"
+  },
+  "client_policy": "both variants recovery-aware next-opt; GSO ECN PMTU defaults unchanged; boundary snapshots on both; packet trace off in performance",
+  "trace": false,
+  "gate": {
+    "loaded_p95_ratio_max": 0.8,
+    "warm_p95_ratio_max": 1.1,
+    "throughput_ratio_min": 0.9,
+    "completion_not_lower": true,
+    "min_loaded_samples": 48
+  },
+  "metrics": [
+    [
+      "mixed",
+      6,
+      [
+        "-mixed-download-bytes",
+        "16777216",
+        "-samples",
+        "12",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "90s"
+      ],
+      true,
+      120
+    ],
+    [
+      "parallel",
+      6,
+      [
+        "-download-bytes",
+        "4194304",
+        "-download-workers",
+        "4",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "90s"
+      ],
+      true,
+      120
+    ],
+    [
+      "rolling",
+      6,
+      [
+        "-download-bytes",
+        "4194304",
+        "-download-workers",
+        "4",
+        "-download-jobs",
+        "12",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "150s"
+      ],
+      true,
+      180
+    ],
+    [
+      "latency",
+      3,
+      [
+        "-samples",
+        "12",
+        "-pools",
+        "1",
+        "-batches",
+        "3",
+        "-workers",
+        "4"
+      ],
+      false,
+      450
+    ]
+  ]
+}

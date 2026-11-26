@@ -1,0 +1,6 @@
+fuzz: elapsed: 0s, gathering baseline coverage: 0/1 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 1/1 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 69521 (23158/sec), new interesting: 4 (total: 5)
+fuzz: elapsed: 5s, execs: 112045 (20458/sec), new interesting: 6 (total: 7)
+PASS
+ok  	core/fastcatnext	5.677s

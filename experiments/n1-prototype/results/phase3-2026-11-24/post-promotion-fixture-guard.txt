@@ -1,0 +1,1 @@
+A/B fixture mismatch: restore 18461 legacy and 18463 coalesced before comparing; no requests sent

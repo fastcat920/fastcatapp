@@ -1,0 +1,53 @@
+{
+  "phase": "download",
+  "round": 2,
+  "position": 3,
+  "arm": "adaptive",
+  "args": [
+    "./compare",
+    "-config",
+    "adaptive.json",
+    "-protocol",
+    "fcnv3",
+    "-phase",
+    "download",
+    "-bytes",
+    "1048576",
+    "-count",
+    "4",
+    "-workers",
+    "4",
+    "-timeout",
+    "25s",
+    "-diagnostic-id",
+    "fcn3diag01-adaptive-2"
+  ],
+  "host_timeout_s": 40,
+  "diagnostic_id": "fcn3diag01-adaptive-2",
+  "before": {
+    "default_net_id": 359,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795593859270,
+    "exit_code": 0,
+    "probe_error": null
+  },
+  "after": {
+    "default_net_id": 359,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795593863337,
+    "exit_code": 0,
+    "probe_error": null
+  },
+  "network_stable": true,
+  "status": "exited",
+  "exit_code": 0,
+  "start_unix_ms": 1795593859271,
+  "end_unix_ms": 1795593863247,
+  "elapsed_ms": 3976.155208
+}

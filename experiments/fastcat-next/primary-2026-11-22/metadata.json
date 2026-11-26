@@ -1,0 +1,52 @@
+{
+  "date": "2026-11-22",
+  "device": "TFY-AN00 Android12 arm64",
+  "network": "active Wi-Fi required before every phase; app VPN disconnected for native core testing",
+  "server": "191.223.214.8",
+  "endpoints": {
+    "Next all modes": 19458,
+    "TUIC": 19451
+  },
+  "client_go": "go version go1.26.2 darwin/arm64",
+  "server_go": "go1.27.3",
+  "modes": {
+    "next-base": "single lane",
+    "next-opt": "previous adaptive two-lane scheduler",
+    "next-primary": "primary preferred, bounded trial and evidence-gated spill",
+    "tuic": "stock TUIC default",
+    "tuic-dual": "two stock TUIC clients, mixed-load control only"
+  },
+  "parameters": {
+    "load_window_seconds": 2,
+    "load_window_read_bytes": 32768,
+    "capacity_window_seconds": 0.5,
+    "capacity_window_read_bytes": 262144,
+    "capacity_windows_for_spare": 2,
+    "capacity_proof_ttl_seconds": 15,
+    "spare_speed_margin": 1.25,
+    "trial_starts_per_5_seconds": 4,
+    "trial_received_byte_gate": 65536,
+    "spare_idle_seconds": 15
+  },
+  "repetition_rules": {
+    "parallel_initial": 6,
+    "parallel_additional": 6,
+    "parallel_trigger": "any incomplete group; or any mode range ratio >2.5 or CV >.45; all main modes repeated in reverse order",
+    "echo_initial": 3,
+    "echo_additional": 2,
+    "echo_trigger": "any incomplete group; or range ratio >3 or CV >.60; all main modes repeated in reverse order",
+    "rolling": 2,
+    "single_32MiB": 3,
+    "single_100MiB": 1
+  },
+  "sha256": {
+    "compare": "50ff066467739786f3fe180f3c191563392ea6ada101a3b41e2b872c56ff6f44",
+    "next-diagnostic": "4cb5f199fe72d60cc4cde2a5f636a145988eafa84aaf613d964adbec8796d245"
+  },
+  "Trace": false,
+  "formal_app_updated": false,
+  "acceptance": "failed combined-advantages gate; optional policy remains default off",
+  "controlled_rounds_per_mode": 8,
+  "main_cold_download_rounds_per_mode": 12,
+  "cleanup": "verified; see cleanup.txt"
+}

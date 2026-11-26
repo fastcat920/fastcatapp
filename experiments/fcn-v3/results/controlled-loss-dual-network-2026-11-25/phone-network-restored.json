@@ -1,0 +1,14 @@
+{
+  "wifi": "1",
+  "mobile_data": "1",
+  "default_network": {
+    "default_net_id": 360,
+    "validated": true,
+    "transports": [
+      "CELLULAR"
+    ],
+    "observed_unix_ms": 1795597703509,
+    "exit_code": 0,
+    "probe_error": null
+  }
+}

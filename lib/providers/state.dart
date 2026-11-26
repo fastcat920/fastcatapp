@@ -467,6 +467,16 @@ int? getDelay(
   Ref ref, {
   required String proxyName,
   String? testUrl,
+}) =>
+    ref
+        .watch(getDelayResultProvider(proxyName: proxyName, testUrl: testUrl))
+        ?.value;
+
+@riverpod
+Delay? getDelayResult(
+  Ref ref, {
+  required String proxyName,
+  String? testUrl,
 }) {
   final currentTestUrl = ref.watch(getRealTestUrlProvider(testUrl));
   final proxyCardState = ref.watch(

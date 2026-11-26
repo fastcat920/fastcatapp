@@ -1,0 +1,247 @@
+[
+  {
+    "bytes": 1048576,
+    "chunk": 16384,
+    "first_payload_ms": 867.25,
+    "first_response_headers_ms": 867.193,
+    "full_request_ms": 2526.279,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_read_mbps": 5.387220471495334,
+    "payload_read_ms": 1557.131,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 124,
+        "shape": "http-chunk",
+        "body_bytes": 118
+      },
+      {
+        "bytes": 32,
+        "shape": "http-chunk",
+        "body_bytes": 21
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "arm": "baseline",
+    "repeat": 1,
+    "index": 0,
+    "exit_code": 0,
+    "pair": 0
+  },
+  {
+    "bytes": 1048576,
+    "chunk": 16384,
+    "first_payload_ms": 3757.133,
+    "first_response_headers_ms": 3757.101,
+    "full_request_ms": 10201.393,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_read_mbps": 1.3225994226896707,
+    "payload_read_ms": 6342.516,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 109,
+        "shape": "http-chunk",
+        "body_bytes": 103
+      },
+      {
+        "bytes": 21,
+        "shape": "http-chunk",
+        "body_bytes": 11
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "arm": "capped",
+    "repeat": 1,
+    "index": 1,
+    "exit_code": 0,
+    "pair": 0
+  },
+  {
+    "bytes": 1048576,
+    "chunk": 16384,
+    "first_payload_ms": 2166.724,
+    "first_response_headers_ms": 2166.646,
+    "full_request_ms": 3389.256,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_read_mbps": 7.4889860604967655,
+    "payload_read_ms": 1120.126,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 115,
+        "shape": "http-chunk",
+        "body_bytes": 109
+      },
+      {
+        "bytes": 31,
+        "shape": "http-chunk",
+        "body_bytes": 20
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "arm": "capped",
+    "repeat": 2,
+    "index": 2,
+    "exit_code": 0,
+    "pair": 1
+  },
+  {
+    "bytes": 1048576,
+    "chunk": 16384,
+    "first_payload_ms": 1278.273,
+    "first_response_headers_ms": 1278.163,
+    "full_request_ms": 2727.949,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_read_mbps": 6.9104548064463245,
+    "payload_read_ms": 1213.901,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 126,
+        "shape": "http-chunk",
+        "body_bytes": 120
+      },
+      {
+        "bytes": 43,
+        "shape": "http-chunk",
+        "body_bytes": 32
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "arm": "baseline",
+    "repeat": 2,
+    "index": 3,
+    "exit_code": 0,
+    "pair": 1
+  },
+  {
+    "bytes": 1048576,
+    "chunk": 16384,
+    "first_payload_ms": 912.811,
+    "first_response_headers_ms": 912.749,
+    "full_request_ms": 2193.128,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_read_mbps": 7.097315348228042,
+    "payload_read_ms": 1181.941,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 102,
+        "shape": "http-chunk",
+        "body_bytes": 96
+      },
+      {
+        "bytes": 31,
+        "shape": "http-chunk",
+        "body_bytes": 20
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "arm": "capped",
+    "repeat": 3,
+    "index": 4,
+    "exit_code": 0,
+    "pair": 2
+  },
+  {
+    "bytes": 1048576,
+    "chunk": 16384,
+    "first_payload_ms": 2145.058,
+    "first_response_headers_ms": 2144.978,
+    "full_request_ms": 8104.529,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_read_mbps": 1.4323421895455135,
+    "payload_read_ms": 5856.567,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 112,
+        "shape": "http-chunk",
+        "body_bytes": 106
+      },
+      {
+        "bytes": 40,
+        "shape": "http-chunk",
+        "body_bytes": 29
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "arm": "baseline",
+    "repeat": 3,
+    "index": 5,
+    "exit_code": 0,
+    "pair": 2
+  },
+  {
+    "bytes": 1048576,
+    "chunk": 16384,
+    "first_payload_ms": 743.285,
+    "first_response_headers_ms": 743.253,
+    "full_request_ms": 2263.889,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_read_mbps": 7.569033096329448,
+    "payload_read_ms": 1108.28,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 125,
+        "shape": "http-chunk",
+        "body_bytes": 119
+      },
+      {
+        "bytes": 38,
+        "shape": "http-chunk",
+        "body_bytes": 27
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "arm": "capped",
+    "repeat": 4,
+    "index": 6,
+    "exit_code": 0,
+    "pair": 3
+  }
+]

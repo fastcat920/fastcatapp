@@ -1,0 +1,23 @@
+{
+  "device": "TFY-AN00 Android 12 API31 arm64",
+  "network": "same Android Wi-Fi; app VPN disconnected for direct core benchmark",
+  "server": "191.223.214.8 zlhk.fastcat.ink",
+  "client_go": "go version go1.26.2 darwin/arm64",
+  "server_go": "go1.27.3",
+  "sha256": {
+    "next-gso": "4f6c8b46fcbc3f10726748df36e626c340e67953da5e192e342fa184bd32cf16",
+    "compare-candidates": "56de69ad03c7fbb2d2de2d047b5d1f2b307bc7ce6395c474b9f771632efd49c9",
+    "next-baseline": "34ae10dd058cc9cbe4b7de11ab9f601f38618e9986a9a762eec1a9195ff5d5be"
+  },
+  "candidate": {
+    "QUICProfile": "bbr-legacy",
+    "CoalesceOpen": true,
+    "receive_windows": "unchanged"
+  },
+  "baseline": {
+    "QUICProfile": "baseline",
+    "CoalesceOpen": false
+  },
+  "trace": false,
+  "production_app_updated": false
+}

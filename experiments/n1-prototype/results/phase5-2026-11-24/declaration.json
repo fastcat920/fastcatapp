@@ -1,0 +1,665 @@
+{
+  "plan": [
+    {
+      "split": "train",
+      "bytes": 98304,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "legacy",
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 1536,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "rpc",
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 98304,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "coalesced",
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 1536,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "coalesced",
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 1536,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "legacy",
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 1536,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "legacy",
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 98304,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "rpc",
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 98304,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "legacy",
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 12288,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "rpc",
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 12288,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "legacy",
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 98304,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "legacy",
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 98304,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "coalesced",
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 1536,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "rpc",
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 1536,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "rpc",
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 98304,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "coalesced",
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 12288,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "legacy",
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 98304,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "rpc",
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 98304,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "rpc",
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 12288,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "rpc",
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 12288,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "rpc",
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 1536,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "legacy",
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 12288,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "coalesced",
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 12288,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "legacy",
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 1536,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "coalesced",
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 1536,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "coalesced",
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 98304,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "legacy",
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 98304,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "coalesced",
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 12288,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "coalesced",
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 1536,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "rpc",
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 12288,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "legacy",
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 12288,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "rpc",
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 1536,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "coalesced",
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 12288,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "coalesced",
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 98304,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "rpc",
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 12288,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "coalesced",
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 1536,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "legacy",
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 24576,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "rpc",
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 3072,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "legacy",
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 3072,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "coalesced",
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 3072,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "legacy",
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 196608,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "coalesced",
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 196608,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "rpc",
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 24576,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "legacy",
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 24576,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "coalesced",
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 24576,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "coalesced",
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 24576,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "rpc",
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 196608,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "legacy",
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 3072,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "legacy",
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 24576,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "coalesced",
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 196608,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "legacy",
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 196608,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "coalesced",
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 24576,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "rpc",
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 196608,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "legacy",
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 24576,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "legacy",
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 196608,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "coalesced",
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 3072,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "rpc",
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 24576,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "rpc",
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 196608,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "rpc",
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 3072,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "rpc",
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 24576,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "legacy",
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 3072,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "coalesced",
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 3072,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "coalesced",
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 196608,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "coalesced",
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 196608,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "rpc",
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 3072,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "legacy",
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 24576,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "coalesced",
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 3072,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "rpc",
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 24576,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "legacy",
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 3072,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "rpc",
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 3072,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "coalesced",
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 196608,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "kind": "rpc",
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 196608,
+      "shape": "paced",
+      "chunk": 8192,
+      "gap_ms": 15,
+      "kind": "legacy",
+      "repeat": 1
+    }
+  ],
+  "features": [
+    "client_records",
+    "server_records",
+    "client_small_records",
+    "server_small_records",
+    "log_client_tcp_bytes",
+    "log_server_tcp_bytes"
+  ],
+  "model": "one-level decision stump; threshold/polarity chosen on train only by balanced accuracy",
+  "evaluations": [
+    "legacy vs RPC and coalesced vs RPC; counts-only and all features; train-only fitting"
+  ],
+  "limitations": "Synthetic implementations, one network/device; not a GFW detection probability estimate"
+}

@@ -1,0 +1,19 @@
+{
+  "status": "complete",
+  "speed": {
+    "server": "172.104.55.44",
+    "valid_cases": 250,
+    "preflight_cases": 10
+  },
+  "latency": {
+    "server": "154.37.155.240",
+    "valid_base_cases": 150,
+    "valid_loaded_cases": 70,
+    "preflight_cases": 35,
+    "warm_vless_success": "57/60"
+  },
+  "valid_total_cases": 470,
+  "measurement_fix": "superseded4-waymixed excluded;all5loaded andweb rerun",
+  "cleanup": "complete",
+  "network_boundaries_verified": 940
+}

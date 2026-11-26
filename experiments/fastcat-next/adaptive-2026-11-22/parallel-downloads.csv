@@ -1,0 +1,16 @@
+elapsed_ms,expected_bytes_each,phase,protocol,received_bytes,round,success,test,verified_bytes,verified_mbps,version,workers
+36213,8388608,parallel_download,quic,33554432,1,4,final-parallel-download,33554432,7.412585160444928,next-base,4
+44636,8388608,parallel_download,quic,33554432,1,4,final-parallel-download,33554432,6.013855756519988,next-fixed,4
+9925,8388608,parallel_download,quic,33554432,1,4,final-parallel-download,33554432,27.04554251493282,next-opt,4
+65213,8388608,parallel_download,quic,33554432,1,4,final-parallel-download,33554432,4.116279054588947,tuic,4
+40566,8388608,parallel_download,quic,33554432,1,4,final-parallel-download,33554432,6.617119174124134,tuic-dual,4
+8232,8388608,parallel_download,quic,33554432,2,4,final-parallel-download,33554432,32.60694838703235,next-fixed,4
+26773,8388608,parallel_download,quic,33554432,2,4,final-parallel-download,33554432,10.026145348473955,next-opt,4
+41923,8388608,parallel_download,quic,33554432,2,4,final-parallel-download,33554432,6.403041370610745,tuic,4
+24283,8388608,parallel_download,quic,33554432,2,4,final-parallel-download,33554432,11.054182680619729,tuic-dual,4
+8291,8388608,parallel_download,quic,33554432,2,4,final-parallel-download,33554432,32.3765113192554,next-base,4
+29510,8388608,parallel_download,quic,33554432,3,4,final-parallel-download,33554432,9.096238716813778,next-opt,4
+8506,8388608,parallel_download,quic,33554432,3,4,final-parallel-download,33554432,31.558132505998426,tuic,4
+90000,8388608,parallel_download,quic,24002560,3,2,final-parallel-download,16777216,1.491291716461091,tuic-dual,4
+8262,8388608,parallel_download,quic,33554432,3,4,final-parallel-download,33554432,32.48776768215975,next-base,4
+17499,8388608,parallel_download,quic,33554432,3,4,final-parallel-download,33554432,15.339348872020544,next-fixed,4

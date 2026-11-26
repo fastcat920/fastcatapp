@@ -1,0 +1,1 @@
+ok  	fastcat/n1prototype	6.632s

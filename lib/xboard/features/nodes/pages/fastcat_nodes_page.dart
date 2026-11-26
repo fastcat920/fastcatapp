@@ -727,13 +727,9 @@ class _DelayBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     return _LatencyTapTarget(
       content: LatencyIndicator(
-          delayValue: testing
-              ? 0
-              : node.timedOut
-                  ? -1
-                  : node.delayMs == 0
-                      ? null
-                      : node.delayMs),
+        delayValue: testing ? 0 : (node.delayMs == 0 ? null : node.delayMs),
+        timedOut: node.timedOut,
+      ),
       onTap: testing ? null : onTap,
     );
   }

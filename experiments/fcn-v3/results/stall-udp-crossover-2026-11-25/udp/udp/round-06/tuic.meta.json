@@ -1,0 +1,47 @@
+{
+  "phase": "udp",
+  "round": 6,
+  "position": 1,
+  "arm": "tuic",
+  "args": [
+    "./compare",
+    "-config",
+    "bench.json",
+    "-protocol",
+    "tuic",
+    "-udp-diagnostic",
+    "-count",
+    "28",
+    "-timeout",
+    "55s",
+    "-udp-wire-rx"
+  ],
+  "host_timeout_s": 70,
+  "entry_port": 18533,
+  "before": {
+    "default_net_id": 359,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795595445130,
+    "exit_code": 0,
+    "probe_error": null
+  },
+  "after": {
+    "default_net_id": 359,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795595462069,
+    "exit_code": 0,
+    "probe_error": null
+  },
+  "network_stable": true,
+  "status": "exited",
+  "exit_code": 1,
+  "start_unix_ms": 1795595445130,
+  "end_unix_ms": 1795595461980,
+  "elapsed_ms": 16849.9885
+}

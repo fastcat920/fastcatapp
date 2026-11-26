@@ -19,6 +19,12 @@ if [[ -n "$smoke_arch" && "$smoke_arch" != "arm64" && "$smoke_arch" != "x86_64" 
 fi
 smoke_home="$(mktemp -d "${RUNNER_TEMP:-/tmp}/fastcat-smoke-home.XXXXXX")"
 diagnostic_log="$smoke_home/Library/Application Support/FastCat/boot_diag.log"
+# Opt-in fixture for testing the main application after onboarding. This only
+# touches the disposable HOME; it must never acknowledge a real user's policy.
+if [[ "${FASTCAT_MACOS_SMOKE_AFTER_ONBOARDING:-0}" == "1" ]]; then
+  mkdir -p "$smoke_home/Library/Application Support/FastCat"
+  printf '%s\n' '{"flutter.fastcat.privacy-disclosure":"2026-10-v1"}' > "$smoke_home/Library/Application Support/FastCat/shared_preferences.json"
+fi
 process_log="${RUNNER_TEMP:-/tmp}/fastcat-macos-smoke.log"
 rm -f "$diagnostic_log" "$process_log"
 

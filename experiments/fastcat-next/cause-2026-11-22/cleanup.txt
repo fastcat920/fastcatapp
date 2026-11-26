@@ -1,0 +1,1 @@
+Android VPN restored and stay_on_while_plugged_in=0 verified. No temporary fc-opt phone files, remote services/runtime dirs/binaries remain. Private test configs removed. Production TCP/UDP443 and18447 still listening. No formal App installation, scheduler default change, protocol wire change or Git push. SSH control session left available under existing authorization.

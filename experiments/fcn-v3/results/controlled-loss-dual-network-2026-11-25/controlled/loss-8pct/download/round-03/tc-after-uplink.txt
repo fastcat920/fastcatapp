@@ -1,0 +1,3 @@
+qdisc netem 8002: root refcnt 2 limit 1000 delay 50ms rate 20Mbit seed 10902095624914903811
+ Sent 2804528 bytes 30662 pkt (dropped 0, overlimits 0 requeues 0) 
+ backlog 260b 3p requeues 0

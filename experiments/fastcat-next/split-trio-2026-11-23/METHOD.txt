@@ -1,0 +1,5 @@
+User-requested split server comparison: speed on104.64.221.179, latency on154.37.155.240. Same three frozen implementations: Next recovery-aware2lanes, Next single, CatNode TUICv5; explicitBBR, no prefix/budget/0RTT changes. Separate measurements and rankings, no cross-server combined score. Android native Wi-Fi core; not fullApp/TUN or battery.
+Latency: six blocks, order permutations and crossover19451/19458. Cold/warm each72, batch4each72, batch8each144, strict loaded local foreground12x6, idle6, realweb12x2. Mixed backgrounds2x4MiB, both receive256KiB before foreground or wait5s; strict sample eligibility recorded. Full foreground success and background completion also retained.
+Speed server SSH22 is currently unreachable from both localMac and154; awaiting user correction/availability. No performance measurements exist for104 yet.
+
+Resolved: user changed speed IP to172.104.55.44. Speed90cases+2pilots completed, direct3failed auxiliary controls retained. Latency84cases+2pilots completed separately on154. No cross-server total score.

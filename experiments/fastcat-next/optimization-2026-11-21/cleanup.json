@@ -1,0 +1,9 @@
+{
+  "test_listeners_remaining": [],
+  "private_runtime_directories_remaining": [],
+  "private_local_config_files_remaining": [],
+  "vpn_restored": true,
+  "stay_on_while_plugged_in": "0",
+  "production_443_listening": true,
+  "production_18447_listening": true
+}

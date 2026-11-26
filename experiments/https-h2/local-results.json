@@ -1,0 +1,64 @@
+{
+  "scope": "loopback; first_ms/warm/batch measure local connect through full echo and EOF; first_echo_byte measures local connect through first received payload byte",
+  "bytes_per_stream_each_way": 32768,
+  "local_http_connect_buffered_payload_verified": true,
+  "h2_fixed": {
+    "first_ms": 4.255,
+    "warm": {
+      "samples": 100,
+      "p50_ms": 0.456,
+      "p95_ms": 0.773
+    },
+    "batch": {
+      "samples": 256,
+      "p50_ms": 5.058,
+      "p95_ms": 6.391,
+      "workers": 16,
+      "elapsed_ms": 85.37
+    },
+    "first_echo_byte": {
+      "cold_ms": 4.217,
+      "warm": {
+        "samples": 100,
+        "p50_ms": 0.431,
+        "p95_ms": 0.744
+      },
+      "batch": {
+        "samples": 256,
+        "p50_ms": 4.627,
+        "p95_ms": 5.883
+      }
+    },
+    "verified_streams": 357,
+    "negotiated_h2_connections": 1
+  },
+  "v1_fixed": {
+    "first_ms": 2.641,
+    "warm": {
+      "samples": 100,
+      "p50_ms": 1.803,
+      "p95_ms": 1.972
+    },
+    "batch": {
+      "samples": 256,
+      "p50_ms": 7.528,
+      "p95_ms": 10.745,
+      "workers": 16,
+      "elapsed_ms": 126.174
+    },
+    "first_echo_byte": {
+      "cold_ms": 2.575,
+      "warm": {
+        "samples": 100,
+        "p50_ms": 1.755,
+        "p95_ms": 1.886
+      },
+      "batch": {
+        "samples": 256,
+        "p50_ms": 7.161,
+        "p95_ms": 10.139
+      }
+    },
+    "verified_streams": 357
+  }
+}

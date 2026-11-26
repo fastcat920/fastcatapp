@@ -1,0 +1,33 @@
+source,version,success,jobs,elapsed_ms,verified_bytes,received_bytes,verified_mbps,lane_usage
+rolling-c1-b1-p1-next-base.jsonl,next-base,12,12,12730,50331648,50331648,31.628654273806372,"{'tcp_assignments': [12, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}"
+rolling-c1-b1-p2-next-opt.jsonl,next-opt,12,12,48881,50331648,50331648,8.237372014357504,"{'tcp_assignments': [6, 6], 'trial_assignments': 0, 'proven_spill_assignments': 0}"
+rolling-c1-b1-p3-tuic.jsonl,tuic,12,12,13966,50331648,50331648,28.829643704552645,
+rolling-c1-b1-p4-next-primary.jsonl,next-primary,12,12,14967,50331648,50331648,26.902404335600036,"{'tcp_assignments': [10, 2], 'trial_assignments': 2, 'proven_spill_assignments': 0}"
+rolling-c1-b2-p1-next-opt.jsonl,next-opt,12,12,15701,50331648,50331648,25.643849014910575,"{'tcp_assignments': [9, 3], 'trial_assignments': 0, 'proven_spill_assignments': 0}"
+rolling-c1-b2-p2-next-primary.jsonl,next-primary,12,12,17409,50331648,50331648,23.1285195542729,"{'tcp_assignments': [11, 1], 'trial_assignments': 1, 'proven_spill_assignments': 0}"
+rolling-c1-b2-p3-next-base.jsonl,next-base,0,12,150003,0,11730944,0,"{'tcp_assignments': [12, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}"
+rolling-c1-b2-p4-tuic.jsonl,tuic,12,12,12620,50331648,50331648,31.90452332081489,
+rolling-c1-b3-p1-next-primary.jsonl,next-primary,12,12,53408,50331648,50331648,7.539076242401273,"{'tcp_assignments': [7, 5], 'trial_assignments': 1, 'proven_spill_assignments': 4}"
+rolling-c1-b3-p2-tuic.jsonl,tuic,12,12,49904,50331648,50331648,8.06842889762213,
+rolling-c1-b3-p3-next-opt.jsonl,next-opt,12,12,17617,50331648,50331648,22.855506047544196,"{'tcp_assignments': [10, 2], 'trial_assignments': 0, 'proven_spill_assignments': 0}"
+rolling-c1-b3-p4-next-base.jsonl,next-base,12,12,13649,50331648,50331648,29.500402862418987,"{'tcp_assignments': [12, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}"
+rolling-c1-b4-p1-tuic.jsonl,tuic,12,12,23509,50331648,50331648,17.127272807178617,
+rolling-c1-b4-p2-next-base.jsonl,next-base,12,12,14281,50331648,50331648,28.193412653318518,"{'tcp_assignments': [12, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}"
+rolling-c1-b4-p3-next-primary.jsonl,next-primary,12,12,21554,50331648,50331648,18.680299067659707,"{'tcp_assignments': [11, 1], 'trial_assignments': 1, 'proven_spill_assignments': 0}"
+rolling-c1-b4-p4-next-opt.jsonl,next-opt,12,12,13634,50331648,50331648,29.532359893841406,"{'tcp_assignments': [4, 8], 'trial_assignments': 0, 'proven_spill_assignments': 0}"
+rolling-c2-b1-p1-next-base.jsonl,next-base,12,12,12420,50331648,50331648,32.418106503763774,"{'tcp_assignments': [12, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}"
+rolling-c2-b1-p2-next-opt.jsonl,next-opt,12,12,46471,50331648,50331648,8.664440504620691,"{'tcp_assignments': [7, 5], 'trial_assignments': 0, 'proven_spill_assignments': 0}"
+rolling-c2-b1-p3-tuic.jsonl,tuic,12,12,80388,50331648,50331648,5.008815056926629,
+rolling-c2-b1-p4-next-primary.jsonl,next-primary,12,12,27382,50331648,50331648,14.70456500346207,"{'tcp_assignments': [11, 1], 'trial_assignments': 1, 'proven_spill_assignments': 0}"
+rolling-c2-b2-p1-next-opt.jsonl,next-opt,12,12,13989,50331648,50331648,28.783162313535826,"{'tcp_assignments': [6, 6], 'trial_assignments': 0, 'proven_spill_assignments': 0}"
+rolling-c2-b2-p2-next-primary.jsonl,next-primary,12,12,16629,50331648,50331648,24.21282266301953,"{'tcp_assignments': [11, 1], 'trial_assignments': 1, 'proven_spill_assignments': 0}"
+rolling-c2-b2-p3-next-base.jsonl,next-base,12,12,74132,50331648,50331648,5.431518463871348,"{'tcp_assignments': [12, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}"
+rolling-c2-b2-p4-tuic.jsonl,tuic,0,12,150010,0,14319616,0,
+rolling-c2-b3-p1-next-primary.jsonl,next-primary,10,12,150003,41943040,46071808,2.236915605354527,"{'tcp_assignments': [8, 4], 'trial_assignments': 3, 'proven_spill_assignments': 1}"
+rolling-c2-b3-p2-tuic.jsonl,tuic,12,12,73375,50331648,50331648,5.487591399229913,
+rolling-c2-b3-p3-next-opt.jsonl,next-opt,12,12,55663,50331648,50331648,7.233679046385194,"{'tcp_assignments': [7, 5], 'trial_assignments': 0, 'proven_spill_assignments': 0}"
+rolling-c2-b3-p4-next-base.jsonl,next-base,0,12,150003,0,15712256,0,"{'tcp_assignments': [12, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}"
+rolling-c2-b4-p1-tuic.jsonl,tuic,12,12,64209,50331648,50331648,6.2709382057635805,
+rolling-c2-b4-p2-next-base.jsonl,next-base,12,12,16445,50331648,50331648,24.483850244613645,"{'tcp_assignments': [12, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}"
+rolling-c2-b4-p3-next-primary.jsonl,next-primary,12,12,57079,50331648,50331648,7.054249573812455,"{'tcp_assignments': [12, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}"
+rolling-c2-b4-p4-next-opt.jsonl,next-opt,12,12,45903,50331648,50331648,8.7718253776009,"{'tcp_assignments': [2, 10], 'trial_assignments': 0, 'proven_spill_assignments': 0}"

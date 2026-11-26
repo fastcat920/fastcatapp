@@ -285,15 +285,15 @@ class DelayDataSource extends _$DelayDataSource with AutoDisposeNotifierMixin {
       globalState.appState = globalState.appState.copyWith(delayMap: value);
 
   void setDelay(Delay delay) {
-    // A refresh must not erase the last measured RTT. Actual results,
-    // including timeout (-1), still replace it when the probe completes.
+    // Preserve the last result while a new probe is in progress.
     final previous = state[delay.url]?[delay.name];
-    if (delay.value == 0 && previous != null && previous != 0) return;
-    if (previous != delay.value) {
+    final previousValue = previous?.value;
+    if (delay.value == 0 && previousValue != null && previousValue != 0) return;
+    if (previous != delay) {
       final DelayMap newDelayMap = Map.from(state);
       newDelayMap[delay.url] = {
         ...?state[delay.url],
-        delay.name: delay.value,
+        delay.name: delay,
       };
       state = newDelayMap;
     }

@@ -1,0 +1,14 @@
+{
+  "baseline": {
+    "samples": 16,
+    "server_tls_records": 1025,
+    "server_tcp_unique_bytes": 4999484,
+    "rst_packets": 0
+  },
+  "capped": {
+    "samples": 16,
+    "server_tls_records": 886,
+    "server_tcp_unique_bytes": 4996133,
+    "rst_packets": 0
+  }
+}

@@ -1,0 +1,117 @@
+{
+  "samples": 48,
+  "scope": "Synthetic length/phase-matched streaming job; fixed N1-first pair order; one device/network; not GFW detection probability",
+  "models": {
+    "counts_only": {
+      "rule": {
+        "feature": "server_small_records",
+        "threshold": 6.5,
+        "sign": 1
+      },
+      "train": {
+        "tp": 4,
+        "tn": 12,
+        "fp": 0,
+        "fn": 8,
+        "tpr": 0.3333333333333333,
+        "fpr": 0.0,
+        "balanced_accuracy": 0.6666666666666666
+      },
+      "holdout": {
+        "tp": 7,
+        "tn": 10,
+        "fp": 2,
+        "fn": 5,
+        "tpr": 0.5833333333333334,
+        "fpr": 0.16666666666666666,
+        "balanced_accuracy": 0.7083333333333334
+      }
+    },
+    "all": {
+      "rule": {
+        "feature": "log_server_tcp_bytes",
+        "threshold": 8.885979852382734,
+        "sign": 1
+      },
+      "train": {
+        "tp": 12,
+        "tn": 4,
+        "fp": 8,
+        "fn": 0,
+        "tpr": 1.0,
+        "fpr": 0.6666666666666666,
+        "balanced_accuracy": 0.6666666666666667
+      },
+      "holdout": {
+        "tp": 12,
+        "tn": 0,
+        "fp": 12,
+        "fn": 0,
+        "tpr": 1.0,
+        "fpr": 1.0,
+        "balanced_accuracy": 0.5
+      }
+    },
+    "upstream_only": {
+      "rule": {
+        "feature": "client_records",
+        "threshold": 4,
+        "sign": 1
+      },
+      "train": {
+        "tp": 12,
+        "tn": 0,
+        "fp": 12,
+        "fn": 0,
+        "tpr": 1.0,
+        "fpr": 1.0,
+        "balanced_accuracy": 0.5
+      },
+      "holdout": {
+        "tp": 12,
+        "tn": 0,
+        "fp": 12,
+        "fn": 0,
+        "tpr": 1.0,
+        "fpr": 1.0,
+        "balanced_accuracy": 0.5
+      }
+    }
+  },
+  "workloads": {
+    "train-n1": {
+      "samples": 12,
+      "server_records_p50": 13.0,
+      "client_records": [
+        5
+      ],
+      "rst_packets": 0
+    },
+    "train-rpc": {
+      "samples": 12,
+      "server_records_p50": 12.5,
+      "client_records": [
+        5
+      ],
+      "rst_packets": 0
+    },
+    "holdout-n1": {
+      "samples": 12,
+      "server_records_p50": 16.5,
+      "client_records": [
+        5
+      ],
+      "rst_packets": 0
+    },
+    "holdout-rpc": {
+      "samples": 12,
+      "server_records_p50": 16.5,
+      "client_records": [
+        5
+      ],
+      "rst_packets": 0
+    }
+  },
+  "exact_upstream_matches": 24,
+  "exact_upstream_record_length_matches": 24
+}

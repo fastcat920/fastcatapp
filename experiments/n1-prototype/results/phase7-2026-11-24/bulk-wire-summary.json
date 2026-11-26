@@ -1,0 +1,90 @@
+[
+  {
+    "index": 0,
+    "arm": "baseline",
+    "success": true,
+    "server_unique_tcp_bytes": 1058815,
+    "server_wire_bytes": 1304999,
+    "server_packets": null,
+    "server_tls_unparsed_bytes": 0,
+    "server_tcp_capture_contiguous": true,
+    "rst_packets": 0
+  },
+  {
+    "index": 1,
+    "arm": "capped",
+    "success": true,
+    "server_unique_tcp_bytes": 1057668,
+    "server_wire_bytes": 1321010,
+    "server_packets": null,
+    "server_tls_unparsed_bytes": 0,
+    "server_tcp_capture_contiguous": true,
+    "rst_packets": 0
+  },
+  {
+    "index": 2,
+    "arm": "capped",
+    "success": true,
+    "server_unique_tcp_bytes": 1057637,
+    "server_wire_bytes": 1313199,
+    "server_packets": null,
+    "server_tls_unparsed_bytes": 0,
+    "server_tcp_capture_contiguous": true,
+    "rst_packets": 0
+  },
+  {
+    "index": 3,
+    "arm": "baseline",
+    "success": true,
+    "server_unique_tcp_bytes": 1058794,
+    "server_wire_bytes": 1296426,
+    "server_packets": null,
+    "server_tls_unparsed_bytes": 0,
+    "server_tcp_capture_contiguous": true,
+    "rst_packets": 0
+  },
+  {
+    "index": 4,
+    "arm": "capped",
+    "success": true,
+    "server_unique_tcp_bytes": 1057412,
+    "server_wire_bytes": 1316672,
+    "server_packets": null,
+    "server_tls_unparsed_bytes": 0,
+    "server_tcp_capture_contiguous": true,
+    "rst_packets": 0
+  },
+  {
+    "index": 5,
+    "arm": "baseline",
+    "success": true,
+    "server_unique_tcp_bytes": 1058816,
+    "server_wire_bytes": 1284974,
+    "server_packets": null,
+    "server_tls_unparsed_bytes": 0,
+    "server_tcp_capture_contiguous": true,
+    "rst_packets": 0
+  },
+  {
+    "index": 6,
+    "arm": "capped",
+    "success": true,
+    "server_unique_tcp_bytes": 1057485,
+    "server_wire_bytes": 1301729,
+    "server_packets": null,
+    "server_tls_unparsed_bytes": 0,
+    "server_tcp_capture_contiguous": true,
+    "rst_packets": 0
+  },
+  {
+    "index": 7,
+    "arm": "baseline",
+    "success": false,
+    "server_unique_tcp_bytes": 280836,
+    "server_wire_bytes": 439900,
+    "server_packets": null,
+    "server_tls_unparsed_bytes": 12272,
+    "server_tcp_capture_contiguous": true,
+    "rst_packets": 3
+  }
+]

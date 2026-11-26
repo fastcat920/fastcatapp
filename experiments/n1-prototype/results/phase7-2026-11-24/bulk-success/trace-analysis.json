@@ -1,0 +1,3850 @@
+{
+  "flows": 7,
+  "stage_totals": {
+    "baseline/response-headers": {
+      "writes": 3,
+      "small_records": 3,
+      "records": 3,
+      "small_whole_write_records": 3,
+      "small_fragment_records": 0,
+      "over_16k_writes": 0,
+      "over_16k_small_records": 0,
+      "fragment_examples": [],
+      "plaintext_range": [
+        124,
+        124
+      ]
+    },
+    "baseline/target-http-prefix": {
+      "writes": 3,
+      "small_records": 0,
+      "records": 8,
+      "small_whole_write_records": 0,
+      "small_fragment_records": 0,
+      "over_16k_writes": 1,
+      "over_16k_small_records": 0,
+      "fragment_examples": [],
+      "plaintext_range": [
+        4124,
+        16423
+      ]
+    },
+    "baseline/n1-data": {
+      "writes": 197,
+      "small_records": 171,
+      "records": 384,
+      "small_whole_write_records": 1,
+      "small_fragment_records": 170,
+      "over_16k_writes": 183,
+      "over_16k_small_records": 170,
+      "fragment_examples": [
+        {
+          "plaintext_bytes": 16423,
+          "encrypted_lengths": [
+            16401,
+            56
+          ]
+        },
+        {
+          "plaintext_bytes": 16426,
+          "encrypted_lengths": [
+            16401,
+            59
+          ]
+        },
+        {
+          "plaintext_bytes": 16410,
+          "encrypted_lengths": [
+            16401,
+            43
+          ]
+        },
+        {
+          "plaintext_bytes": 16406,
+          "encrypted_lengths": [
+            16401,
+            39
+          ]
+        },
+        {
+          "plaintext_bytes": 16411,
+          "encrypted_lengths": [
+            16401,
+            44
+          ]
+        },
+        {
+          "plaintext_bytes": 16408,
+          "encrypted_lengths": [
+            16401,
+            41
+          ]
+        }
+      ],
+      "plaintext_range": [
+        172,
+        16431
+      ]
+    },
+    "baseline/n1-fin": {
+      "writes": 3,
+      "small_records": 3,
+      "records": 3,
+      "small_whole_write_records": 3,
+      "small_fragment_records": 0,
+      "over_16k_writes": 0,
+      "over_16k_small_records": 0,
+      "fragment_examples": [],
+      "plaintext_range": [
+        19,
+        35
+      ]
+    },
+    "capped/response-headers": {
+      "writes": 4,
+      "small_records": 4,
+      "records": 4,
+      "small_whole_write_records": 4,
+      "small_fragment_records": 0,
+      "over_16k_writes": 0,
+      "over_16k_small_records": 0,
+      "fragment_examples": [],
+      "plaintext_range": [
+        124,
+        124
+      ]
+    },
+    "capped/target-http-prefix": {
+      "writes": 4,
+      "small_records": 0,
+      "records": 12,
+      "small_whole_write_records": 0,
+      "small_fragment_records": 0,
+      "over_16k_writes": 0,
+      "over_16k_small_records": 0,
+      "fragment_examples": [],
+      "plaintext_range": [
+        4120,
+        16380
+      ]
+    },
+    "capped/n1-data": {
+      "writes": 267,
+      "small_records": 0,
+      "records": 289,
+      "small_whole_write_records": 0,
+      "small_fragment_records": 0,
+      "over_16k_writes": 0,
+      "over_16k_small_records": 0,
+      "fragment_examples": [],
+      "plaintext_range": [
+        489,
+        16384
+      ]
+    },
+    "capped/n1-fin": {
+      "writes": 4,
+      "small_records": 4,
+      "records": 4,
+      "small_whole_write_records": 4,
+      "small_fragment_records": 0,
+      "over_16k_writes": 0,
+      "over_16k_small_records": 0,
+      "fragment_examples": [],
+      "plaintext_range": [
+        25,
+        46
+      ]
+    }
+  },
+  "attribution_scope": "Validated Go TLS1.3 laboratory fixture and +17 byte overhead; no decryption, not a general traffic parser",
+  "flows_detail": [
+    {
+      "index": 0,
+      "pair": 0,
+      "kind": "n1",
+      "arm": "baseline",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4132,
+          "encrypted_lengths": [
+            2389,
+            1777
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16417,
+          "encrypted_lengths": [
+            4761,
+            5947,
+            5760
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16421,
+          "encrypted_lengths": [
+            8319,
+            8136
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16416,
+          "encrypted_lengths": [
+            10691,
+            5759
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16417,
+          "encrypted_lengths": [
+            13063,
+            3388
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16431,
+          "encrypted_lengths": [
+            15435,
+            1030
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16423,
+          "encrypted_lengths": [
+            16401,
+            56
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 12463,
+          "encrypted_lengths": [
+            12480
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16426,
+          "encrypted_lengths": [
+            16401,
+            59
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16410,
+          "encrypted_lengths": [
+            16401,
+            43
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16406,
+          "encrypted_lengths": [
+            16401,
+            39
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16411,
+          "encrypted_lengths": [
+            16401,
+            44
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16408,
+          "encrypted_lengths": [
+            16401,
+            41
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16403,
+          "encrypted_lengths": [
+            16401,
+            36
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 10798,
+          "encrypted_lengths": [
+            10815
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16407,
+          "encrypted_lengths": [
+            16401,
+            40
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16422,
+          "encrypted_lengths": [
+            16401,
+            55
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16410,
+          "encrypted_lengths": [
+            16401,
+            43
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16404,
+          "encrypted_lengths": [
+            16401,
+            37
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16425,
+          "encrypted_lengths": [
+            16401,
+            58
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16422,
+          "encrypted_lengths": [
+            16401,
+            55
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16413,
+          "encrypted_lengths": [
+            16401,
+            46
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16417,
+          "encrypted_lengths": [
+            16401,
+            50
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16418,
+          "encrypted_lengths": [
+            16401,
+            51
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16419,
+          "encrypted_lengths": [
+            16401,
+            52
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16429,
+          "encrypted_lengths": [
+            16401,
+            62
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16406,
+          "encrypted_lengths": [
+            16401,
+            39
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16427,
+          "encrypted_lengths": [
+            16401,
+            60
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16404,
+          "encrypted_lengths": [
+            16401,
+            37
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16416,
+          "encrypted_lengths": [
+            16401,
+            49
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16409,
+          "encrypted_lengths": [
+            16401,
+            42
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16424,
+          "encrypted_lengths": [
+            16401,
+            57
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16403,
+          "encrypted_lengths": [
+            16401,
+            36
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16427,
+          "encrypted_lengths": [
+            16401,
+            60
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16420,
+          "encrypted_lengths": [
+            16401,
+            53
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16423,
+          "encrypted_lengths": [
+            16401,
+            56
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16426,
+          "encrypted_lengths": [
+            16401,
+            59
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16430,
+          "encrypted_lengths": [
+            16401,
+            63
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16423,
+          "encrypted_lengths": [
+            16401,
+            56
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16404,
+          "encrypted_lengths": [
+            16401,
+            37
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16430,
+          "encrypted_lengths": [
+            16401,
+            63
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16406,
+          "encrypted_lengths": [
+            16401,
+            39
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16430,
+          "encrypted_lengths": [
+            16401,
+            63
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16408,
+          "encrypted_lengths": [
+            16401,
+            41
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16407,
+          "encrypted_lengths": [
+            16401,
+            40
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16416,
+          "encrypted_lengths": [
+            16401,
+            49
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16411,
+          "encrypted_lengths": [
+            16401,
+            44
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16402,
+          "encrypted_lengths": [
+            16401,
+            35
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16421,
+          "encrypted_lengths": [
+            16401,
+            54
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16422,
+          "encrypted_lengths": [
+            16401,
+            55
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16421,
+          "encrypted_lengths": [
+            16401,
+            54
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16401,
+          "encrypted_lengths": [
+            16401,
+            34
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16414,
+          "encrypted_lengths": [
+            16401,
+            47
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16412,
+          "encrypted_lengths": [
+            16401,
+            45
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16431,
+          "encrypted_lengths": [
+            16401,
+            64
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16429,
+          "encrypted_lengths": [
+            16401,
+            62
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16417,
+          "encrypted_lengths": [
+            16401,
+            50
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16404,
+          "encrypted_lengths": [
+            16401,
+            37
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16407,
+          "encrypted_lengths": [
+            16401,
+            40
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16426,
+          "encrypted_lengths": [
+            16401,
+            59
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16414,
+          "encrypted_lengths": [
+            16401,
+            47
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16414,
+          "encrypted_lengths": [
+            16401,
+            47
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16430,
+          "encrypted_lengths": [
+            16401,
+            63
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16425,
+          "encrypted_lengths": [
+            16401,
+            58
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16400,
+          "encrypted_lengths": [
+            16401,
+            33
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 5658,
+          "encrypted_lengths": [
+            5675
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 35,
+          "encrypted_lengths": [
+            52
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 1,
+      "pair": 0,
+      "kind": "n1",
+      "arm": "capped",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 16373,
+          "encrypted_lengths": [
+            2389,
+            3575,
+            4761,
+            5716
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16375,
+          "encrypted_lengths": [
+            7133,
+            8319,
+            974
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16376,
+          "encrypted_lengths": [
+            10691,
+            5719
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16355,
+          "encrypted_lengths": [
+            13063,
+            3326
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16354,
+          "encrypted_lengths": [
+            15435,
+            953
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16356,
+          "encrypted_lengths": [
+            16373
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16370,
+          "encrypted_lengths": [
+            16387
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 511,
+          "encrypted_lengths": [
+            528
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16363,
+          "encrypted_lengths": [
+            16380
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16384,
+          "encrypted_lengths": [
+            16401
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16369,
+          "encrypted_lengths": [
+            16386
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16371,
+          "encrypted_lengths": [
+            16388
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16372,
+          "encrypted_lengths": [
+            16389
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16371,
+          "encrypted_lengths": [
+            16388
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 7238,
+          "encrypted_lengths": [
+            7255
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16356,
+          "encrypted_lengths": [
+            16373
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16374,
+          "encrypted_lengths": [
+            16391
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16356,
+          "encrypted_lengths": [
+            16373
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16378,
+          "encrypted_lengths": [
+            16395
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16377,
+          "encrypted_lengths": [
+            16394
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16365,
+          "encrypted_lengths": [
+            16382
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 7219,
+          "encrypted_lengths": [
+            7236
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16377,
+          "encrypted_lengths": [
+            16394
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16381,
+          "encrypted_lengths": [
+            16398
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16382,
+          "encrypted_lengths": [
+            16399
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16360,
+          "encrypted_lengths": [
+            16377
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16384,
+          "encrypted_lengths": [
+            16401
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16379,
+          "encrypted_lengths": [
+            16396
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 7231,
+          "encrypted_lengths": [
+            7248
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16366,
+          "encrypted_lengths": [
+            16383
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16360,
+          "encrypted_lengths": [
+            16377
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16369,
+          "encrypted_lengths": [
+            16386
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16371,
+          "encrypted_lengths": [
+            16388
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16383,
+          "encrypted_lengths": [
+            16400
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16383,
+          "encrypted_lengths": [
+            16400
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 7222,
+          "encrypted_lengths": [
+            7239
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16376,
+          "encrypted_lengths": [
+            16393
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16383,
+          "encrypted_lengths": [
+            16400
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16362,
+          "encrypted_lengths": [
+            16379
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16370,
+          "encrypted_lengths": [
+            16387
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16353,
+          "encrypted_lengths": [
+            16370
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16359,
+          "encrypted_lengths": [
+            16376
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 7223,
+          "encrypted_lengths": [
+            7240
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16363,
+          "encrypted_lengths": [
+            16380
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16371,
+          "encrypted_lengths": [
+            16388
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16358,
+          "encrypted_lengths": [
+            16375
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16364,
+          "encrypted_lengths": [
+            16381
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16369,
+          "encrypted_lengths": [
+            16386
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16378,
+          "encrypted_lengths": [
+            16395
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 7231,
+          "encrypted_lengths": [
+            7248
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16361,
+          "encrypted_lengths": [
+            16378
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16371,
+          "encrypted_lengths": [
+            16388
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16355,
+          "encrypted_lengths": [
+            16372
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16377,
+          "encrypted_lengths": [
+            16394
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16358,
+          "encrypted_lengths": [
+            16375
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16356,
+          "encrypted_lengths": [
+            16373
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16359,
+          "encrypted_lengths": [
+            16376
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16365,
+          "encrypted_lengths": [
+            16382
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16359,
+          "encrypted_lengths": [
+            16376
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16357,
+          "encrypted_lengths": [
+            16374
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16355,
+          "encrypted_lengths": [
+            16372
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16367,
+          "encrypted_lengths": [
+            16384
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16383,
+          "encrypted_lengths": [
+            16400
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16360,
+          "encrypted_lengths": [
+            16377
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16366,
+          "encrypted_lengths": [
+            16383
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16368,
+          "encrypted_lengths": [
+            16385
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16369,
+          "encrypted_lengths": [
+            16386
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16360,
+          "encrypted_lengths": [
+            16377
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 8557,
+          "encrypted_lengths": [
+            8574
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 46,
+          "encrypted_lengths": [
+            63
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 2,
+      "pair": 1,
+      "kind": "n1",
+      "arm": "capped",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 16380,
+          "encrypted_lengths": [
+            2389,
+            3575,
+            4761,
+            5723
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16368,
+          "encrypted_lengths": [
+            7133,
+            8319,
+            967
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16384,
+          "encrypted_lengths": [
+            10691,
+            5727
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16356,
+          "encrypted_lengths": [
+            13063,
+            3327
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16369,
+          "encrypted_lengths": [
+            15435,
+            968
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16354,
+          "encrypted_lengths": [
+            16371
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16355,
+          "encrypted_lengths": [
+            16372
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 489,
+          "encrypted_lengths": [
+            506
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16362,
+          "encrypted_lengths": [
+            16379
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16360,
+          "encrypted_lengths": [
+            16377
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16384,
+          "encrypted_lengths": [
+            16401
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16383,
+          "encrypted_lengths": [
+            16400
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16354,
+          "encrypted_lengths": [
+            16371
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16362,
+          "encrypted_lengths": [
+            16379
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 7220,
+          "encrypted_lengths": [
+            7237
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16373,
+          "encrypted_lengths": [
+            16390
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16382,
+          "encrypted_lengths": [
+            16399
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16354,
+          "encrypted_lengths": [
+            16371
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16378,
+          "encrypted_lengths": [
+            16395
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16359,
+          "encrypted_lengths": [
+            16376
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16364,
+          "encrypted_lengths": [
+            16381
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 7211,
+          "encrypted_lengths": [
+            7228
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16371,
+          "encrypted_lengths": [
+            16388
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16383,
+          "encrypted_lengths": [
+            16400
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16354,
+          "encrypted_lengths": [
+            16371
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16363,
+          "encrypted_lengths": [
+            16380
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16381,
+          "encrypted_lengths": [
+            16398
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16358,
+          "encrypted_lengths": [
+            16375
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 7239,
+          "encrypted_lengths": [
+            7256
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16354,
+          "encrypted_lengths": [
+            16371
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16362,
+          "encrypted_lengths": [
+            16379
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16378,
+          "encrypted_lengths": [
+            16395
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16381,
+          "encrypted_lengths": [
+            16398
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16381,
+          "encrypted_lengths": [
+            16398
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16363,
+          "encrypted_lengths": [
+            16380
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 7224,
+          "encrypted_lengths": [
+            7241
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16384,
+          "encrypted_lengths": [
+            16401
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16353,
+          "encrypted_lengths": [
+            16370
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16376,
+          "encrypted_lengths": [
+            16393
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16355,
+          "encrypted_lengths": [
+            16372
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16365,
+          "encrypted_lengths": [
+            16382
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16361,
+          "encrypted_lengths": [
+            16378
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 7239,
+          "encrypted_lengths": [
+            7256
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16369,
+          "encrypted_lengths": [
+            16386
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16368,
+          "encrypted_lengths": [
+            16385
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16362,
+          "encrypted_lengths": [
+            16379
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16372,
+          "encrypted_lengths": [
+            16389
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16357,
+          "encrypted_lengths": [
+            16374
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16363,
+          "encrypted_lengths": [
+            16380
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 7229,
+          "encrypted_lengths": [
+            7246
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16364,
+          "encrypted_lengths": [
+            16381
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16373,
+          "encrypted_lengths": [
+            16390
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16357,
+          "encrypted_lengths": [
+            16374
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16378,
+          "encrypted_lengths": [
+            16395
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16366,
+          "encrypted_lengths": [
+            16383
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16382,
+          "encrypted_lengths": [
+            16399
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 7223,
+          "encrypted_lengths": [
+            7240
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16380,
+          "encrypted_lengths": [
+            16397
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16373,
+          "encrypted_lengths": [
+            16390
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16353,
+          "encrypted_lengths": [
+            16370
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16360,
+          "encrypted_lengths": [
+            16377
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16364,
+          "encrypted_lengths": [
+            16381
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16360,
+          "encrypted_lengths": [
+            16377
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 7231,
+          "encrypted_lengths": [
+            7248
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16362,
+          "encrypted_lengths": [
+            16379
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16364,
+          "encrypted_lengths": [
+            16381
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16367,
+          "encrypted_lengths": [
+            16384
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16369,
+          "encrypted_lengths": [
+            16386
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16353,
+          "encrypted_lengths": [
+            16370
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 10498,
+          "encrypted_lengths": [
+            10515
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 45,
+          "encrypted_lengths": [
+            62
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 3,
+      "pair": 1,
+      "kind": "n1",
+      "arm": "baseline",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 16423,
+          "encrypted_lengths": [
+            2389,
+            3575,
+            4761,
+            5766
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16421,
+          "encrypted_lengths": [
+            7133,
+            8319,
+            1020
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16413,
+          "encrypted_lengths": [
+            10691,
+            5756
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16412,
+          "encrypted_lengths": [
+            13063,
+            3383
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16404,
+          "encrypted_lengths": [
+            15435,
+            1003
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16416,
+          "encrypted_lengths": [
+            16401,
+            49
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16426,
+          "encrypted_lengths": [
+            16401,
+            59
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 172,
+          "encrypted_lengths": [
+            189
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16416,
+          "encrypted_lengths": [
+            16401,
+            49
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16418,
+          "encrypted_lengths": [
+            16401,
+            51
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16430,
+          "encrypted_lengths": [
+            16401,
+            63
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16420,
+          "encrypted_lengths": [
+            16401,
+            53
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16409,
+          "encrypted_lengths": [
+            16401,
+            42
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16427,
+          "encrypted_lengths": [
+            16401,
+            60
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 6930,
+          "encrypted_lengths": [
+            6947
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16415,
+          "encrypted_lengths": [
+            16401,
+            48
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16408,
+          "encrypted_lengths": [
+            16401,
+            41
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16401,
+          "encrypted_lengths": [
+            16401,
+            34
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16407,
+          "encrypted_lengths": [
+            16401,
+            40
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16426,
+          "encrypted_lengths": [
+            16401,
+            59
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16418,
+          "encrypted_lengths": [
+            16401,
+            51
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 6942,
+          "encrypted_lengths": [
+            6959
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16427,
+          "encrypted_lengths": [
+            16401,
+            60
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16402,
+          "encrypted_lengths": [
+            16401,
+            35
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16423,
+          "encrypted_lengths": [
+            16401,
+            56
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16415,
+          "encrypted_lengths": [
+            16401,
+            48
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16406,
+          "encrypted_lengths": [
+            16401,
+            39
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16428,
+          "encrypted_lengths": [
+            16401,
+            61
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 6937,
+          "encrypted_lengths": [
+            6954
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16412,
+          "encrypted_lengths": [
+            16401,
+            45
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 12067,
+          "encrypted_lengths": [
+            12084
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16426,
+          "encrypted_lengths": [
+            16401,
+            59
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16402,
+          "encrypted_lengths": [
+            16401,
+            35
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16422,
+          "encrypted_lengths": [
+            16401,
+            55
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16428,
+          "encrypted_lengths": [
+            16401,
+            61
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16411,
+          "encrypted_lengths": [
+            16401,
+            44
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16427,
+          "encrypted_lengths": [
+            16401,
+            60
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16408,
+          "encrypted_lengths": [
+            16401,
+            41
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16427,
+          "encrypted_lengths": [
+            16401,
+            60
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16404,
+          "encrypted_lengths": [
+            16401,
+            37
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16417,
+          "encrypted_lengths": [
+            16401,
+            50
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16402,
+          "encrypted_lengths": [
+            16401,
+            35
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16407,
+          "encrypted_lengths": [
+            16401,
+            40
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16429,
+          "encrypted_lengths": [
+            16401,
+            62
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 14237,
+          "encrypted_lengths": [
+            14254
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16421,
+          "encrypted_lengths": [
+            16401,
+            54
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16421,
+          "encrypted_lengths": [
+            16401,
+            54
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16403,
+          "encrypted_lengths": [
+            16401,
+            36
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16404,
+          "encrypted_lengths": [
+            16401,
+            37
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16415,
+          "encrypted_lengths": [
+            16401,
+            48
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16413,
+          "encrypted_lengths": [
+            16401,
+            46
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 14231,
+          "encrypted_lengths": [
+            14248
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16414,
+          "encrypted_lengths": [
+            16401,
+            47
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16422,
+          "encrypted_lengths": [
+            16401,
+            55
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16428,
+          "encrypted_lengths": [
+            16401,
+            61
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16415,
+          "encrypted_lengths": [
+            16401,
+            48
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16402,
+          "encrypted_lengths": [
+            16401,
+            35
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16406,
+          "encrypted_lengths": [
+            16401,
+            39
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16411,
+          "encrypted_lengths": [
+            16401,
+            44
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16429,
+          "encrypted_lengths": [
+            16401,
+            62
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16412,
+          "encrypted_lengths": [
+            16401,
+            45
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16414,
+          "encrypted_lengths": [
+            16401,
+            47
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16431,
+          "encrypted_lengths": [
+            16401,
+            64
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16404,
+          "encrypted_lengths": [
+            16401,
+            37
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16418,
+          "encrypted_lengths": [
+            16401,
+            51
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16414,
+          "encrypted_lengths": [
+            16401,
+            47
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16414,
+          "encrypted_lengths": [
+            16401,
+            47
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4370,
+          "encrypted_lengths": [
+            4387
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 29,
+          "encrypted_lengths": [
+            46
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 4,
+      "pair": 2,
+      "kind": "n1",
+      "arm": "capped",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4121,
+          "encrypted_lengths": [
+            2389,
+            1766
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16366,
+          "encrypted_lengths": [
+            4761,
+            5947,
+            5709
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16359,
+          "encrypted_lengths": [
+            8319,
+            8074
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16371,
+          "encrypted_lengths": [
+            10691,
+            5714
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16364,
+          "encrypted_lengths": [
+            13063,
+            3335
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16357,
+          "encrypted_lengths": [
+            15435,
+            956
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16354,
+          "encrypted_lengths": [
+            16371
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 12741,
+          "encrypted_lengths": [
+            12758
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16366,
+          "encrypted_lengths": [
+            16383
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16373,
+          "encrypted_lengths": [
+            16390
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16353,
+          "encrypted_lengths": [
+            16370
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16364,
+          "encrypted_lengths": [
+            16381
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16362,
+          "encrypted_lengths": [
+            16379
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16372,
+          "encrypted_lengths": [
+            16389
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 11075,
+          "encrypted_lengths": [
+            11092
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16353,
+          "encrypted_lengths": [
+            16370
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16378,
+          "encrypted_lengths": [
+            16395
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16366,
+          "encrypted_lengths": [
+            16383
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16364,
+          "encrypted_lengths": [
+            16381
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16360,
+          "encrypted_lengths": [
+            16377
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16372,
+          "encrypted_lengths": [
+            16389
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16380,
+          "encrypted_lengths": [
+            16397
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16362,
+          "encrypted_lengths": [
+            16379
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16364,
+          "encrypted_lengths": [
+            16381
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16369,
+          "encrypted_lengths": [
+            16386
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16378,
+          "encrypted_lengths": [
+            16395
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16378,
+          "encrypted_lengths": [
+            16395
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16360,
+          "encrypted_lengths": [
+            16377
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16356,
+          "encrypted_lengths": [
+            16373
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16369,
+          "encrypted_lengths": [
+            16386
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16367,
+          "encrypted_lengths": [
+            16384
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16353,
+          "encrypted_lengths": [
+            16370
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16381,
+          "encrypted_lengths": [
+            16398
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16368,
+          "encrypted_lengths": [
+            16385
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16355,
+          "encrypted_lengths": [
+            16372
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16364,
+          "encrypted_lengths": [
+            16381
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16373,
+          "encrypted_lengths": [
+            16390
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16369,
+          "encrypted_lengths": [
+            16386
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16376,
+          "encrypted_lengths": [
+            16393
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16380,
+          "encrypted_lengths": [
+            16397
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16359,
+          "encrypted_lengths": [
+            16376
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16381,
+          "encrypted_lengths": [
+            16398
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16381,
+          "encrypted_lengths": [
+            16398
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16363,
+          "encrypted_lengths": [
+            16380
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16362,
+          "encrypted_lengths": [
+            16379
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16379,
+          "encrypted_lengths": [
+            16396
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16365,
+          "encrypted_lengths": [
+            16382
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16368,
+          "encrypted_lengths": [
+            16385
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16367,
+          "encrypted_lengths": [
+            16384
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16372,
+          "encrypted_lengths": [
+            16389
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16370,
+          "encrypted_lengths": [
+            16387
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16366,
+          "encrypted_lengths": [
+            16383
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16355,
+          "encrypted_lengths": [
+            16372
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16358,
+          "encrypted_lengths": [
+            16375
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16355,
+          "encrypted_lengths": [
+            16372
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16358,
+          "encrypted_lengths": [
+            16375
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16378,
+          "encrypted_lengths": [
+            16395
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16384,
+          "encrypted_lengths": [
+            16401
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16381,
+          "encrypted_lengths": [
+            16398
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16382,
+          "encrypted_lengths": [
+            16399
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16368,
+          "encrypted_lengths": [
+            16385
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16380,
+          "encrypted_lengths": [
+            16397
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16357,
+          "encrypted_lengths": [
+            16374
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16358,
+          "encrypted_lengths": [
+            16375
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16379,
+          "encrypted_lengths": [
+            16396
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 8008,
+          "encrypted_lengths": [
+            8025
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 25,
+          "encrypted_lengths": [
+            42
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 5,
+      "pair": 2,
+      "kind": "n1",
+      "arm": "baseline",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4124,
+          "encrypted_lengths": [
+            2389,
+            1769
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 12474,
+          "encrypted_lengths": [
+            4761,
+            5947,
+            1817
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16411,
+          "encrypted_lengths": [
+            8319,
+            8126
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16411,
+          "encrypted_lengths": [
+            10691,
+            5754
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16410,
+          "encrypted_lengths": [
+            13063,
+            3381
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16407,
+          "encrypted_lengths": [
+            15435,
+            1006
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16422,
+          "encrypted_lengths": [
+            16401,
+            55
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16413,
+          "encrypted_lengths": [
+            16401,
+            46
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16419,
+          "encrypted_lengths": [
+            16401,
+            52
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16424,
+          "encrypted_lengths": [
+            16401,
+            57
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16431,
+          "encrypted_lengths": [
+            16401,
+            64
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16412,
+          "encrypted_lengths": [
+            16401,
+            45
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16405,
+          "encrypted_lengths": [
+            16401,
+            38
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16430,
+          "encrypted_lengths": [
+            16401,
+            63
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16430,
+          "encrypted_lengths": [
+            16401,
+            63
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 10782,
+          "encrypted_lengths": [
+            10799
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16402,
+          "encrypted_lengths": [
+            16401,
+            35
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16430,
+          "encrypted_lengths": [
+            16401,
+            63
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16402,
+          "encrypted_lengths": [
+            16401,
+            35
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16402,
+          "encrypted_lengths": [
+            16401,
+            35
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16409,
+          "encrypted_lengths": [
+            16401,
+            42
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16400,
+          "encrypted_lengths": [
+            16401,
+            33
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16423,
+          "encrypted_lengths": [
+            16401,
+            56
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16424,
+          "encrypted_lengths": [
+            16401,
+            57
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16419,
+          "encrypted_lengths": [
+            16401,
+            52
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16429,
+          "encrypted_lengths": [
+            16401,
+            62
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16430,
+          "encrypted_lengths": [
+            16401,
+            63
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16423,
+          "encrypted_lengths": [
+            16401,
+            56
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16412,
+          "encrypted_lengths": [
+            16401,
+            45
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16410,
+          "encrypted_lengths": [
+            16401,
+            43
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16419,
+          "encrypted_lengths": [
+            16401,
+            52
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16400,
+          "encrypted_lengths": [
+            16401,
+            33
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 5662,
+          "encrypted_lengths": [
+            5679
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16421,
+          "encrypted_lengths": [
+            16401,
+            54
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16428,
+          "encrypted_lengths": [
+            16401,
+            61
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16422,
+          "encrypted_lengths": [
+            16401,
+            55
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16421,
+          "encrypted_lengths": [
+            16401,
+            54
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16415,
+          "encrypted_lengths": [
+            16401,
+            48
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16429,
+          "encrypted_lengths": [
+            16401,
+            62
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16405,
+          "encrypted_lengths": [
+            16401,
+            38
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16426,
+          "encrypted_lengths": [
+            16401,
+            59
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16430,
+          "encrypted_lengths": [
+            16401,
+            63
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16429,
+          "encrypted_lengths": [
+            16401,
+            62
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16415,
+          "encrypted_lengths": [
+            16401,
+            48
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16403,
+          "encrypted_lengths": [
+            16401,
+            36
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16423,
+          "encrypted_lengths": [
+            16401,
+            56
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16407,
+          "encrypted_lengths": [
+            16401,
+            40
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16428,
+          "encrypted_lengths": [
+            16401,
+            61
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16407,
+          "encrypted_lengths": [
+            16401,
+            40
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16411,
+          "encrypted_lengths": [
+            16401,
+            44
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16406,
+          "encrypted_lengths": [
+            16401,
+            39
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16409,
+          "encrypted_lengths": [
+            16401,
+            42
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16418,
+          "encrypted_lengths": [
+            16401,
+            51
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16407,
+          "encrypted_lengths": [
+            16401,
+            40
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16406,
+          "encrypted_lengths": [
+            16401,
+            39
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16425,
+          "encrypted_lengths": [
+            16401,
+            58
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16412,
+          "encrypted_lengths": [
+            16401,
+            45
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16424,
+          "encrypted_lengths": [
+            16401,
+            57
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16413,
+          "encrypted_lengths": [
+            16401,
+            46
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16416,
+          "encrypted_lengths": [
+            16401,
+            49
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16428,
+          "encrypted_lengths": [
+            16401,
+            61
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16413,
+          "encrypted_lengths": [
+            16401,
+            46
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16412,
+          "encrypted_lengths": [
+            16401,
+            45
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16403,
+          "encrypted_lengths": [
+            16401,
+            36
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16417,
+          "encrypted_lengths": [
+            16401,
+            50
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16431,
+          "encrypted_lengths": [
+            16401,
+            64
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 19,
+          "encrypted_lengths": [
+            36
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 6,
+      "pair": 3,
+      "kind": "n1",
+      "arm": "capped",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4120,
+          "encrypted_lengths": [
+            2389,
+            1765
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16370,
+          "encrypted_lengths": [
+            4761,
+            5947,
+            5713
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16364,
+          "encrypted_lengths": [
+            8319,
+            8079
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16384,
+          "encrypted_lengths": [
+            10691,
+            5727
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16354,
+          "encrypted_lengths": [
+            13063,
+            3325
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16383,
+          "encrypted_lengths": [
+            15435,
+            982
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16366,
+          "encrypted_lengths": [
+            16383
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 12731,
+          "encrypted_lengths": [
+            12748
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16355,
+          "encrypted_lengths": [
+            16372
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16377,
+          "encrypted_lengths": [
+            16394
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16360,
+          "encrypted_lengths": [
+            16377
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16372,
+          "encrypted_lengths": [
+            16389
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16367,
+          "encrypted_lengths": [
+            16384
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16384,
+          "encrypted_lengths": [
+            16401
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 11064,
+          "encrypted_lengths": [
+            11081
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16361,
+          "encrypted_lengths": [
+            16378
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16364,
+          "encrypted_lengths": [
+            16381
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16370,
+          "encrypted_lengths": [
+            16387
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16373,
+          "encrypted_lengths": [
+            16390
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16382,
+          "encrypted_lengths": [
+            16399
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16372,
+          "encrypted_lengths": [
+            16389
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16372,
+          "encrypted_lengths": [
+            16389
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16363,
+          "encrypted_lengths": [
+            16380
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16354,
+          "encrypted_lengths": [
+            16371
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16366,
+          "encrypted_lengths": [
+            16383
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16377,
+          "encrypted_lengths": [
+            16394
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16379,
+          "encrypted_lengths": [
+            16396
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16372,
+          "encrypted_lengths": [
+            16389
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16360,
+          "encrypted_lengths": [
+            16377
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16353,
+          "encrypted_lengths": [
+            16370
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16371,
+          "encrypted_lengths": [
+            16388
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16378,
+          "encrypted_lengths": [
+            16395
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16357,
+          "encrypted_lengths": [
+            16374
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16379,
+          "encrypted_lengths": [
+            16396
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16365,
+          "encrypted_lengths": [
+            16382
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16377,
+          "encrypted_lengths": [
+            16394
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16363,
+          "encrypted_lengths": [
+            16380
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16376,
+          "encrypted_lengths": [
+            16393
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16377,
+          "encrypted_lengths": [
+            16394
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16379,
+          "encrypted_lengths": [
+            16396
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16368,
+          "encrypted_lengths": [
+            16385
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16359,
+          "encrypted_lengths": [
+            16376
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16378,
+          "encrypted_lengths": [
+            16395
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16384,
+          "encrypted_lengths": [
+            16401
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16366,
+          "encrypted_lengths": [
+            16383
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16366,
+          "encrypted_lengths": [
+            16383
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16382,
+          "encrypted_lengths": [
+            16399
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16376,
+          "encrypted_lengths": [
+            16393
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16383,
+          "encrypted_lengths": [
+            16400
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16375,
+          "encrypted_lengths": [
+            16392
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16358,
+          "encrypted_lengths": [
+            16375
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16360,
+          "encrypted_lengths": [
+            16377
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16384,
+          "encrypted_lengths": [
+            16401
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16353,
+          "encrypted_lengths": [
+            16370
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16354,
+          "encrypted_lengths": [
+            16371
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16353,
+          "encrypted_lengths": [
+            16370
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16355,
+          "encrypted_lengths": [
+            16372
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16354,
+          "encrypted_lengths": [
+            16371
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16354,
+          "encrypted_lengths": [
+            16371
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16374,
+          "encrypted_lengths": [
+            16391
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16383,
+          "encrypted_lengths": [
+            16400
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16354,
+          "encrypted_lengths": [
+            16371
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16366,
+          "encrypted_lengths": [
+            16383
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16375,
+          "encrypted_lengths": [
+            16392
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16379,
+          "encrypted_lengths": [
+            16396
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 8001,
+          "encrypted_lengths": [
+            8018
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 41,
+          "encrypted_lengths": [
+            58
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+Running as unit: fc-opt-backend-1795340223.service; invocation ID: 099e6eeaff4147f189d46e9e621f4013
+Running as unit: fc-opt-next-1795340223.service; invocation ID: 57853dced1c6462fbd84877a9b1269f7
+/tmp/fc-next-latency/compare: 1 file pushed, 0 skipped. 29.0 MB/s (38812119 bytes in 1.275s)
+/tmp/fc-next-latency/client-1795340223.json: 1 file pushed, 0 skipped. 1.9 MB/s (432 bytes in 0.000s)
+/etc/ssl/cert.pem: 1 file pushed, 0 skipped. 129.8 MB/s (333483 bytes in 0.002s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+/tmp/fc-next-latency/latency-config-1795340223.json: 1 file pushed, 0 skipped. 5.4 MB/s (609 bytes in 0.000s)
+COMPLETE mixed-b1-p1-next-opt
+COMPLETE mixed-b1-p2-next-latency
+COMPLETE mixed-b2-p1-next-latency
+COMPLETE mixed-b2-p2-next-opt
+COMPLETE mixed-b3-p1-next-opt
+COMPLETE mixed-b3-p2-next-latency
+COMPLETE mixed-b4-p1-next-latency
+COMPLETE mixed-b4-p2-next-opt
+COMPLETE mixed-b5-p1-next-opt
+COMPLETE mixed-b5-p2-next-latency
+COMPLETE mixed-b6-p1-next-latency
+COMPLETE mixed-b6-p2-next-opt
+COMPLETE parallel-b1-p1-next-opt
+COMPLETE parallel-b1-p2-next-latency
+COMPLETE parallel-b2-p1-next-latency
+COMPLETE parallel-b2-p2-next-opt
+COMPLETE parallel-b3-p1-next-opt
+COMPLETE parallel-b3-p2-next-latency
+COMPLETE parallel-b4-p1-next-latency
+COMPLETE parallel-b4-p2-next-opt
+COMPLETE parallel-b5-p1-next-opt
+COMPLETE parallel-b5-p2-next-latency
+COMPLETE parallel-b6-p1-next-latency
+COMPLETE parallel-b6-p2-next-opt
+COMPLETE rolling-b1-p1-next-opt
+COMPLETE rolling-b1-p2-next-latency
+COMPLETE rolling-b2-p1-next-latency
+COMPLETE rolling-b2-p2-next-opt
+COMPLETE rolling-b3-p1-next-opt
+COMPLETE rolling-b3-p2-next-latency
+COMPLETE rolling-b4-p1-next-latency
+COMPLETE rolling-b4-p2-next-opt
+COMPLETE rolling-b5-p1-next-opt
+COMPLETE rolling-b5-p2-next-latency
+COMPLETE rolling-b6-p1-next-latency
+COMPLETE rolling-b6-p2-next-opt
+COMPLETE latency-b1-p1-next-opt
+COMPLETE latency-b1-p2-next-latency
+COMPLETE latency-b2-p1-next-latency
+COMPLETE latency-b2-p2-next-opt
+COMPLETE latency-b3-p1-next-opt
+COMPLETE latency-b3-p2-next-latency
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+VPN restored: True
+COMPLETE stage12

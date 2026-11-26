@@ -1,0 +1,889 @@
+--- before/fastcatnext/client.go
++++ after/fastcatnext/client.go
+@@ -52,6 +52,10 @@
+ 	laneWarmCancel  []context.CancelFunc
+ 	laneWarmLast    []time.Time
+ 	laneAssigned    [2]uint64
++	laneSequence    uint64
++	lastLane        int
++	laneStreak      int
++	laneSwitchAt    time.Time
+ 	laneTrials      uint64
+ 	laneSpills      uint64
+ 	probeWindow     time.Time
+@@ -91,6 +95,10 @@
+ 		childConfig.QUICLanes = 1
+ 		childConfig.AdaptiveLanes = false
+ 		childConfig.PrimaryPreferred = false
++		childConfig.LatencyAware = false
++		childConfig.ReserveInteractive = false
++		childConfig.ScheduleHysteresis = false
++		childConfig.LaneTrace = nil
+ 		for i := 0; i < 2; i++ {
+ 			child, err := NewClient(ctx, childConfig, carrier)
+ 			if err != nil {
+@@ -140,6 +148,8 @@
+ 	defer c.mu.Unlock()
+ 	c.epoch++
+ 	c.cancelSpareIdleLocked()
++	c.laneStreak = 0
++	c.laneSwitchAt = time.Time{}
+ 	c.probeWindow = time.Time{}
+ 	c.probeCount = 0
+ 	c.probeBytes = 0
+--- before/fastcatnext/config.go
++++ after/fastcatnext/config.go
+@@ -20,6 +20,15 @@
+ 	AdaptiveLanes bool
+ 	// PrimaryPreferred keeps unproven traffic on the primary. Opt-in only.
+ 	PrimaryPreferred bool
++	// LatencyAware scores observed setup/first-read wait and current load. Opt-in.
++	LatencyAware bool
++	// ReserveInteractive groups the first two concurrent unknown opens briefly,
++	// leaving an independent lane available for later work. Never classifies payload.
++	ReserveInteractive bool
++	// ScheduleHysteresis bounds score-driven switching and consecutive assignments.
++	ScheduleHysteresis bool
++	// LaneTrace reports sanitized per-stream selection without packet-level tracing.
++	LaneTrace func(LaneEvent)
+ 	// QUICProfile selects a bounded transport experiment; empty/baseline preserve 0.2.
+ 	QUICProfile                               string
+ 	CoalesceOpen                              bool
+@@ -32,7 +41,13 @@
+ }
+ 
+ func (c Config) validate() error {
+-	if c.PrimaryPreferred && !c.AdaptiveLanes {
++	if (c.PrimaryPreferred || c.LatencyAware) && !c.AdaptiveLanes {
++		return ErrProtocol
++	}
++	if (c.ReserveInteractive || c.ScheduleHysteresis) && !c.LatencyAware {
++		return ErrProtocol
++	}
++	if c.PrimaryPreferred && c.LatencyAware {
+ 		return ErrProtocol
+ 	}
+ 	if c.QUICLanes < 0 || c.QUICLanes > 2 {
+--- before/fastcatnext/lanes.go
++++ after/fastcatnext/lanes.go
+@@ -9,6 +9,7 @@
+ )
+ 
+ type laneMetrics struct {
++	latency   laneLatency
+ 	delivery  deliveryEvidence
+ 	bytes     atomic.Int64
+ 	pending   atomic.Int64
+@@ -130,7 +131,10 @@
+ 		return nil, net.ErrClosed
+ 	}
+ 	i := 0
+-	if c.cfg.PrimaryPreferred {
++	var selection LaneSelection
++	if c.cfg.LatencyAware {
++		i = c.chooseLatencyLocked(time.Now())
++	} else if c.cfg.PrimaryPreferred {
+ 		i, _ = c.choosePrimaryLocked(time.Now())
+ 	} else if !c.cfg.AdaptiveLanes {
+ 		for j := 1; j < len(c.lanes); j++ {
+@@ -170,11 +174,23 @@
+ 	if i == 1 {
+ 		c.cancelSpareIdleLocked()
+ 	}
++	observed := c.cfg.LatencyAware || c.cfg.LaneTrace != nil
++	if observed {
++		c.laneSequence++
++		selection = c.selectionLocked(i, time.Now())
++	}
+ 	c.laneAssigned[i]++
+ 	epoch := c.epoch
+ 	metric := c.laneMetrics[i]
+ 	c.laneActive[i]++
++	if observed {
++		metric.latency.assignedAt = time.Now()
++		metric.latency.opening.Add(1)
++	}
+ 	c.mu.Unlock()
++	if c.cfg.LaneTrace != nil {
++		c.cfg.LaneTrace(LaneEvent{Stage: "lane_select", Selection: selection})
++	}
+ 	release := func() {
+ 		c.mu.Lock()
+ 		if c.epoch == epoch {
+@@ -185,8 +201,18 @@
+ 		}
+ 		c.mu.Unlock()
+ 	}
++	opened := time.Now()
+ 	n, err := c.lanes[i].Dial(ctx, target)
++	if observed && err == nil {
++		metric.latency.setup.observe(time.Since(opened), time.Now())
++	}
++	if c.cfg.LaneTrace != nil {
++		c.cfg.LaneTrace(LaneEvent{Stage: "lane_entry", Selection: selection, DurationUS: time.Since(opened).Microseconds(), OK: err == nil})
++	}
+ 	if err != nil {
++		if observed {
++			metric.latency.opening.Add(-1)
++		}
+ 		release()
+ 		return nil, err
+ 	}
+@@ -194,24 +220,40 @@
+ 	stale := c.closed || c.epoch != epoch
+ 	c.mu.Unlock()
+ 	if stale {
++		if observed {
++			metric.latency.opening.Add(-1)
++		}
+ 		n.Close()
+ 		release()
+ 		return nil, net.ErrClosed
+ 	}
+-	return &laneConn{Conn: n, release: release, metrics: metric, measure: c.cfg.AdaptiveLanes, primary: c.cfg.PrimaryPreferred}, nil
++	return &laneConn{Conn: n, release: release, metrics: metric, measure: c.cfg.AdaptiveLanes, primary: c.cfg.PrimaryPreferred, observed: observed, selection: selection, trace: c.cfg.LaneTrace}, nil
+ }
+ 
+ type laneConn struct {
+ 	net.Conn
+-	once    sync.Once
+-	release func()
+-	metrics *laneMetrics
+-	measure bool
+-	primary bool
++	once          sync.Once
++	release       func()
++	metrics       *laneMetrics
++	measure       bool
++	primary       bool
++	observed      bool
++	selection     LaneSelection
++	trace         func(LaneEvent)
++	openingDone   sync.Once
++	firstWrite    atomic.Int64
++	readBytes     atomic.Int64
++	writeBytes    atomic.Int64
++	firstReadWait atomic.Int64
++	bulkMu        sync.Mutex
++	heavy, ended  bool
+ }
+ 
+ func (c *laneConn) Read(p []byte) (int, error) {
+ 	n, e := c.Conn.Read(p)
++	if c.observed && n > 0 {
++		c.observeRead(n)
++	}
+ 	if c.measure && n > 0 {
+ 		c.metrics.bytes.Add(int64(n))
+ 		now := time.Now().UnixNano()
+@@ -223,16 +265,41 @@
+ 	return n, e
+ }
+ func (c *laneConn) Write(p []byte) (int, error) {
++	if c.observed && len(p) > 0 {
++		c.firstWrite.CompareAndSwap(0, time.Now().UnixNano())
++	}
+ 	if c.measure {
+ 		c.metrics.pending.Add(int64(len(p)))
+ 		defer c.metrics.pending.Add(-int64(len(p)))
+ 	}
+ 	n, e := c.Conn.Write(p)
++	if c.observed && n > 0 {
++		c.writeBytes.Add(int64(n))
++		c.metrics.latency.writtenBytes.Add(int64(n))
++	}
+ 	if c.measure && n > 0 {
+ 		c.metrics.bytes.Add(int64(n))
+ 		c.metrics.progress.Store(time.Now().UnixNano())
+ 	}
+ 	return n, e
+ }
+-func (c *laneConn) Close() error      { e := c.Conn.Close(); c.once.Do(c.release); return e }
++func (c *laneConn) Close() error {
++	e := c.Conn.Close()
++	c.once.Do(func() {
++		if c.observed {
++			c.finishOpening()
++			c.bulkMu.Lock()
++			c.ended = true
++			if c.heavy {
++				c.metrics.latency.heavy.Add(-1)
++			}
++			c.bulkMu.Unlock()
++			if c.trace != nil {
++				c.trace(LaneEvent{Stage: "lane_close", Selection: c.selection, OK: e == nil, ReadBytes: c.readBytes.Load(), WrittenBytes: c.writeBytes.Load(), DurationUS: c.firstReadWait.Load()})
++			}
++		}
++		c.release()
++	})
++	return e
++}
+ func (c *laneConn) CloseWrite() error { return c.Conn.(interface{ CloseWrite() error }).CloseWrite() }
+--- before/fastcatnext/latency.go
++++ after/fastcatnext/latency.go
+@@ -0,0 +1,275 @@
++package fastcatnext
++
++import (
++	"sync/atomic"
++	"time"
++)
++
++// Wait samples expire so old destination delays do not permanently poison a lane.
++// No target, credential, payload or QUIC connection identifier is retained.
++type waitEstimate struct{ us, at atomic.Int64 }
++
++func (w *waitEstimate) observe(d time.Duration, now time.Time) {
++	n := d.Microseconds()
++	if n < 1 {
++		n = 1
++	}
++	if n > 5000000 {
++		n = 5000000
++	}
++	for {
++		old := w.us.Load()
++		next := n
++		if old > 0 && now.UnixNano()-w.at.Load() < int64(10*time.Second) {
++			next = (old*3 + n) / 4
++		}
++		if w.us.CompareAndSwap(old, next) {
++			break
++		}
++	}
++	w.at.Store(now.UnixNano())
++}
++func (w *waitEstimate) value(now time.Time) time.Duration {
++	if at := w.at.Load(); at == 0 || now.UnixNano()-at > int64(10*time.Second) {
++		return 0
++	}
++	return time.Duration(w.us.Load()) * time.Microsecond
++}
++
++type laneLatency struct {
++	assignedAt                                     time.Time // parent Client.mu
++	windowAt                                       time.Time
++	windowRX, windowTX, deltaRX, deltaTX, windowMS int64
++	writtenBytes                                   atomic.Int64
++
++	opening, heavy, readBytes atomic.Int64
++	setup, firstRead          waitEstimate
++}
++type LaneState struct {
++	WindowReadBytes   int64 `json:"window_read_bytes"`
++	WindowWriteBytes  int64 `json:"window_write_bytes"`
++	WindowMS          int64 `json:"window_ms"`
++	WrittenBytes      int64 `json:"written_bytes"`
++	Ready             bool  `json:"ready"`
++	Active            int   `json:"active"`
++	Opening           int64 `json:"opening"`
++	Heavy             int64 `json:"heavy"`
++	PendingWriteBytes int64 `json:"pending_write_bytes"`
++	ReadBytes         int64 `json:"read_bytes"`
++	RTTUS             int64 `json:"rtt_us"`
++	SetupEWMAUS       int64 `json:"setup_ewma_us"`
++	FirstReadEWMAUS   int64 `json:"first_read_ewma_us"`
++	ScoreUS           int64 `json:"score_us"`
++}
++type LaneSelection struct {
++	Request    uint64       `json:"request"`
++	Generation uint64       `json:"generation"`
++	Lane       int          `json:"lane"`
++	Policy     string       `json:"policy"`
++	Lanes      [2]LaneState `json:"lanes"`
++}
++type LaneEvent struct {
++	Stage        string        `json:"stage"`
++	Selection    LaneSelection `json:"selection"`
++	DurationUS   int64         `json:"duration_us,omitempty"`
++	OK           bool          `json:"ok"`
++	ReadBytes    int64         `json:"read_bytes,omitempty"`
++	WrittenBytes int64         `json:"written_bytes,omitempty"`
++}
++type LaneObservation struct {
++	Selection       LaneSelection `json:"selection"`
++	FirstReadWaitUS int64         `json:"first_read_wait_us"`
++	ReadBytes       int64         `json:"read_bytes"`
++	WrittenBytes    int64         `json:"written_bytes"`
++}
++
++func (c *laneConn) LaneObservation() LaneObservation {
++	return LaneObservation{c.selection, c.firstReadWait.Load(), c.readBytes.Load(), c.writeBytes.Load()}
++}
++func (c *laneConn) finishOpening() { c.openingDone.Do(func() { c.metrics.latency.opening.Add(-1) }) }
++func (c *laneConn) observeRead(n int) {
++	now := time.Now()
++	c.metrics.latency.readBytes.Add(int64(n))
++	total := c.readBytes.Add(int64(n))
++	c.openingDone.Do(func() {
++		c.metrics.latency.opening.Add(-1)
++		if at := c.firstWrite.Load(); at > 0 {
++			wait := now.Sub(time.Unix(0, at))
++			c.firstReadWait.Store(wait.Microseconds())
++			c.metrics.latency.firstRead.observe(wait, now)
++		}
++	})
++	if total >= 256<<10 {
++		c.bulkMu.Lock()
++		if !c.heavy && !c.ended {
++			c.heavy = true
++			c.metrics.latency.heavy.Add(1)
++		}
++		c.bulkMu.Unlock()
++	}
++}
++func latencyScore(s LaneState) int64 {
++	rtt := s.RTTUS
++	if rtt <= 0 {
++		rtt = 150000
++	}
++	if rtt < 20000 {
++		rtt = 20000
++	}
++	if rtt > 800000 {
++		rtt = 800000
++	}
++	setup := s.SetupEWMAUS
++	if setup > 2*rtt {
++		setup = 2 * rtt
++	}
++	first := s.FirstReadEWMAUS
++	if first > 4*rtt {
++		first = 4 * rtt
++	}
++	pending := s.PendingWriteBytes / 16384
++	if pending > 4 {
++		pending = 4
++	}
++	if pending < 0 {
++		pending = 0
++	}
++	// Throughput is not a capacity discount: high bulk delivery must not attract
++	// all new short/unknown flows. Each stream is still assigned exactly once.
++	return rtt + setup/3 + first/2 + int64(s.Active)*rtt/3 + s.Opening*rtt + s.Heavy*rtt*3/2 + pending*rtt/2
++}
++func (c *Client) laneStatesLocked(now time.Time) (out [2]LaneState) {
++	for i := range c.lanes {
++		ready, rtt := c.lanes[i].laneReady()
++		m := c.laneMetrics[i]
++		s := LaneState{Ready: ready, Active: c.laneActive[i], Opening: m.latency.opening.Load(), Heavy: m.latency.heavy.Load(), PendingWriteBytes: m.pending.Load(), ReadBytes: m.latency.readBytes.Load(), RTTUS: rtt.Microseconds(), SetupEWMAUS: m.latency.setup.value(now).Microseconds(), FirstReadEWMAUS: m.latency.firstRead.value(now).Microseconds()}
++		s.WindowReadBytes, s.WindowWriteBytes, s.WindowMS = m.latency.window(now)
++		s.WrittenBytes = m.latency.writtenBytes.Load()
++		s.ScoreUS = latencyScore(s)
++		out[i] = s
++	}
++	return
++}
++func (c *Client) selectionLocked(i int, now time.Time) LaneSelection {
++	policy := "adaptive"
++	if c.cfg.LatencyAware {
++		policy = "latency"
++		if c.cfg.ReserveInteractive {
++			policy = "reserve"
++		}
++	}
++	if c.cfg.PrimaryPreferred {
++		policy = "primary"
++	}
++	return LaneSelection{c.laneSequence, c.epoch, i, policy, c.laneStatesLocked(now)}
++}
++func (c *Client) chooseLatencyLocked(now time.Time) int {
++	s := c.laneStatesLocked(now)
++	i := 0
++	if s[1].Ready && (!s[0].Ready || s[1].ScoreUS < s[0].ScoreUS) {
++		i = 1
++	}
++	i = c.refineLatencyLocked(i, s, now)
++	other := 1 - i
++	if c.laneActive[0]+c.laneActive[1] > 0 && !s[other].Ready {
++		c.prepareLaneLocked(other)
++	}
++	return i
++}
++
++// Cold requests have unknown payload sizes. At most the first two in-flight
++// opens share startup affinity, for <=250ms, and only while the sibling is ready
++// and has a comparable path. Later traffic is free to use either lane.
++func (c *Client) refineLatencyLocked(best int, s [2]LaneState, now time.Time) int {
++	preferred := best
++	if c.cfg.ReserveInteractive && s[0].Ready && s[1].Ready {
++		if s[0].Active+s[1].Active == 1 {
++			busy := 0
++			if s[1].Active == 1 {
++				busy = 1
++			}
++			other := 1 - busy
++			age := now.Sub(c.laneMetrics[busy].latency.assignedAt)
++			if s[busy].Opening == 1 && s[busy].Heavy == 0 && age >= 0 && age <= 250*time.Millisecond && comparablePath(s[busy], s[other]) {
++				preferred = busy
++			}
++		}
++		// Prefer the lane with no established bulk flow only if its observed path is
++		// comparable. This is an admission preference, never a bandwidth reservation.
++		if s[0].Heavy+s[1].Heavy > 0 && (s[0].Heavy == 0 || s[1].Heavy == 0) {
++			light := 0
++			if s[0].Heavy > 0 {
++				light = 1
++			}
++			other := 1 - light
++			if s[light].Opening <= 1 && comparablePath(s[light], s[other]) {
++				preferred = light
++			}
++		}
++	}
++	if c.cfg.ScheduleHysteresis && c.laneStreak > 0 && s[0].Ready && s[1].Ready {
++		prev := c.lastLane
++		// Never override an explicit reserve preference or hold a substantially worse lane.
++		if preferred == best && preferred != prev && now.Sub(c.laneSwitchAt) < 200*time.Millisecond && c.laneStreak < 3 && s[prev].ScoreUS*100 <= s[preferred].ScoreUS*115 {
++			preferred = prev
++		}
++		other := 1 - preferred
++		if preferred == prev && c.laneStreak >= 3 && s[other].ScoreUS*100 <= s[preferred].ScoreUS*125 {
++			preferred = other
++		}
++	}
++	if c.laneStreak == 0 || preferred != c.lastLane {
++		c.lastLane = preferred
++		c.laneStreak = 1
++		c.laneSwitchAt = now
++	} else {
++		c.laneStreak++
++	}
++	return preferred
++}
++func comparablePath(a, b LaneState) bool {
++	ar, br := a.RTTUS, b.RTTUS
++	if ar <= 0 {
++		ar = 150000
++	}
++	if br <= 0 {
++		br = 150000
++	}
++	if ar > br*3/2+25000 {
++		return false
++	}
++	if a.FirstReadEWMAUS > 0 && b.FirstReadEWMAUS > 0 && a.FirstReadEWMAUS > b.FirstReadEWMAUS*2+100000 {
++		return false
++	}
++	return true
++}
++
++// window is called under parent Client.mu; counters themselves are atomic.
++func (m *laneLatency) window(now time.Time) (int64, int64, int64) {
++	rx, tx := m.readBytes.Load(), m.writtenBytes.Load()
++	if m.windowAt.IsZero() {
++		m.windowAt = now
++		m.windowRX = rx
++		m.windowTX = tx
++		return 0, 0, 0
++	}
++	elapsed := now.Sub(m.windowAt)
++	if elapsed > 3*time.Second {
++		m.deltaRX = 0
++		m.deltaTX = 0
++		m.windowMS = 0
++		m.windowAt = now
++		m.windowRX = rx
++		m.windowTX = tx
++		return 0, 0, 0
++	}
++	if elapsed >= 200*time.Millisecond {
++		m.deltaRX = rx - m.windowRX
++		m.deltaTX = tx - m.windowTX
++		m.windowMS = elapsed.Milliseconds()
++		m.windowRX = rx
++		m.windowTX = tx
++		m.windowAt = now
++	}
++	return m.deltaRX, m.deltaTX, m.windowMS
++}
+--- before/fastcatnext/latency_test.go
++++ after/fastcatnext/latency_test.go
+@@ -0,0 +1,208 @@
++package fastcatnext
++
++import (
++	"context"
++	"net"
++	"testing"
++	"time"
++)
++
++func TestLatencyScoreDoesNotRewardBulkForHighRate(t *testing.T) {
++	light := LaneState{RTTUS: 100000, Active: 1, Opening: 1}
++	bulk := LaneState{RTTUS: 100000, Active: 1, Heavy: 1}
++	if latencyScore(bulk) <= latencyScore(light) {
++		t.Fatal("bulk load attracted first packets")
++	}
++	fastBusy := LaneState{RTTUS: 80000, Active: 3, Opening: 2, Heavy: 1, PendingWriteBytes: 1 << 20}
++	if latencyScore(fastBusy) <= latencyScore(LaneState{RTTUS: 150000}) {
++		t.Fatal("busy fast lane monopolized unknown streams")
++	}
++}
++func TestLatencyWaitExpiresAndIsBounded(t *testing.T) {
++	now := time.Now()
++	var w waitEstimate
++	w.observe(100*time.Millisecond, now)
++	w.observe(500*time.Millisecond, now.Add(time.Second))
++	if v := w.value(now.Add(time.Second)); v != 200*time.Millisecond {
++		t.Fatal(v)
++	}
++	if w.value(now.Add(12*time.Second)) != 0 {
++		t.Fatal("stale destination wait remained influential")
++	}
++	w.observe(time.Hour, now.Add(13*time.Second))
++	if w.value(now.Add(13*time.Second)) != 5*time.Second {
++		t.Fatal("unbounded sample")
++	}
++}
++func TestLatencyLifecycleResetAndDiagnostics(t *testing.T) {
++	c, _, stop := adaptiveFixture(t)
++	defer stop()
++	c.cfg.LatencyAware = true
++	events := make(chan LaneEvent, 32)
++	c.cfg.LaneTrace = func(e LaneEvent) { events <- e }
++	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
++	defer cancel()
++	if err := c.Warm(ctx); err != nil {
++		t.Fatal(err)
++	}
++	target, _ := echoTarget(t)
++	if err := checkEcho(ctx, c, target, make([]byte, 300<<10)); err != nil {
++		t.Fatal(err)
++	}
++	c.mu.Lock()
++	for i, m := range c.laneMetrics {
++		if m.latency.opening.Load() != 0 || m.latency.heavy.Load() != 0 || c.laneActive[i] != 0 {
++			t.Fatal("load reservation leaked")
++		}
++	}
++	c.mu.Unlock()
++	var selected bool
++	for len(events) > 0 {
++		e := <-events
++		if e.Stage == "lane_select" {
++			selected = true
++			if e.Selection.Policy != "latency" || e.Selection.Request == 0 {
++				t.Fatal(e)
++			}
++		}
++	}
++	if !selected {
++		t.Fatal("missing sanitized selection")
++	}
++	c.Reset()
++	c.mu.Lock()
++	for _, m := range c.laneMetrics {
++		if m.latency.readBytes.Load() != 0 {
++			t.Fatal("stale generation metrics")
++		}
++	}
++	c.mu.Unlock()
++}
++func TestLatencyReadyLaneNeverWaitsForMissingOther(t *testing.T) {
++	c, _, stop := adaptiveFixture(t)
++	defer stop()
++	c.cfg.LatencyAware = true
++	sink, e := net.ListenPacket("udp4", "127.0.0.1:0")
++	if e != nil {
++		t.Fatal(e)
++	}
++	defer sink.Close()
++	c.lanes[0].cfg.Endpoint = sink.LocalAddr().String()
++	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
++	defer cancel()
++	if e = c.lanes[1].Warm(ctx); e != nil {
++		t.Fatal(e)
++	}
++	target, _ := echoTarget(t)
++	start := time.Now()
++	conn, e := c.Dial(ctx, target)
++	if e != nil {
++		t.Fatal(e)
++	}
++	defer conn.Close()
++	if conn.(*laneConn).selection.Lane != 1 || time.Since(start) > time.Second {
++		t.Fatal("ready spare did not bypass missing primary")
++	}
++}
++
++func TestReserveStartupAndPathSafety(t *testing.T) {
++	now := time.Now()
++	c := &Client{cfg: Config{ReserveInteractive: true}, laneMetrics: []*laneMetrics{{}, {}}}
++	c.laneMetrics[0].latency.assignedAt = now
++	s := [2]LaneState{{Ready: true, Active: 1, Opening: 1, RTTUS: 100000, ScoreUS: 250000}, {Ready: true, RTTUS: 110000, ScoreUS: 110000}}
++	if got := c.refineLatencyLocked(1, s, now.Add(time.Millisecond)); got != 0 {
++		t.Fatal("startup affinity lost", got)
++	}
++	if got := c.refineLatencyLocked(1, s, now.Add(300*time.Millisecond)); got != 1 {
++		t.Fatal("affinity exceeded bounded time", got)
++	}
++	s[0].RTTUS = 500000
++	if got := c.refineLatencyLocked(1, s, now); got != 1 {
++		t.Fatal("affinity forced poor path", got)
++	}
++	s[0] = LaneState{Ready: true, Active: 2, Heavy: 2, RTTUS: 100000, ScoreUS: 500000}
++	s[1].RTTUS = 100000
++	if got := c.refineLatencyLocked(1, s, now); got != 1 {
++		t.Fatal("no admission space for unknown work")
++	}
++	s[1].RTTUS = 600000
++	s[1].ScoreUS = 900000
++	if got := c.refineLatencyLocked(0, s, now); got != 0 {
++		t.Fatal("reserved unhealthy spare")
++	}
++}
++func TestHysteresisBoundAndLargeImprovement(t *testing.T) {
++	now := time.Now()
++	c := &Client{cfg: Config{ScheduleHysteresis: true}, laneStreak: 1, lastLane: 0, laneSwitchAt: now}
++	s := [2]LaneState{{Ready: true, ScoreUS: 110000}, {Ready: true, ScoreUS: 100000}}
++	if got := c.refineLatencyLocked(1, s, now.Add(time.Millisecond)); got != 0 {
++		t.Fatal("small score change caused flapping")
++	}
++	c.laneStreak = 3
++	if got := c.refineLatencyLocked(0, s, now); got != 1 {
++		t.Fatal("burst cap did not admit comparable alternative")
++	}
++	c.lastLane = 0
++	c.laneStreak = 1
++	s[0].ScoreUS = 500000
++	if got := c.refineLatencyLocked(1, s, now); got != 1 {
++		t.Fatal("hysteresis held substantially worse path")
++	}
++}
++
++func TestLaneWindowOnlyCountsRecentDeltas(t *testing.T) {
++	var m laneLatency
++	now := time.Now()
++	m.window(now)
++	m.readBytes.Add(1000)
++	m.writtenBytes.Add(300)
++	r, w, ms := m.window(now.Add(time.Second))
++	if r != 1000 || w != 300 || ms != 1000 {
++		t.Fatal(r, w, ms)
++	}
++	r, w, ms = m.window(now.Add(5 * time.Second))
++	if r != 0 || w != 0 || ms != 0 {
++		t.Fatal("stale byte window")
++	}
++}
++
++func TestReserveOnlyGroupsFirstTwoOpens(t *testing.T) {
++	c, _, stop := adaptiveFixture(t)
++	defer stop()
++	c.cfg.LatencyAware = true
++	c.cfg.ReserveInteractive = true
++	c.cfg.ScheduleHysteresis = true
++	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
++	defer cancel()
++	if e := c.Warm(ctx); e != nil {
++		t.Fatal(e)
++	}
++	target, _ := echoTarget(t)
++	var conns []net.Conn
++	for i := 0; i < 3; i++ {
++		n, e := c.Dial(ctx, target)
++		if e != nil {
++			t.Fatal(e)
++		}
++		conns = append(conns, n)
++		defer n.Close()
++	}
++	got := [3]int{conns[0].(*laneConn).selection.Lane, conns[1].(*laneConn).selection.Lane, conns[2].(*laneConn).selection.Lane}
++	if got[0] != got[1] || got[2] == got[0] {
++		t.Fatal("startup grouping monopolized every new open", got)
++	}
++	c.Reset()
++	for _, m := range c.laneMetrics {
++		if m.latency.opening.Load() != 0 {
++			t.Fatal("reset leaked opening count")
++		}
++	}
++	for _, n := range conns {
++		_ = n.Close()
++	}
++	for _, m := range c.laneMetrics {
++		if m.latency.opening.Load() != 0 {
++			t.Fatal("old close damaged new generation")
++		}
++	}
++}
+--- before/fastcat-v3-compare/download.go
++++ after/fastcat-v3-compare/download.go
+@@ -4,6 +4,7 @@
+ 	"bufio"
+ 	"bytes"
+ 	"context"
++	next "core/fastcatnext"
+ 	"crypto/sha256"
+ 	"crypto/tls"
+ 	"crypto/x509"
+@@ -71,6 +72,11 @@
+ 	if e != nil {
+ 		return finish(fmt.Errorf("entry: %w", e))
+ 	}
++	if laneDiagnostics {
++		if observed, ok := conn.(interface{ LaneObservation() next.LaneObservation }); ok {
++			defer func() { row["lane"] = observed.LaneObservation() }()
++		}
++	}
+ 	defer conn.Close()
+ 	conn.SetDeadline(start.Add(downloadTimeout))
+ 	host, _, _ := net.SplitHostPort(target)
+--- before/fastcat-v3-compare/main.go
++++ after/fastcat-v3-compare/main.go
+@@ -34,6 +34,7 @@
+ var nextCoalesceOpen bool
+ var nextQUICProfile string
+ var nextTraceEnabled bool
++var laneDiagnostics bool
+ var nextEntryBudget time.Duration
+ 
+ type configuration struct {
+@@ -57,24 +58,25 @@
+ 	stats func() any
+ }
+ type sample struct {
+-	IdleUS        int64  `json:"idle_us,omitempty"`
+-	Start         int64  `json:"start_unix_us"`
+-	ClientReady   int64  `json:"client_ready_us"`
+-	Pool          int    `json:"pool"`
+-	Phase         string `json:"phase"`
+-	Protocol      string `json:"protocol"`
+-	Version       string `json:"version"`
+-	Round         int    `json:"round"`
+-	Worker        int    `json:"worker"`
+-	Entry         int64  `json:"entry_us"`
+-	TargetTLS     int64  `json:"target_tls_us"`
+-	Response      int64  `json:"response_us"`
+-	First         int64  `json:"first_byte_us"`
+-	Elapsed       int64  `json:"elapsed_us"`
+-	Error         string `json:"error,omitempty"`
+-	GatewayTLS    string `json:"gateway_tls,omitempty"`
+-	GatewayCipher string `json:"gateway_cipher,omitempty"`
+-	GatewayALPN   string `json:"gateway_alpn,omitempty"`
++	Lane          *next.LaneObservation `json:"lane,omitempty"`
++	IdleUS        int64                 `json:"idle_us,omitempty"`
++	Start         int64                 `json:"start_unix_us"`
++	ClientReady   int64                 `json:"client_ready_us"`
++	Pool          int                   `json:"pool"`
++	Phase         string                `json:"phase"`
++	Protocol      string                `json:"protocol"`
++	Version       string                `json:"version"`
++	Round         int                   `json:"round"`
++	Worker        int                   `json:"worker"`
++	Entry         int64                 `json:"entry_us"`
++	TargetTLS     int64                 `json:"target_tls_us"`
++	Response      int64                 `json:"response_us"`
++	First         int64                 `json:"first_byte_us"`
++	Elapsed       int64                 `json:"elapsed_us"`
++	Error         string                `json:"error,omitempty"`
++	GatewayTLS    string                `json:"gateway_tls,omitempty"`
++	GatewayCipher string                `json:"gateway_cipher,omitempty"`
++	GatewayALPN   string                `json:"gateway_alpn,omitempty"`
+ }
+ 
+ func main() {
+@@ -87,10 +89,18 @@
+ 	if version == "tuic-dual" {
+ 		return newDualTUIC(ctx, c, roots)
+ 	}
+-	if version == "next" || version == "next-h2" || version == "next-quic" || version == "next-base" || version == "next-opt" || version == "next-fixed" || version == "next-primary" {
++	if version == "next" || version == "next-h2" || version == "next-quic" || version == "next-base" || version == "next-opt" || version == "next-fixed" || (version == "next-primary" || (version == "next-latency" || version == "next-reserve")) {
+ 		key, e := hex.DecodeString(c.NextSecret)
+ 		if e != nil {
+ 			return client{}, e
++		}
++		var laneTrace func(next.LaneEvent)
++		if laneDiagnostics {
++			laneTrace = func(event next.LaneEvent) {
++				diagnosticMu.Lock()
++				defer diagnosticMu.Unlock()
++				json.NewEncoder(os.Stderr).Encode(map[string]any{"phase": "lane_event", "version": version, "event": event})
++			}
+ 		}
+ 		var trace next.Trace
+ 		if nextTraceEnabled {
+@@ -105,21 +115,21 @@
+ 			profile = "baseline"
+ 			coalesce = false
+ 		}
+-		if version == "next-opt" || version == "next-fixed" || version == "next-primary" {
++		if version == "next-opt" || version == "next-fixed" || (version == "next-primary" || (version == "next-latency" || version == "next-reserve")) {
+ 			endpoint = c.NextOptimizedAddress
+ 			profile = c.NextOptimizedProfile
+ 			coalesce = c.NextOptimizedCoalesce
+ 		}
+ 		connections := 1
+-		if version == "next-opt" || version == "next-fixed" || version == "next-primary" {
++		if version == "next-opt" || version == "next-fixed" || (version == "next-primary" || (version == "next-latency" || version == "next-reserve")) {
+ 			connections = c.NextOptimizedConnections
+ 		}
+-		adaptive := (version == "next-opt" || version == "next-primary") && c.NextOptimizedAdaptive
+-		if version == "next-primary" {
++		adaptive := (version == "next-opt" || (version == "next-primary" || (version == "next-latency" || version == "next-reserve"))) && c.NextOptimizedAdaptive
++		if version == "next-primary" || (version == "next-latency" || version == "next-reserve") {
+ 			connections = 2
+ 			adaptive = true
+ 		}
+-		cl, e := next.NewClient(ctx, next.Config{PrimaryPreferred: version == "next-primary", AdaptiveLanes: adaptive, QUICLanes: connections, Endpoint: endpoint, ServerName: c.ServerName, Account: c.NextAccount, Key: key, Roots: roots, Congestion: "bbr", QUICProfile: profile, CoalesceOpen: coalesce, Trace: trace, ConnectTimeout: nextEntryBudget}, protocol)
++		cl, e := next.NewClient(ctx, next.Config{PrimaryPreferred: version == "next-primary", LatencyAware: (version == "next-latency" || version == "next-reserve"), ReserveInteractive: version == "next-reserve", ScheduleHysteresis: version == "next-reserve", LaneTrace: laneTrace, AdaptiveLanes: adaptive, QUICLanes: connections, Endpoint: endpoint, ServerName: c.ServerName, Account: c.NextAccount, Key: key, Roots: roots, Congestion: "bbr", QUICProfile: profile, CoalesceOpen: coalesce, Trace: trace, ConnectTimeout: nextEntryBudget}, protocol)
+ 		if e != nil {
+ 			return client{}, e
+ 		}
+@@ -229,6 +239,11 @@
+ 	if e != nil {
+ 		return fmt.Errorf("entry: %w", e)
+ 	}
++	if laneDiagnostics {
++		if observed, ok := stream.(interface{ LaneObservation() next.LaneObservation }); ok {
++			defer func() { o := observed.LaneObservation(); out.Lane = &o }()
++		}
++	}
+ 	recordGatewayTLS(stream, out)
+ 	defer stream.Close()
+ 	deadline, _ := ctx.Deadline()
+@@ -270,6 +285,7 @@
+ 	clog.SetLevel(clog.SILENT)
+ 	flag.BoolVar(&nextCoalesceOpen, "next-coalesce-open", false, "coalesce OPEN with first business write")
+ 	flag.StringVar(&nextQUICProfile, "next-quic-profile", "", "baseline, wide, conservative, balanced, bbr-legacy")
++	flag.BoolVar(&laneDiagnostics, "lane-diagnostics", false, "sanitized per-lane selection and stream timing; no packet trace")
+ 	flag.BoolVar(&nextTraceEnabled, "trace-next", false, "sanitized Next stage and QUIC counters to stderr")
+ 	flag.DurationVar(&nextEntryBudget, "next-entry-budget", 0, "Next total entry budget override; 0 uses default")
+ 	versionList := flag.String("versions", "v2,v3", "comma-separated v2,v3,v3-light,v3-sealed,v3-light-fast,vless-vision,trojan")
+@@ -341,7 +357,7 @@
+ 	versions := strings.Split(*versionList, ",")
+ 	seen := make(map[string]bool)
+ 	for _, version := range versions {
+-		if seen[version] || (version != "next-base" && version != "next-opt" && version != "next-fixed" && version != "next-primary" && version != "next-h2" && version != "next-quic" && version != "next" && version != "v2-bbr" && version != "v2-reno" && version != "v2" && version != "v3" && version != "v3-light" && version != "v3-sealed" && version != "v3-light-fast" && version != "vless-vision" && version != "trojan" && version != "hysteria2" && version != "tuic" && version != "tuic-dual" && version != "anytls") {
++		if seen[version] || (version != "next-base" && version != "next-opt" && version != "next-fixed" && version != "next-primary" && version != "next-latency" && version != "next-reserve" && version != "next-h2" && version != "next-quic" && version != "next" && version != "v2-bbr" && version != "v2-reno" && version != "v2" && version != "v3" && version != "v3-light" && version != "v3-sealed" && version != "v3-light-fast" && version != "vless-vision" && version != "trojan" && version != "hysteria2" && version != "tuic" && version != "tuic-dual" && version != "anytls") {
+ 			return errors.New("invalid comparison versions")
+ 		}
+ 		seen[version] = true
+@@ -529,7 +545,7 @@
+ 	p := []string{"h2", "h3"}
+ 	tcp, udp := false, false
+ 	for _, v := range versions {
+-		if v == "next-base" || v == "next-opt" || v == "next-fixed" || v == "next-primary" || v == "next-quic" || v == "next" || v == "hysteria2" || v == "tuic" || v == "tuic-dual" {
++		if v == "next-base" || v == "next-opt" || v == "next-fixed" || (v == "next-primary" || (v == "next-latency" || v == "next-reserve")) || v == "next-quic" || v == "next" || v == "hysteria2" || v == "tuic" || v == "tuic-dual" {
+ 			udp = true
+ 		} else if nativeVersion(v) {
+ 			tcp = true
+@@ -547,7 +563,7 @@
+ 	if v == "next-h2" {
+ 		return p == "h2"
+ 	}
+-	if v == "next-base" || v == "next-opt" || v == "next-fixed" || v == "next-primary" || v == "next-quic" {
++	if v == "next-base" || v == "next-opt" || v == "next-fixed" || (v == "next-primary" || (v == "next-latency" || v == "next-reserve")) || v == "next-quic" {
+ 		return p == "quic"
+ 	}
+ 	if v == "next" {
+@@ -556,7 +572,7 @@
+ 	if v == "v2-bbr" || v == "v2-reno" {
+ 		return p == "h3"
+ 	}
+-	if v == "next-base" || v == "next-opt" || v == "next-fixed" || v == "next-primary" || v == "next-quic" || v == "next" || v == "hysteria2" || v == "tuic" || v == "tuic-dual" {
++	if v == "next-base" || v == "next-opt" || v == "next-fixed" || (v == "next-primary" || (v == "next-latency" || v == "next-reserve")) || v == "next-quic" || v == "next" || v == "hysteria2" || v == "tuic" || v == "tuic-dual" {
+ 		return p == "quic"
+ 	}
+ 	if nativeVersion(v) {

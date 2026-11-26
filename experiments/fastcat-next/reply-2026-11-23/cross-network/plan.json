@@ -1,0 +1,14 @@
+{
+  "purpose": "small request route comparison; no bulk downloads on cellular",
+  "networks": [
+    "wifi-before",
+    "cellular",
+    "wifi-after"
+  ],
+  "samples": 12,
+  "policy": "next-opt unchanged",
+  "sha256": {
+    "compare": "a639f438e20990ceb7684192de64f6d0d4d405e7103fe51ede8e8c97ac4f12d8",
+    "next-diagnostic": "e44d076b142d7ac2e5e435d6a6bbc300038db34a87a7141173369f2c40d5fe0f"
+  }
+}

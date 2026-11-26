@@ -1,0 +1,2 @@
+{"body_ms":0.084,"bytes":1048576,"cleanup_ms":0.142,"e2e_mbps":6.180914270069904,"entry_ms":537.641,"first_byte_ms":1357.153,"headers_ms":1357.079,"phase":"upload","protocol":"tuic","sample":1,"start_unix_ms":1795539326012,"success":true,"total_ms":1357.176}
+{"count":1,"elapsed_ms":1358.057,"event":"batch-ended","failed":0,"phase":"upload","protocol":"tuic","workers":1}

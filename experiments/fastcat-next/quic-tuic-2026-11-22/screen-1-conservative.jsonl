@@ -1,0 +1,5 @@
+{"stage":"resolve","carrier":"quic","duration_us":18,"ok":true}
+{"stage":"udp_socket","carrier":"quic","duration_us":443,"ok":true}
+{"smoothed_rtt_us":111217,"stage":"quic_handshake","carrier":"quic","duration_us":331850,"ok":true,"packets_sent":4,"packets_received":4}
+{"smoothed_rtt_us":109107,"blocked_received":1,"window_updates_sent":87,"stage":"client_quic_end","carrier":"quic","duration_us":19222144,"ok":true,"packets_sent":7131,"packets_received":24934}
+{"body_ms":18214,"checksum_ok":true,"complete":true,"connect_ms":335,"deadline_seconds":90,"download_mbps":14.73714214616167,"end_to_end_mbps":13.964186208214107,"expected_bytes":33554432,"first_byte_ms":883,"phase":"download","protocol":"quic","received_bytes":33554432,"round":1,"target_tls_ms":313,"total_ms":19223,"version":"next-quic"}

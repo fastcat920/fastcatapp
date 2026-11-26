@@ -1,5 +1,5 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
 #include "Generated.xcconfig"
-OTHER_LDFLAGS=$(inherited) -lresolv -Wl,-u,_fastCatSupportsV2 -Wl,-export_dynamic
+OTHER_LDFLAGS=$(inherited) -lresolv -Wl,-u,_fastCatSupportsFCN -Wl,-export_dynamic
 
 APS_ENVIRONMENT=development

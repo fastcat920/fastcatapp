@@ -1,0 +1,3 @@
+{"sample":1,"tcp_ms":362.259,"tls_ms":249.230,"open_ms":126.097,"first_response_headers_ms":1029.527,"full_request_ms":2564.647,"bytes":1048576,"end_to_end_mbps":3.271,"stream_fin_verified":true,"outer_response_eof_verified":true,"tls_shutdown_eof_observed":true}
+{"sample":2,"tcp_ms":98.092,"tls_ms":940.494,"open_ms":368.028,"first_response_headers_ms":1635.338,"full_request_ms":3675.926,"bytes":1048576,"end_to_end_mbps":2.282,"stream_fin_verified":true,"outer_response_eof_verified":true,"tls_shutdown_eof_observed":true}
+{"bytes_each":1048576,"failed":0,"p50_ms":2564.647,"p95_ms":3675.926,"scope":"fresh TCP + TLS + authenticated tunnel + verified payload + N1 FIN + HTTP EOF + TLS shutdown; speed includes setup, verification and shutdown","success":2}

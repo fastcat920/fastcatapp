@@ -1,0 +1,205 @@
+{
+  "plan": [
+    {
+      "split": "train",
+      "bytes": 2048,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 12,
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 81920,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 12,
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 81920,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 20480,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 12,
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 81920,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 20480,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 2048,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 12,
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 20480,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 2048,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 2048,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 1
+    },
+    {
+      "split": "train",
+      "bytes": 81920,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 12,
+      "repeat": 2
+    },
+    {
+      "split": "train",
+      "bytes": 20480,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 12,
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 40960,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 163840,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 12,
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 163840,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 40960,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 12,
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 4096,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 12,
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 40960,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 12,
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 4096,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 4096,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 12,
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 163840,
+      "shape": "paced",
+      "chunk": 4096,
+      "gap_ms": 12,
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 40960,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 1
+    },
+    {
+      "split": "holdout",
+      "bytes": 163840,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 2
+    },
+    {
+      "split": "holdout",
+      "bytes": 4096,
+      "shape": "burst",
+      "chunk": 16384,
+      "gap_ms": 0,
+      "repeat": 1
+    }
+  ],
+  "features": [
+    "client_records",
+    "server_records",
+    "client_small_records",
+    "server_small_records",
+    "log_client_tcp_bytes",
+    "log_server_tcp_bytes"
+  ],
+  "limitations": "Synthetic length/phase-matched streaming job; fixed N1-first pair order; one device/network; not GFW detection probability"
+}

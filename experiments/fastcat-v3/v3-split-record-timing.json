@@ -1,0 +1,636 @@
+{
+  "note": "Wall-clock intervals. Lock includes scheduling pauses; write means local carrier API, not end-to-end delivery. Concurrent lock waits overlap and must not be summed as request latency.",
+  "groups": [
+    {
+      "role": "client",
+      "carrier": "h2",
+      "samples": 502,
+      "stages": {
+        "encode_us": {
+          "p50_us": 4.0,
+          "p95_us": 11,
+          "max_us": 785
+        },
+        "lock_us": {
+          "p50_us": 0.0,
+          "p95_us": 437,
+          "max_us": 1378
+        },
+        "rotate_us": {
+          "p50_us": 0.0,
+          "p95_us": 0,
+          "max_us": 0
+        },
+        "seal_us": {
+          "p50_us": 26.0,
+          "p95_us": 111,
+          "max_us": 661
+        },
+        "write_us": {
+          "p50_us": 276.0,
+          "p95_us": 508,
+          "max_us": 2895
+        },
+        "other_us": {
+          "p50_us": 7.0,
+          "p95_us": 15,
+          "max_us": 404
+        },
+        "total_us": {
+          "p50_us": 352.0,
+          "p95_us": 899,
+          "max_us": 2961
+        }
+      },
+      "slow_records": 0,
+      "slow_largest_component": {},
+      "slowest": [
+        {
+          "role": "client",
+          "carrier": "h2",
+          "session": 41,
+          "stream": 43,
+          "kind": 6,
+          "frames": 2,
+          "bytes": 62,
+          "start_unix_us": 1795197574275758,
+          "encode_us": 12,
+          "lock_us": 4,
+          "rotate_us": 0,
+          "seal_us": 44,
+          "write_us": 2895,
+          "total_us": 2961,
+          "ok": "true",
+          "other_us": 6
+        },
+        {
+          "role": "client",
+          "carrier": "h2",
+          "session": 41,
+          "stream": 59,
+          "kind": 4,
+          "frames": 1,
+          "bytes": 333,
+          "start_unix_us": 1795197580418518,
+          "encode_us": 1,
+          "lock_us": 1338,
+          "rotate_us": 0,
+          "seal_us": 37,
+          "write_us": 379,
+          "total_us": 1762,
+          "ok": "true",
+          "other_us": 7
+        },
+        {
+          "role": "client",
+          "carrier": "h2",
+          "session": 41,
+          "stream": 73,
+          "kind": 4,
+          "frames": 1,
+          "bytes": 333,
+          "start_unix_us": 1795197582677588,
+          "encode_us": 12,
+          "lock_us": 1273,
+          "rotate_us": 0,
+          "seal_us": 47,
+          "write_us": 415,
+          "total_us": 1752,
+          "ok": "true",
+          "other_us": 5
+        },
+        {
+          "role": "client",
+          "carrier": "h2",
+          "session": 41,
+          "stream": 65,
+          "kind": 10,
+          "frames": 1,
+          "bytes": 42,
+          "start_unix_us": 1795197580734639,
+          "encode_us": 1,
+          "lock_us": 1378,
+          "rotate_us": 0,
+          "seal_us": 20,
+          "write_us": 195,
+          "total_us": 1601,
+          "ok": "true",
+          "other_us": 7
+        },
+        {
+          "role": "client",
+          "carrier": "h2",
+          "session": 41,
+          "stream": 73,
+          "kind": 10,
+          "frames": 1,
+          "bytes": 42,
+          "start_unix_us": 1795197582993688,
+          "encode_us": 2,
+          "lock_us": 1158,
+          "rotate_us": 0,
+          "seal_us": 16,
+          "write_us": 332,
+          "total_us": 1516,
+          "ok": "true",
+          "other_us": 8
+        },
+        {
+          "role": "client",
+          "carrier": "h2",
+          "session": 41,
+          "stream": 71,
+          "kind": 6,
+          "frames": 4,
+          "bytes": 106,
+          "start_unix_us": 1795197582993187,
+          "encode_us": 3,
+          "lock_us": 1170,
+          "rotate_us": 0,
+          "seal_us": 32,
+          "write_us": 295,
+          "total_us": 1509,
+          "ok": "true",
+          "other_us": 9
+        }
+      ]
+    },
+    {
+      "role": "client",
+      "carrier": "h3",
+      "samples": 507,
+      "stages": {
+        "encode_us": {
+          "p50_us": 4,
+          "p95_us": 7,
+          "max_us": 109
+        },
+        "lock_us": {
+          "p50_us": 0,
+          "p95_us": 390,
+          "max_us": 1272
+        },
+        "rotate_us": {
+          "p50_us": 0,
+          "p95_us": 0,
+          "max_us": 0
+        },
+        "seal_us": {
+          "p50_us": 22,
+          "p95_us": 96,
+          "max_us": 394
+        },
+        "write_us": {
+          "p50_us": 247,
+          "p95_us": 428,
+          "max_us": 3621
+        },
+        "other_us": {
+          "p50_us": 7,
+          "p95_us": 14,
+          "max_us": 215
+        },
+        "total_us": {
+          "p50_us": 327,
+          "p95_us": 708,
+          "max_us": 3657
+        }
+      },
+      "slow_records": 0,
+      "slow_largest_component": {},
+      "slowest": [
+        {
+          "role": "client",
+          "carrier": "h3",
+          "session": 42,
+          "stream": 27,
+          "kind": 6,
+          "frames": 2,
+          "bytes": 62,
+          "start_unix_us": 1795197557359238,
+          "encode_us": 5,
+          "lock_us": 0,
+          "rotate_us": 0,
+          "seal_us": 24,
+          "write_us": 3621,
+          "total_us": 3657,
+          "ok": "true",
+          "other_us": 7
+        },
+        {
+          "role": "client",
+          "carrier": "h3",
+          "session": 42,
+          "stream": 1,
+          "kind": 2,
+          "frames": 1,
+          "bytes": 50,
+          "start_unix_us": 1795197531237984,
+          "encode_us": 5,
+          "lock_us": 0,
+          "rotate_us": 0,
+          "seal_us": 26,
+          "write_us": 2987,
+          "total_us": 3025,
+          "ok": "true",
+          "other_us": 7
+        },
+        {
+          "role": "client",
+          "carrier": "h3",
+          "session": 42,
+          "stream": 73,
+          "kind": 6,
+          "frames": 3,
+          "bytes": 84,
+          "start_unix_us": 1795197582177768,
+          "encode_us": 3,
+          "lock_us": 1121,
+          "rotate_us": 0,
+          "seal_us": 20,
+          "write_us": 369,
+          "total_us": 1518,
+          "ok": "true",
+          "other_us": 5
+        },
+        {
+          "role": "client",
+          "carrier": "h3",
+          "session": 42,
+          "stream": 73,
+          "kind": 4,
+          "frames": 1,
+          "bytes": 333,
+          "start_unix_us": 1795197581849156,
+          "encode_us": 1,
+          "lock_us": 1272,
+          "rotate_us": 0,
+          "seal_us": 35,
+          "write_us": 182,
+          "total_us": 1497,
+          "ok": "true",
+          "other_us": 7
+        },
+        {
+          "role": "client",
+          "carrier": "h3",
+          "session": 42,
+          "stream": 81,
+          "kind": 4,
+          "frames": 1,
+          "bytes": 333,
+          "start_unix_us": 1795197586251816,
+          "encode_us": 3,
+          "lock_us": 816,
+          "rotate_us": 0,
+          "seal_us": 29,
+          "write_us": 455,
+          "total_us": 1307,
+          "ok": "true",
+          "other_us": 4
+        },
+        {
+          "role": "client",
+          "carrier": "h3",
+          "session": 42,
+          "stream": 69,
+          "kind": 4,
+          "frames": 1,
+          "bytes": 333,
+          "start_unix_us": 1795197581849132,
+          "encode_us": 3,
+          "lock_us": 346,
+          "rotate_us": 0,
+          "seal_us": 29,
+          "write_us": 614,
+          "total_us": 1207,
+          "ok": "true",
+          "other_us": 215
+        }
+      ]
+    },
+    {
+      "role": "server",
+      "carrier": "h2",
+      "samples": 457,
+      "stages": {
+        "encode_us": {
+          "p50_us": 0,
+          "p95_us": 1,
+          "max_us": 50
+        },
+        "lock_us": {
+          "p50_us": 0,
+          "p95_us": 0,
+          "max_us": 200
+        },
+        "rotate_us": {
+          "p50_us": 0,
+          "p95_us": 0,
+          "max_us": 0
+        },
+        "seal_us": {
+          "p50_us": 3,
+          "p95_us": 12,
+          "max_us": 66
+        },
+        "write_us": {
+          "p50_us": 100,
+          "p95_us": 234,
+          "max_us": 621
+        },
+        "other_us": {
+          "p50_us": 2,
+          "p95_us": 3,
+          "max_us": 184
+        },
+        "total_us": {
+          "p50_us": 109,
+          "p95_us": 257,
+          "max_us": 630
+        }
+      },
+      "slow_records": 0,
+      "slow_largest_component": {},
+      "slowest": [
+        {
+          "role": "server",
+          "carrier": "h2",
+          "session": 1,
+          "stream": 1,
+          "kind": 6,
+          "frames": 2,
+          "bytes": 62,
+          "start_unix_us": 1795197429824309,
+          "encode_us": 1,
+          "lock_us": 0,
+          "rotate_us": 0,
+          "seal_us": 6,
+          "write_us": 621,
+          "total_us": 630,
+          "ok": "true",
+          "other_us": 2
+        },
+        {
+          "role": "server",
+          "carrier": "h2",
+          "session": 36,
+          "stream": 1,
+          "kind": 4,
+          "frames": 1,
+          "bytes": 4616,
+          "start_unix_us": 1795197512709137,
+          "encode_us": 0,
+          "lock_us": 0,
+          "rotate_us": 0,
+          "seal_us": 61,
+          "write_us": 443,
+          "total_us": 506,
+          "ok": "true",
+          "other_us": 2
+        },
+        {
+          "role": "server",
+          "carrier": "h2",
+          "session": 40,
+          "stream": 0,
+          "kind": 6,
+          "frames": 1,
+          "bytes": 40,
+          "start_unix_us": 1795197527260795,
+          "encode_us": 0,
+          "lock_us": 0,
+          "rotate_us": 0,
+          "seal_us": 10,
+          "write_us": 371,
+          "total_us": 382,
+          "ok": "true",
+          "other_us": 1
+        },
+        {
+          "role": "server",
+          "carrier": "h2",
+          "session": 9,
+          "stream": 1,
+          "kind": 6,
+          "frames": 2,
+          "bytes": 62,
+          "start_unix_us": 1795197446011035,
+          "encode_us": 1,
+          "lock_us": 0,
+          "rotate_us": 0,
+          "seal_us": 3,
+          "write_us": 352,
+          "total_us": 358,
+          "ok": "true",
+          "other_us": 2
+        },
+        {
+          "role": "server",
+          "carrier": "h2",
+          "session": 41,
+          "stream": 47,
+          "kind": 4,
+          "frames": 1,
+          "bytes": 4616,
+          "start_unix_us": 1795197574022373,
+          "encode_us": 22,
+          "lock_us": 0,
+          "rotate_us": 0,
+          "seal_us": 6,
+          "write_us": 308,
+          "total_us": 338,
+          "ok": "true",
+          "other_us": 2
+        },
+        {
+          "role": "server",
+          "carrier": "h2",
+          "session": 41,
+          "stream": 77,
+          "kind": 6,
+          "frames": 2,
+          "bytes": 62,
+          "start_unix_us": 1795197585479983,
+          "encode_us": 0,
+          "lock_us": 0,
+          "rotate_us": 0,
+          "seal_us": 0,
+          "write_us": 335,
+          "total_us": 337,
+          "ok": "true",
+          "other_us": 2
+        }
+      ]
+    },
+    {
+      "role": "server",
+      "carrier": "h3",
+      "samples": 476,
+      "stages": {
+        "encode_us": {
+          "p50_us": 0.0,
+          "p95_us": 2,
+          "max_us": 77
+        },
+        "lock_us": {
+          "p50_us": 0.0,
+          "p95_us": 0,
+          "max_us": 80
+        },
+        "rotate_us": {
+          "p50_us": 0.0,
+          "p95_us": 0,
+          "max_us": 0
+        },
+        "seal_us": {
+          "p50_us": 2.0,
+          "p95_us": 13,
+          "max_us": 192
+        },
+        "write_us": {
+          "p50_us": 5.0,
+          "p95_us": 115,
+          "max_us": 12210
+        },
+        "other_us": {
+          "p50_us": 2.0,
+          "p95_us": 2,
+          "max_us": 11
+        },
+        "total_us": {
+          "p50_us": 9.0,
+          "p95_us": 135,
+          "max_us": 12224
+        }
+      },
+      "slow_records": 0,
+      "slow_largest_component": {},
+      "slowest": [
+        {
+          "role": "server",
+          "carrier": "h3",
+          "session": 42,
+          "stream": 81,
+          "kind": 4,
+          "frames": 1,
+          "bytes": 4618,
+          "start_unix_us": 1795197586179251,
+          "encode_us": 0,
+          "lock_us": 0,
+          "rotate_us": 0,
+          "seal_us": 12,
+          "write_us": 12210,
+          "total_us": 12224,
+          "ok": "true",
+          "other_us": 2
+        },
+        {
+          "role": "server",
+          "carrier": "h3",
+          "session": 42,
+          "stream": 57,
+          "kind": 4,
+          "frames": 1,
+          "bytes": 4618,
+          "start_unix_us": 1795197575296809,
+          "encode_us": 0,
+          "lock_us": 0,
+          "rotate_us": 0,
+          "seal_us": 5,
+          "write_us": 10891,
+          "total_us": 10898,
+          "ok": "true",
+          "other_us": 2
+        },
+        {
+          "role": "server",
+          "carrier": "h3",
+          "session": 42,
+          "stream": 61,
+          "kind": 4,
+          "frames": 1,
+          "bytes": 4617,
+          "start_unix_us": 1795197581376702,
+          "encode_us": 0,
+          "lock_us": 0,
+          "rotate_us": 0,
+          "seal_us": 4,
+          "write_us": 10837,
+          "total_us": 10843,
+          "ok": "true",
+          "other_us": 2
+        },
+        {
+          "role": "server",
+          "carrier": "h3",
+          "session": 42,
+          "stream": 43,
+          "kind": 4,
+          "frames": 1,
+          "bytes": 4618,
+          "start_unix_us": 1795197574901700,
+          "encode_us": 0,
+          "lock_us": 0,
+          "rotate_us": 0,
+          "seal_us": 4,
+          "write_us": 7653,
+          "total_us": 7659,
+          "ok": "true",
+          "other_us": 2
+        },
+        {
+          "role": "server",
+          "carrier": "h3",
+          "session": 42,
+          "stream": 69,
+          "kind": 4,
+          "frames": 1,
+          "bytes": 4618,
+          "start_unix_us": 1795197581775748,
+          "encode_us": 0,
+          "lock_us": 0,
+          "rotate_us": 0,
+          "seal_us": 4,
+          "write_us": 5537,
+          "total_us": 5542,
+          "ok": "true",
+          "other_us": 1
+        },
+        {
+          "role": "server",
+          "carrier": "h3",
+          "session": 39,
+          "stream": 1,
+          "kind": 4,
+          "frames": 1,
+          "bytes": 4616,
+          "start_unix_us": 1795197519779185,
+          "encode_us": 9,
+          "lock_us": 0,
+          "rotate_us": 0,
+          "seal_us": 5,
+          "write_us": 231,
+          "total_us": 246,
+          "ok": "true",
+          "other_us": 1
+        }
+      ]
+    }
+  ],
+  "h2_server_flush": {
+    "samples": 478,
+    "stages": {
+      "buffer_us": {
+        "p50_us": 1.0,
+        "p95_us": 95,
+        "max_us": 355
+      },
+      "flush_us": {
+        "p50_us": 60.0,
+        "p95_us": 185,
+        "max_us": 307
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "rule": "Keep stage3 recovery-aware if its main gate passed. Add prefix only if stage4 full main gate passes. Then compare selected profile against original on two real remote targets with local background load; no post-hoc target removal.",
+  "remote_gate": {
+    "min_loaded_per_variant_target": 12,
+    "p95_ratio_max": 1.1,
+    "foreground_background_completion_not_lower": true
+  }
+}

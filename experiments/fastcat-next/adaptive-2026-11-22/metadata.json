@@ -1,0 +1,38 @@
+{
+  "device": "TFY-AN00 Android12 arm64",
+  "network": "same Wi-Fi, native core tests with app VPN disconnected",
+  "server": "191.223.214.8",
+  "client_go": "go version go1.26.2 darwin/arm64",
+  "server_go": "go1.27.3",
+  "endpoints": {
+    "Next all modes": 19458,
+    "TUIC both modes": 19451
+  },
+  "modes": {
+    "next-base": "single lane baseline",
+    "next-fixed": "previous active-count two lanes",
+    "next-opt": "adaptive two lanes; ready-first + bounded background warm + recent goodput/pending write/entry RTT scoring",
+    "tuic": "one stock TUIC client",
+    "tuic-dual": "two stock TUIC clients, active-count split"
+  },
+  "Trace": false,
+  "production_app_updated": false,
+  "sha256": {
+    "compare-final": "287d7b62a335479a2e1afc2281d6fc9443f22db3ed513bcd4deed35f3de8ab17",
+    "next-final": "08a79c728ee89e8cd89d92f9b068940e8ba37a8ca67260d82b765593e5a3db84"
+  },
+  "superseded": "First diagnostic client retained in diagnostic-client.sha256. A fully completed preliminary latency phase and interrupted throughput phase were excluded after two lifecycle/stale-rate fixes; final-* files use the rebuilt frozen version.",
+  "quic_module": {
+    "Path": "github.com/metacubex/quic-go",
+    "Version": "v0.61.1-0.20260727080200-2548683b76f4",
+    "Time": "2026-07-27T08:02:00Z",
+    "Indirect": true,
+    "Dir": "/Users/pizihu/go/pkg/mod/github.com/metacubex/quic-go@v0.61.1-0.20260727080200-2548683b76f4",
+    "GoMod": "/Users/pizihu/go/pkg/mod/cache/download/github.com/metacubex/quic-go/@v/v0.61.1-0.20260727080200-2548683b76f4.mod",
+    "GoVersion": "1.20",
+    "Sum": "h1:7oX6CpHVqoUXNyyt0MTuO5ywd1qVe1S1t3jXWMW7bYc=",
+    "GoModSum": "h1:KTmibo7vZo0gCxdFWrPEQ/u/RGt92mJkrXDE2Qg2/AU="
+  },
+  "cleanup_verified": true,
+  "source_scope": "Feature source snapshots, lab scripts, core module manifests. Building requires the FastCatAPP core workspace and its local replacements."
+}

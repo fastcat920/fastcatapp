@@ -1,0 +1,338 @@
+[
+  {
+    "name": "mixed-baseline-b1-p1",
+    "variant": "baseline",
+    "metric": "mixed",
+    "block": 1,
+    "start": 1795402406.716032,
+    "end": 1795402417.660713
+  },
+  {
+    "name": "mixed-recovery-b1-p2",
+    "variant": "recovery",
+    "metric": "mixed",
+    "block": 1,
+    "start": 1795402423.57458,
+    "end": 1795402441.5410829
+  },
+  {
+    "name": "mixed-recovery-b2-p1",
+    "variant": "recovery",
+    "metric": "mixed",
+    "block": 2,
+    "start": 1795402447.464979,
+    "end": 1795402461.5098329
+  },
+  {
+    "name": "mixed-baseline-b2-p2",
+    "variant": "baseline",
+    "metric": "mixed",
+    "block": 2,
+    "start": 1795402467.427256,
+    "end": 1795402487.119745
+  },
+  {
+    "name": "mixed-baseline-b3-p1",
+    "variant": "baseline",
+    "metric": "mixed",
+    "block": 3,
+    "start": 1795402493.0520372,
+    "end": 1795402507.397506
+  },
+  {
+    "name": "mixed-recovery-b3-p2",
+    "variant": "recovery",
+    "metric": "mixed",
+    "block": 3,
+    "start": 1795402513.31949,
+    "end": 1795402531.278514
+  },
+  {
+    "name": "mixed-recovery-b4-p1",
+    "variant": "recovery",
+    "metric": "mixed",
+    "block": 4,
+    "start": 1795402537.183798,
+    "end": 1795402547.256151
+  },
+  {
+    "name": "mixed-baseline-b4-p2",
+    "variant": "baseline",
+    "metric": "mixed",
+    "block": 4,
+    "start": 1795402553.170764,
+    "end": 1795402566.238105
+  },
+  {
+    "name": "mixed-baseline-b5-p1",
+    "variant": "baseline",
+    "metric": "mixed",
+    "block": 5,
+    "start": 1795402572.145236,
+    "end": 1795402587.919562
+  },
+  {
+    "name": "mixed-recovery-b5-p2",
+    "variant": "recovery",
+    "metric": "mixed",
+    "block": 5,
+    "start": 1795402593.830508,
+    "end": 1795402613.48898
+  },
+  {
+    "name": "mixed-recovery-b6-p1",
+    "variant": "recovery",
+    "metric": "mixed",
+    "block": 6,
+    "start": 1795402619.4045172,
+    "end": 1795402639.90644
+  },
+  {
+    "name": "mixed-baseline-b6-p2",
+    "variant": "baseline",
+    "metric": "mixed",
+    "block": 6,
+    "start": 1795402645.849765,
+    "end": 1795402667.3433769
+  },
+  {
+    "name": "parallel-baseline-b1-p1",
+    "variant": "baseline",
+    "metric": "parallel",
+    "block": 1,
+    "start": 1795402673.272049,
+    "end": 1795402679.3315232
+  },
+  {
+    "name": "parallel-recovery-b1-p2",
+    "variant": "recovery",
+    "metric": "parallel",
+    "block": 1,
+    "start": 1795402685.275948,
+    "end": 1795402693.395614
+  },
+  {
+    "name": "parallel-recovery-b2-p1",
+    "variant": "recovery",
+    "metric": "parallel",
+    "block": 2,
+    "start": 1795402699.345609,
+    "end": 1795402704.858141
+  },
+  {
+    "name": "parallel-baseline-b2-p2",
+    "variant": "baseline",
+    "metric": "parallel",
+    "block": 2,
+    "start": 1795402710.7481658,
+    "end": 1795402721.640414
+  },
+  {
+    "name": "parallel-baseline-b3-p1",
+    "variant": "baseline",
+    "metric": "parallel",
+    "block": 3,
+    "start": 1795402727.540093,
+    "end": 1795402741.313356
+  },
+  {
+    "name": "parallel-recovery-b3-p2",
+    "variant": "recovery",
+    "metric": "parallel",
+    "block": 3,
+    "start": 1795402747.2432692,
+    "end": 1795402759.170614
+  },
+  {
+    "name": "parallel-recovery-b4-p1",
+    "variant": "recovery",
+    "metric": "parallel",
+    "block": 4,
+    "start": 1795402765.0933352,
+    "end": 1795402776.11918
+  },
+  {
+    "name": "parallel-baseline-b4-p2",
+    "variant": "baseline",
+    "metric": "parallel",
+    "block": 4,
+    "start": 1795402782.063951,
+    "end": 1795402791.4470148
+  },
+  {
+    "name": "parallel-baseline-b5-p1",
+    "variant": "baseline",
+    "metric": "parallel",
+    "block": 5,
+    "start": 1795402797.359107,
+    "end": 1795402805.2956748
+  },
+  {
+    "name": "parallel-recovery-b5-p2",
+    "variant": "recovery",
+    "metric": "parallel",
+    "block": 5,
+    "start": 1795402811.260191,
+    "end": 1795402821.4902349
+  },
+  {
+    "name": "parallel-recovery-b6-p1",
+    "variant": "recovery",
+    "metric": "parallel",
+    "block": 6,
+    "start": 1795402827.3832462,
+    "end": 1795402838.643369
+  },
+  {
+    "name": "parallel-baseline-b6-p2",
+    "variant": "baseline",
+    "metric": "parallel",
+    "block": 6,
+    "start": 1795402844.537156,
+    "end": 1795402855.769035
+  },
+  {
+    "name": "rolling-baseline-b1-p1",
+    "variant": "baseline",
+    "metric": "rolling",
+    "block": 1,
+    "start": 1795402861.6440709,
+    "end": 1795402881.6840472
+  },
+  {
+    "name": "rolling-recovery-b1-p2",
+    "variant": "recovery",
+    "metric": "rolling",
+    "block": 1,
+    "start": 1795402887.656668,
+    "end": 1795402907.392399
+  },
+  {
+    "name": "rolling-recovery-b2-p1",
+    "variant": "recovery",
+    "metric": "rolling",
+    "block": 2,
+    "start": 1795402913.2953112,
+    "end": 1795402928.5807412
+  },
+  {
+    "name": "rolling-baseline-b2-p2",
+    "variant": "baseline",
+    "metric": "rolling",
+    "block": 2,
+    "start": 1795402934.446466,
+    "end": 1795402954.5195
+  },
+  {
+    "name": "rolling-baseline-b3-p1",
+    "variant": "baseline",
+    "metric": "rolling",
+    "block": 3,
+    "start": 1795402960.4105752,
+    "end": 1795402983.8758242
+  },
+  {
+    "name": "rolling-recovery-b3-p2",
+    "variant": "recovery",
+    "metric": "rolling",
+    "block": 3,
+    "start": 1795402989.8141818,
+    "end": 1795403012.255221
+  },
+  {
+    "name": "rolling-recovery-b4-p1",
+    "variant": "recovery",
+    "metric": "rolling",
+    "block": 4,
+    "start": 1795403018.188082,
+    "end": 1795403041.292054
+  },
+  {
+    "name": "rolling-baseline-b4-p2",
+    "variant": "baseline",
+    "metric": "rolling",
+    "block": 4,
+    "start": 1795403047.2078269,
+    "end": 1795403068.63186
+  },
+  {
+    "name": "rolling-baseline-b5-p1",
+    "variant": "baseline",
+    "metric": "rolling",
+    "block": 5,
+    "start": 1795403074.57477,
+    "end": 1795403089.32497
+  },
+  {
+    "name": "rolling-recovery-b5-p2",
+    "variant": "recovery",
+    "metric": "rolling",
+    "block": 5,
+    "start": 1795403095.2886221,
+    "end": 1795403110.556213
+  },
+  {
+    "name": "rolling-recovery-b6-p1",
+    "variant": "recovery",
+    "metric": "rolling",
+    "block": 6,
+    "start": 1795403116.5529459,
+    "end": 1795403128.803707
+  },
+  {
+    "name": "rolling-baseline-b6-p2",
+    "variant": "baseline",
+    "metric": "rolling",
+    "block": 6,
+    "start": 1795403134.7390962,
+    "end": 1795403150.3574321
+  },
+  {
+    "name": "latency-baseline-b1-p1",
+    "variant": "baseline",
+    "metric": "latency",
+    "block": 1,
+    "start": 1795403156.2561579,
+    "end": 1795403176.076545
+  },
+  {
+    "name": "latency-recovery-b1-p2",
+    "variant": "recovery",
+    "metric": "latency",
+    "block": 1,
+    "start": 1795403181.974009,
+    "end": 1795403196.1025422
+  },
+  {
+    "name": "latency-recovery-b2-p1",
+    "variant": "recovery",
+    "metric": "latency",
+    "block": 2,
+    "start": 1795403202.02217,
+    "end": 1795403218.6651468
+  },
+  {
+    "name": "latency-baseline-b2-p2",
+    "variant": "baseline",
+    "metric": "latency",
+    "block": 2,
+    "start": 1795403224.6122198,
+    "end": 1795403237.190018
+  },
+  {
+    "name": "latency-baseline-b3-p1",
+    "variant": "baseline",
+    "metric": "latency",
+    "block": 3,
+    "start": 1795403243.1259751,
+    "end": 1795403260.595148
+  },
+  {
+    "name": "latency-recovery-b3-p2",
+    "variant": "recovery",
+    "metric": "latency",
+    "block": 3,
+    "start": 1795403266.503582,
+    "end": 1795403283.372447
+  }
+]

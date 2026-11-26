@@ -1,0 +1,8 @@
+Started fastcat-fcn3-xdiag-map1a-current.service - [systemd-run] /opt/fastcat-fcn3-xdiag/fcn-server -listen :18532 -cert /opt/fastcat-fcn3-xdiag/tls.pem -key /opt/fastcat-fcn3-xdiag/tls.key -credentials-file /opt/fastcat-fcn3-xdiag/credentials.json -target 127.0.0.1:18476 -udp-target 127.0.0.1:18477 -diagnostic-trace.
+Started fastcat-fcn3-xdiag-map1a-adaptive.service - [systemd-run] /opt/fastcat-fcn3-xdiag/fcn-server -listen :18534 -cert /opt/fastcat-fcn3-xdiag/tls.pem -key /opt/fastcat-fcn3-xdiag/tls.key -credentials-file /opt/fastcat-fcn3-xdiag/credentials.json -target 127.0.0.1:18476 -udp-target 127.0.0.1:18477 -diagnostic-trace -adaptive-writes.
+2026/11/25 16:23:10 credentials file must be owned by the server user
+fastcat-fcn3-xdiag-map1a-current.service: Main process exited, code=exited, status=1/FAILURE
+fastcat-fcn3-xdiag-map1a-current.service: Failed with result 'exit-code'.
+2026/11/25 16:23:10 credentials file must be owned by the server user
+fastcat-fcn3-xdiag-map1a-adaptive.service: Main process exited, code=exited, status=1/FAILURE
+fastcat-fcn3-xdiag-map1a-adaptive.service: Failed with result 'exit-code'.

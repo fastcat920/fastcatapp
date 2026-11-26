@@ -1,0 +1,74 @@
+{
+  "single": {
+    "formal_requests": 240,
+    "warmup_requests": 4,
+    "failures": 0,
+    "light_cold": {
+      "h2": {
+        "client_ready": {
+          "p50_ms": 805.7,
+          "p95_ms": 2041.7,
+          "max_ms": 2072.7
+        },
+        "open_after_ready": {
+          "p50_ms": 108.7,
+          "p95_ms": 429.5,
+          "max_ms": 656.7
+        },
+        "note": "ClientReady includes TLS/Noise/READY; OPEN includes request, proof, DNS/target dial and ACK. Not directly comparable with lazy v2 constructor timing."
+      },
+      "h3": {
+        "client_ready": {
+          "p50_ms": 458.3,
+          "p95_ms": 1142.2,
+          "max_ms": 4837.8
+        },
+        "open_after_ready": {
+          "p50_ms": 107.5,
+          "p95_ms": 589.7,
+          "max_ms": 738.7
+        },
+        "note": "ClientReady includes TLS/Noise/READY; OPEN includes request, proof, DNS/target dial and ACK. Not directly comparable with lazy v2 constructor timing."
+      }
+    }
+  },
+  "multipool": {
+    "formal_requests": 240,
+    "warmup_requests": 12,
+    "failures": 0,
+    "light_cold": {
+      "h2": {
+        "client_ready": {
+          "p50_ms": 553.5,
+          "p95_ms": 2133.8,
+          "max_ms": 3024.5
+        },
+        "open_after_ready": {
+          "p50_ms": 107.4,
+          "p95_ms": 627.9,
+          "max_ms": 819.5
+        },
+        "note": "ClientReady includes TLS/Noise/READY; OPEN includes request, proof, DNS/target dial and ACK. Not directly comparable with lazy v2 constructor timing."
+      },
+      "h3": {
+        "client_ready": {
+          "p50_ms": 465.2,
+          "p95_ms": 918.5,
+          "max_ms": 2859.1
+        },
+        "open_after_ready": {
+          "p50_ms": 105.3,
+          "p95_ms": 361.5,
+          "max_ms": 573.2
+        },
+        "note": "ClientReady includes TLS/Noise/READY; OPEN includes request, proof, DNS/target dial and ACK. Not directly comparable with lazy v2 constructor timing."
+      }
+    }
+  },
+  "builds": {
+    "client_go": "1.26.2",
+    "server_go": "1.27.3",
+    "server_sha256": "20c6383c837ce9bd0d82fbaf9d9ad26b370de6ecc9e207d1cb886becb5f445b1",
+    "client_multipool_sha256": "b6e7bcf831ec130c8c41c9bf1e00004ca7e581c609d4ef6f4101660321aa3a5e"
+  }
+}

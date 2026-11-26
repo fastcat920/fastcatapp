@@ -1,0 +1,58 @@
+[
+  {
+    "name": "screen-1-baseline",
+    "profile": "baseline",
+    "round": 1,
+    "start": 1795277632.705163,
+    "end": 1795277723.034981
+  },
+  {
+    "name": "screen-1-wide",
+    "profile": "wide",
+    "round": 1,
+    "start": 1795277724.647947,
+    "end": 1795277815.017885
+  },
+  {
+    "name": "screen-1-conservative",
+    "profile": "conservative",
+    "round": 1,
+    "start": 1795277817.704004,
+    "end": 1795277837.285311
+  },
+  {
+    "name": "screen-1-tuic",
+    "profile": "tuic",
+    "round": 1,
+    "start": 1795277837.285583,
+    "end": 1795277848.234103
+  },
+  {
+    "name": "screen-2-tuic",
+    "profile": "tuic",
+    "round": 2,
+    "start": 1795277848.234781,
+    "end": 1795277859.3171468
+  },
+  {
+    "name": "screen-2-conservative",
+    "profile": "conservative",
+    "round": 2,
+    "start": 1795277861.872067,
+    "end": 1795277952.2656791
+  },
+  {
+    "name": "screen-2-wide",
+    "profile": "wide",
+    "round": 2,
+    "start": 1795277954.303958,
+    "end": 1795278044.6904361
+  },
+  {
+    "name": "screen-2-baseline",
+    "profile": "baseline",
+    "round": 2,
+    "start": 1795278046.6059608,
+    "end": 1795278136.971929
+  }
+]

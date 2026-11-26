@@ -1,0 +1,51 @@
+{
+  "phase": "udp",
+  "arm": "tuic",
+  "entry_port": 18533,
+  "round": 2,
+  "rounds": 5,
+  "position": 1,
+  "args": [
+    "./compare",
+    "-config",
+    "bench.json",
+    "-protocol",
+    "tuic",
+    "-udp-diagnostic",
+    "-count",
+    "28",
+    "-timeout",
+    "55s"
+  ],
+  "planned": 28,
+  "diagnostic_id": "fcnfive02-udp-2-tuic",
+  "host_timeout_s": 70,
+  "before": {
+    "default_net_id": 361,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795599697510,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "after": {
+    "default_net_id": 361,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795599700862,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "network_stable": true,
+  "status": "exited",
+  "exit_code": 0,
+  "start_unix_ms": 1795599697510,
+  "end_unix_ms": 1795599700766,
+  "elapsed_ms": 3255.87925
+}

@@ -1,0 +1,30 @@
+Running as unit: fc-opt-backend-1795328792.service; invocation ID: 72d826e1d5654f5b83db9bc18a408ef6
+Running as unit: fc-opt-next-1795328792.service; invocation ID: c3575d40290949d885d3cf1b4a1214f0
+Running as unit: fc-opt-xray-1795328792.service; invocation ID: 68cac1583a0d4be9b2c96a05b6229832
+/tmp/fc-next-primary/compare: 1 file pushed, 0 skipped. 37.9 MB/s (38799075 bytes in 0.976s)
+/tmp/fc-next-primary/client-1795328792.json: 1 file pushed, 0 skipped. 0.9 MB/s (985 bytes in 0.001s)
+/etc/ssl/cert.pem: 1 file pushed, 0 skipped. 154.9 MB/s (333483 bytes in 0.002s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+/tmp/fc-next-primary/client-control-1795328792.json: 1 file pushed, 0 skipped. 9.6 MB/s (1162 bytes in 0.000s)
+Failed to stop fc-opt-next-1795328792.service: Unit fc-opt-next-1795328792.service not loaded.
+Failed to stop fc-opt-xray-1795328792.service: Unit fc-opt-xray-1795328792.service not loaded.
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+VPN restored: True
+Failed to stop fc-opt-next-1795328792.service: Unit fc-opt-next-1795328792.service not loaded.
+Failed to stop fc-opt-xray-1795328792.service: Unit fc-opt-xray-1795328792.service not loaded.
+Traceback (most recent call last):
+  File "/tmp/fc-next-primary/control.py", line 17, in <module>
+    lab.ssh('systemctl stop '+units);time.sleep(5)
+  File "/private/tmp/fc-next-primary/lab.py", line 8, in ssh
+    def ssh(self,c):return sp.check_output(['ssh','-S',self.sock,'-o','ConnectTimeout=10',self.host,c],text=True,timeout=60)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py", line 424, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py", line 528, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['ssh', '-S', '/Users/pizihu/.ssh/fastcat-next-adaptive.sock', '-o', 'ConnectTimeout=10', 'root@zlhk.fastcat.ink', 'systemctl stop fc-opt-next-1795328792 fc-opt-xray-1795328792']' returned non-zero exit status 5.
+Traceback (most recent call last):
+  File "/tmp/fc-next-primary/queue_control.py", line 8, in <module>
+    subprocess.run(['python3','/tmp/fc-next-primary/control.py'],check=True)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py", line 528, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['python3', '/tmp/fc-next-primary/control.py']' returned non-zero exit status 1.

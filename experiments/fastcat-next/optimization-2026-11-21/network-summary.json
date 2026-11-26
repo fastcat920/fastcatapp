@@ -1,0 +1,202 @@
+[
+  {
+    "file": "concurrent8-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "concurrent8-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "controlled-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "controlled-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "diagnosis-10m-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "diagnosis-10m-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "diagnosis-cold-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "diagnosis-cold-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "downloads100m-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "downloads100m-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "downloads100m-reference-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "downloads100m-reference-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "downloads10m-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "downloads10m-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "downloads1m-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "downloads1m-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "idle70-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "idle70-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "internet-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "internet-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "mss-1-0-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "mss-1-0-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "mss-2-1200-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "mss-2-1200-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "mss-3-1200-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "mss-3-1200-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "mss-4-0-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "mss-4-0-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "mss-5-0-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "mss-5-0-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "mss-6-1200-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "mss-6-1200-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "pilot-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "pilot-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "post-reference100-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "post-reference100-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "singlepool-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "singlepool-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "throughput-network-after.txt",
+    "default_network": "171",
+    "vpn": false
+  },
+  {
+    "file": "throughput-network-before.txt",
+    "default_network": "171",
+    "vpn": false
+  }
+]

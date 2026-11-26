@@ -1,0 +1,10 @@
+fuzz: elapsed: 0s, gathering baseline coverage: 0/2 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 2/2 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 93413 (31134/sec), new interesting: 70 (total: 72)
+fuzz: elapsed: 6s, execs: 170394 (25646/sec), new interesting: 84 (total: 86)
+fuzz: elapsed: 9s, execs: 284110 (37906/sec), new interesting: 89 (total: 91)
+fuzz: elapsed: 12s, execs: 369953 (28614/sec), new interesting: 105 (total: 107)
+fuzz: elapsed: 15s, execs: 444123 (24727/sec), new interesting: 107 (total: 109)
+fuzz: elapsed: 15s, execs: 444123 (0/sec), new interesting: 107 (total: 109)
+PASS
+ok  	fastcat/n1prototype	15.560s

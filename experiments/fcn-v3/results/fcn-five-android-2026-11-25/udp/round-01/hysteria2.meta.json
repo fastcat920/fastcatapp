@@ -1,0 +1,51 @@
+{
+  "phase": "udp",
+  "arm": "hysteria2",
+  "entry_port": 18535,
+  "round": 1,
+  "rounds": 5,
+  "position": 1,
+  "args": [
+    "./compare",
+    "-config",
+    "bench.json",
+    "-protocol",
+    "hysteria2",
+    "-udp-diagnostic",
+    "-count",
+    "28",
+    "-timeout",
+    "55s"
+  ],
+  "planned": 28,
+  "diagnostic_id": "fcnfive02-udp-1-hysteria2",
+  "host_timeout_s": 70,
+  "before": {
+    "default_net_id": 361,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795599656493,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "after": {
+    "default_net_id": 361,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795599666709,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "network_stable": true,
+  "status": "exited",
+  "exit_code": 1,
+  "start_unix_ms": 1795599656493,
+  "end_unix_ms": 1795599666592,
+  "elapsed_ms": 10099.139125
+}

@@ -1,0 +1,2 @@
+{"active_connections":0,"active_jobs":0,"active_sessions":0,"elapsed_ms":1,"fd_count":8,"goroutines":4,"heap_alloc":1386528,"heap_sys":7929856,"num_gc":0,"os_threads":6,"pause_total_ns":0,"pid":7960,"rss_kib":14160,"total_alloc":1386528}
+{"active_connections":0,"active_jobs":0,"active_sessions":0,"elapsed_ms":1001,"fd_count":8,"goroutines":10,"heap_alloc":3217152,"heap_sys":11927552,"num_gc":1,"os_threads":11,"pause_total_ns":634692,"pid":7960,"rss_kib":21384,"total_alloc":5111240}

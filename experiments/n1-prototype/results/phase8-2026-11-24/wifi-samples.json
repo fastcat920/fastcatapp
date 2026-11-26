@@ -1,0 +1,3022 @@
+[
+  {
+    "bytes": 1048576,
+    "chunk": 16384,
+    "first_payload_ms": 6658.815,
+    "first_response_headers_ms": 6658.689,
+    "full_request_ms": 8353.493,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_mbps": 5.269378386561421,
+    "payload_read_ms": 1591.954,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 114,
+        "shape": "http-chunk",
+        "body_bytes": 108
+      },
+      {
+        "bytes": 24,
+        "shape": "http-chunk",
+        "body_bytes": 14
+      }
+    ],
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 1048576,
+      "durations_ms": {
+        "dns": 1909.059,
+        "entry_auth_headers": 105.331,
+        "outer_http_eof": 0.005,
+        "tcp_attempts": 1609.132,
+        "tls": 2895.956,
+        "tls_close_receive": 101.058,
+        "tls_close_send": 0.575
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.058
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.107
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 1909.34
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 3518.534
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 6414.584
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 6519.931
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 6520.388
+        },
+        {
+          "phase": "body",
+          "offset_ms": 6658.675
+        },
+        {
+          "phase": "upload_fin",
+          "offset_ms": 8250.696
+        },
+        {
+          "phase": "download_fin",
+          "offset_ms": 8251.195
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 8251.227
+        },
+        {
+          "phase": "outer_http_eof",
+          "offset_ms": 8251.25
+        },
+        {
+          "phase": "tls_close_send",
+          "offset_ms": 8251.263
+        },
+        {
+          "phase": "tls_close_receive",
+          "offset_ms": 8251.845
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 6658.787,
+          "received_bytes": 3956
+        },
+        {
+          "offset_ms": 6979.24,
+          "received_bytes": 12148
+        },
+        {
+          "offset_ms": 7280.836,
+          "received_bytes": 44916
+        },
+        {
+          "offset_ms": 7592.099,
+          "received_bytes": 94068
+        },
+        {
+          "offset_ms": 7867.869,
+          "received_bytes": 368640
+        },
+        {
+          "offset_ms": 8138.833,
+          "received_bytes": 663552
+        },
+        {
+          "offset_ms": 8250.24,
+          "received_bytes": 1048576
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "retry",
+    "repeat": 1,
+    "network": "wifi",
+    "server_begin_unix": 1795528059.3494046,
+    "index": 0,
+    "exit_code": 0
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "first_payload_ms": 3298.633,
+    "first_response_headers_ms": 3298.514,
+    "full_request_ms": 3507.94,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_mbps": 2.566792977508837,
+    "payload_read_ms": 102.129,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 114,
+        "shape": "http-chunk",
+        "body_bytes": 108
+      },
+      {
+        "bytes": 25,
+        "shape": "http-chunk",
+        "body_bytes": 15
+      }
+    ],
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "entry_auth_headers": 1869.173,
+        "outer_http_eof": 0.005,
+        "tcp_attempts": 329.787,
+        "tls": 381.868,
+        "tls_close_receive": 105.836,
+        "tls_close_send": 0.319
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.054
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 0.238
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 330.088
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 712.1
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 2581.243
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 2581.875
+        },
+        {
+          "phase": "body",
+          "offset_ms": 3298.502
+        },
+        {
+          "phase": "upload_fin",
+          "offset_ms": 3400.688
+        },
+        {
+          "phase": "download_fin",
+          "offset_ms": 3401.203
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 3401.258
+        },
+        {
+          "phase": "outer_http_eof",
+          "offset_ms": 3401.28
+        },
+        {
+          "phase": "tls_close_send",
+          "offset_ms": 3401.292
+        },
+        {
+          "phase": "tls_close_receive",
+          "offset_ms": 3401.615
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 3298.607,
+          "received_bytes": 3958
+        },
+        {
+          "offset_ms": 3400.377,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "ip",
+    "repeat": 1,
+    "network": "wifi",
+    "server_begin_unix": 1795528068.1038942,
+    "index": 1,
+    "exit_code": 0
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "first_payload_ms": 2748.222,
+    "first_response_headers_ms": 2748.113,
+    "full_request_ms": 3181.963,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_mbps": 0.7824329850135955,
+    "payload_read_ms": 335.037,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 127,
+        "shape": "http-chunk",
+        "body_bytes": 121
+      },
+      {
+        "bytes": 37,
+        "shape": "http-chunk",
+        "body_bytes": 26
+      }
+    ],
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "dns": 528.658,
+        "entry_auth_headers": 354.17,
+        "outer_http_eof": 0.006,
+        "tcp_attempts": 300.699,
+        "tls": 1284.938,
+        "tls_close_receive": 97.404,
+        "tls_close_send": 0.352
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.076
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.189
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 528.971
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 829.735
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 2114.789
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 2469.017
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 2469.435
+        },
+        {
+          "phase": "body",
+          "offset_ms": 2748.092
+        },
+        {
+          "phase": "upload_fin",
+          "offset_ms": 3083.198
+        },
+        {
+          "phase": "download_fin",
+          "offset_ms": 3083.654
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 3083.701
+        },
+        {
+          "phase": "outer_http_eof",
+          "offset_ms": 3083.722
+        },
+        {
+          "phase": "tls_close_send",
+          "offset_ms": 3083.736
+        },
+        {
+          "phase": "tls_close_receive",
+          "offset_ms": 3084.093
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 2748.185,
+          "received_bytes": 3958
+        },
+        {
+          "offset_ms": 3082.351,
+          "received_bytes": 28534
+        },
+        {
+          "offset_ms": 3082.768,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "retry",
+    "repeat": 4,
+    "network": "wifi",
+    "server_begin_unix": 1795528072.6562037,
+    "index": 2,
+    "exit_code": 0
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "first_payload_ms": 1116.269,
+    "first_response_headers_ms": 1116.119,
+    "full_request_ms": 1238.235,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_mbps": 14.776168197959528,
+    "payload_read_ms": 17.741,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 101,
+        "shape": "http-chunk",
+        "body_bytes": 95
+      },
+      {
+        "bytes": 39,
+        "shape": "http-chunk",
+        "body_bytes": 28
+      }
+    ],
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "dns": 3.012,
+        "entry_auth_headers": 239.37,
+        "outer_http_eof": 0.006,
+        "tcp_attempts": 313.418,
+        "tls": 274.238,
+        "tls_close_receive": 102.504,
+        "tls_close_send": 0.463
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.068
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.137
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 3.281
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 316.762
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 591.125
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 830.55
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 831.1
+        },
+        {
+          "phase": "body",
+          "offset_ms": 1116.098
+        },
+        {
+          "phase": "upload_fin",
+          "offset_ms": 1133.892
+        },
+        {
+          "phase": "download_fin",
+          "offset_ms": 1134.613
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 1134.67
+        },
+        {
+          "phase": "outer_http_eof",
+          "offset_ms": 1134.692
+        },
+        {
+          "phase": "tls_close_send",
+          "offset_ms": 1134.705
+        },
+        {
+          "phase": "tls_close_receive",
+          "offset_ms": 1135.174
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 1116.233,
+          "received_bytes": 3958
+        },
+        {
+          "offset_ms": 1133.837,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "x25519",
+    "repeat": 4,
+    "network": "wifi",
+    "server_begin_unix": 1795528076.4141386,
+    "index": 3,
+    "exit_code": 0
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "first_payload_ms": 2692.176,
+    "first_response_headers_ms": 2692.052,
+    "full_request_ms": 2997.448,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_mbps": 3.248698755762653,
+    "payload_read_ms": 80.692,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 106,
+        "shape": "http-chunk",
+        "body_bytes": 100
+      },
+      {
+        "bytes": 28,
+        "shape": "http-chunk",
+        "body_bytes": 17
+      }
+    ],
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "dns": 3.008,
+        "entry_auth_headers": 369.783,
+        "outer_http_eof": 0.006,
+        "tcp_attempts": 1386.998,
+        "tls": 552.466,
+        "tls_close_receive": 223.482,
+        "tls_close_send": 0.324
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.061
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.163
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 3.224
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 1390.274
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 1942.842
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 2312.745
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 2313.229
+        },
+        {
+          "phase": "body",
+          "offset_ms": 2692.032
+        },
+        {
+          "phase": "upload_fin",
+          "offset_ms": 2772.778
+        },
+        {
+          "phase": "download_fin",
+          "offset_ms": 2773.167
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 2773.204
+        },
+        {
+          "phase": "outer_http_eof",
+          "offset_ms": 2773.226
+        },
+        {
+          "phase": "tls_close_send",
+          "offset_ms": 2773.238
+        },
+        {
+          "phase": "tls_close_receive",
+          "offset_ms": 2773.568
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 2692.141,
+          "received_bytes": 3958
+        },
+        {
+          "offset_ms": 2772.525,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "x25519",
+    "repeat": 3,
+    "network": "wifi",
+    "server_begin_unix": 1795528077.996645,
+    "index": 4,
+    "exit_code": 0
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "first_payload_ms": 4281.199,
+    "first_response_headers_ms": 4281.07,
+    "full_request_ms": 4549.293,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_mbps": 1.5475857346108661,
+    "payload_read_ms": 169.389,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 115,
+        "shape": "http-chunk",
+        "body_bytes": 109
+      },
+      {
+        "bytes": 30,
+        "shape": "http-chunk",
+        "body_bytes": 19
+      }
+    ],
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "dns": 2.885,
+        "entry_auth_headers": 178.32,
+        "outer_http_eof": 0.006,
+        "tcp_attempts": 1243.386,
+        "tls": 2590.438,
+        "tls_close_receive": 97.546,
+        "tls_close_send": 0.329
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.055
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.116
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 3.053
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 1246.501
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 3837.04
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 4015.461
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 4015.925
+        },
+        {
+          "phase": "body",
+          "offset_ms": 4281.057
+        },
+        {
+          "phase": "upload_fin",
+          "offset_ms": 4450.5
+        },
+        {
+          "phase": "download_fin",
+          "offset_ms": 4450.889
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 4450.928
+        },
+        {
+          "phase": "outer_http_eof",
+          "offset_ms": 4450.949
+        },
+        {
+          "phase": "tls_close_send",
+          "offset_ms": 4450.962
+        },
+        {
+          "phase": "tls_close_receive",
+          "offset_ms": 4451.295
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 4281.171,
+          "received_bytes": 3958
+        },
+        {
+          "offset_ms": 4449.989,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "retry",
+    "repeat": 2,
+    "network": "wifi",
+    "server_begin_unix": 1795528081.4324872,
+    "index": 5,
+    "exit_code": 0
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "first_payload_ms": 1468.916,
+    "first_response_headers_ms": 1468.81,
+    "full_request_ms": 5290.831,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_mbps": 0.0704432152615501,
+    "payload_read_ms": 3721.352,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 114,
+        "shape": "http-chunk",
+        "body_bytes": 108
+      },
+      {
+        "bytes": 37,
+        "shape": "http-chunk",
+        "body_bytes": 26
+      }
+    ],
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "dns": 3.32,
+        "entry_auth_headers": 100.383,
+        "outer_http_eof": 0.005,
+        "tcp_attempts": 372.459,
+        "tls": 487.28,
+        "tls_close_receive": 99.383,
+        "tls_close_send": 0.32
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.082
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.198
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 3.614
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 376.135
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 863.594
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 964.091
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 964.599
+        },
+        {
+          "phase": "body",
+          "offset_ms": 1468.788
+        },
+        {
+          "phase": "upload_fin",
+          "offset_ms": 5190.192
+        },
+        {
+          "phase": "download_fin",
+          "offset_ms": 5190.584
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 5190.619
+        },
+        {
+          "phase": "outer_http_eof",
+          "offset_ms": 5190.641
+        },
+        {
+          "phase": "tls_close_send",
+          "offset_ms": 5190.653
+        },
+        {
+          "phase": "tls_close_receive",
+          "offset_ms": 5190.978
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 1468.88,
+          "received_bytes": 3958
+        },
+        {
+          "offset_ms": 5189.1,
+          "received_bytes": 24438
+        },
+        {
+          "offset_ms": 5190.137,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "retry",
+    "repeat": 3,
+    "network": "wifi",
+    "server_begin_unix": 1795528086.8975804,
+    "index": 6,
+    "exit_code": 0
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "first_payload_ms": 776.424,
+    "first_response_headers_ms": 590.897,
+    "full_request_ms": 848.453,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "get",
+    "payload_read_mbps": 1.0200314401780575,
+    "payload_read_ms": 256.996,
+    "payload_verified": true,
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "dns": 3.196,
+        "tcp_attempts": 248.162,
+        "tls": 238.458
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.07
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.155
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 3.432
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 251.627
+        },
+        {
+          "phase": "body",
+          "offset_ms": 590.882
+        },
+        {
+          "phase": "tls_close",
+          "offset_ms": 847.962
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 776.385,
+          "received_bytes": 8192
+        },
+        {
+          "offset_ms": 847.297,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "https",
+    "repeat": 3,
+    "network": "wifi",
+    "server_begin_unix": 1795528092.5708683,
+    "index": 7,
+    "exit_code": 0
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "first_payload_ms": 3227,
+    "first_response_headers_ms": 3226.875,
+    "full_request_ms": 3327.265,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_mbps": 112.36348049721389,
+    "payload_read_ms": 2.333,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 125,
+        "shape": "http-chunk",
+        "body_bytes": 119
+      },
+      {
+        "bytes": 31,
+        "shape": "http-chunk",
+        "body_bytes": 20
+      }
+    ],
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "dns": 2.848,
+        "entry_auth_headers": 98.882,
+        "outer_http_eof": 0.012,
+        "tcp_attempts": 339.711,
+        "tls": 2379.41,
+        "tls_close_receive": 96.819,
+        "tls_close_send": 0.335
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.079
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.139
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 3.098
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 342.871
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 2722.542
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 2821.388
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 2821.861
+        },
+        {
+          "phase": "body",
+          "offset_ms": 3226.863
+        },
+        {
+          "phase": "upload_fin",
+          "offset_ms": 3229.23
+        },
+        {
+          "phase": "download_fin",
+          "offset_ms": 3229.648
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 3229.681
+        },
+        {
+          "phase": "outer_http_eof",
+          "offset_ms": 3229.7
+        },
+        {
+          "phase": "tls_close_send",
+          "offset_ms": 3229.717
+        },
+        {
+          "phase": "tls_close_receive",
+          "offset_ms": 3230.056
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 3226.974,
+          "received_bytes": 3958
+        },
+        {
+          "offset_ms": 3229.193,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "x25519",
+    "repeat": 1,
+    "network": "wifi",
+    "server_begin_unix": 1795528093.868808,
+    "index": 8,
+    "exit_code": 0
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "first_payload_ms": 4962.132,
+    "first_response_headers_ms": 4962.006,
+    "full_request_ms": 6213.23,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_mbps": 0.22860810537404858,
+    "payload_read_ms": 1146.696,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 105,
+        "shape": "http-chunk",
+        "body_bytes": 99
+      },
+      {
+        "bytes": 23,
+        "shape": "http-chunk",
+        "body_bytes": 13
+      }
+    ],
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "dns": 2.426,
+        "entry_auth_headers": 1281.73,
+        "outer_http_eof": 0.006,
+        "tcp_attempts": 1394.135,
+        "tls": 1892.053,
+        "tls_close_receive": 102.801,
+        "tls_close_send": 0.37
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.059
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.106
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 2.593
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 1396.872
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 3289.035
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 4570.813
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 4571.524
+        },
+        {
+          "phase": "body",
+          "offset_ms": 4961.994
+        },
+        {
+          "phase": "upload_fin",
+          "offset_ms": 6108.743
+        },
+        {
+          "phase": "download_fin",
+          "offset_ms": 6109.387
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 6109.422
+        },
+        {
+          "phase": "outer_http_eof",
+          "offset_ms": 6109.443
+        },
+        {
+          "phase": "tls_close_send",
+          "offset_ms": 6109.457
+        },
+        {
+          "phase": "tls_close_receive",
+          "offset_ms": 6109.832
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 4962.104,
+          "received_bytes": 3958
+        },
+        {
+          "offset_ms": 6107.786,
+          "received_bytes": 24438
+        },
+        {
+          "offset_ms": 6108.687,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "retry",
+    "repeat": 1,
+    "network": "wifi",
+    "server_begin_unix": 1795528097.6545632,
+    "index": 9,
+    "exit_code": 0
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "first_payload_ms": 4024.552,
+    "first_response_headers_ms": 4024.453,
+    "full_request_ms": 8026.015,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_mbps": 0.17184305319291898,
+    "payload_read_ms": 1525.485,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 126,
+        "shape": "http-chunk",
+        "body_bytes": 120
+      },
+      {
+        "bytes": 34,
+        "shape": "http-chunk",
+        "body_bytes": 23
+      }
+    ],
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "dns": 2.197,
+        "entry_auth_headers": 1291.842,
+        "outer_http_eof": 0.006,
+        "tcp_attempts": 328.396,
+        "tls": 2087.395,
+        "tls_close_receive": 2474.602,
+        "tls_close_send": 0.328
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.055
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.115
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 2.361
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 330.888
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 2418.379
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 3710.343
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 3710.937
+        },
+        {
+          "phase": "body",
+          "offset_ms": 4024.44
+        },
+        {
+          "phase": "upload_fin",
+          "offset_ms": 5549.979
+        },
+        {
+          "phase": "download_fin",
+          "offset_ms": 5550.496
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 5550.535
+        },
+        {
+          "phase": "outer_http_eof",
+          "offset_ms": 5550.557
+        },
+        {
+          "phase": "tls_close_send",
+          "offset_ms": 5550.569
+        },
+        {
+          "phase": "tls_close_receive",
+          "offset_ms": 5550.902
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 4024.525,
+          "received_bytes": 3958
+        },
+        {
+          "offset_ms": 5549.025,
+          "received_bytes": 24438
+        },
+        {
+          "offset_ms": 5549.923,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "n1",
+    "repeat": 4,
+    "network": "wifi",
+    "server_begin_unix": 1795528104.8202398,
+    "index": 10,
+    "exit_code": 0
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "first_payload_ms": 5113.739,
+    "first_response_headers_ms": 4745.82,
+    "full_request_ms": 5282.459,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "get",
+    "payload_read_mbps": 0.48902900848801417,
+    "payload_read_ms": 536.05,
+    "payload_verified": true,
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "dns": 3.2,
+        "tcp_attempts": 1256.479,
+        "tls": 3128.093
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.069
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.173
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 3.473
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 1260.016
+        },
+        {
+          "phase": "body",
+          "offset_ms": 4745.801
+        },
+        {
+          "phase": "tls_close",
+          "offset_ms": 5281.912
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 5113.703,
+          "received_bytes": 8192
+        },
+        {
+          "offset_ms": 5281.436,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "https",
+    "repeat": 4,
+    "network": "wifi",
+    "server_begin_unix": 1795528114.4646587,
+    "index": 11,
+    "exit_code": 0
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "error": "truncated",
+    "error_category": "truncated",
+    "first_response_headers_ms": 12818.872,
+    "full_request_ms": 12818.883,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      }
+    ],
+    "sample": 1,
+    "trace": {
+      "body_received_bytes": 0,
+      "durations_ms": {
+        "dns": 2.617,
+        "tcp_attempts": 1346.669,
+        "tls": 11096.428
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.058
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.118
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 2.795
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 1349.519
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 12445.994
+        }
+      ],
+      "failure_phase": "entry_auth_headers",
+      "progress": null,
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "n1",
+    "repeat": 3,
+    "network": "wifi",
+    "server_begin_unix": 1795528120.2041235,
+    "index": 12,
+    "exit_code": 1
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "error": "transport_or_protocol",
+    "error_category": "transport_or_protocol",
+    "first_payload_ms": 3471.269,
+    "first_response_headers_ms": 3471.124,
+    "full_request_ms": 8784.073,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_mbps": 0.8550060502480439,
+    "payload_read_ms": 306.599,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 119,
+        "shape": "http-chunk",
+        "body_bytes": 113
+      },
+      {
+        "bytes": 27,
+        "shape": "http-chunk",
+        "body_bytes": 16
+      }
+    ],
+    "sample": 1,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "entry_auth_headers": 374.975,
+        "outer_http_eof": 0.006,
+        "tcp_attempts": 191.998,
+        "tls": 1775.465,
+        "tls_close_receive": 5004.947,
+        "tls_close_send": 0.267
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.084
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 0.257
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 192.322
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 1967.892
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 2342.939
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 2343.422
+        },
+        {
+          "phase": "body",
+          "offset_ms": 3471.103
+        },
+        {
+          "phase": "upload_fin",
+          "offset_ms": 3777.75
+        },
+        {
+          "phase": "download_fin",
+          "offset_ms": 3778.127
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 3778.165
+        },
+        {
+          "phase": "outer_http_eof",
+          "offset_ms": 3778.186
+        },
+        {
+          "phase": "tls_close_send",
+          "offset_ms": 3778.199
+        },
+        {
+          "phase": "tls_close_receive",
+          "offset_ms": 3778.47
+        }
+      ],
+      "failure_phase": "tls_close_receive",
+      "progress": [
+        {
+          "offset_ms": 3471.232,
+          "received_bytes": 3958
+        },
+        {
+          "offset_ms": 3776.862,
+          "received_bytes": 24438
+        },
+        {
+          "offset_ms": 3777.699,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "ip",
+    "repeat": 4,
+    "network": "wifi",
+    "server_begin_unix": 1795528133.878945,
+    "index": 13,
+    "exit_code": 1
+  },
+  {
+    "bytes": 1048576,
+    "chunk": 16384,
+    "error": "timeout",
+    "error_category": "timeout",
+    "first_payload_ms": 9667.37,
+    "first_response_headers_ms": 9667.249,
+    "full_request_ms": 30001.643,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_ms": 20333.363,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 124,
+        "shape": "http-chunk",
+        "body_bytes": 118
+      }
+    ],
+    "sample": 1,
+    "trace": {
+      "body_received_bytes": 616960,
+      "durations_ms": {
+        "dns": 2.901,
+        "entry_auth_headers": 3444.505,
+        "tcp_attempts": 686.759,
+        "tls": 5258.119
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.134
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.237
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 3.192
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 690.012
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 5948.231
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 9392.839
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 9393.388
+        },
+        {
+          "phase": "body",
+          "offset_ms": 9667.228
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 30000.653
+        }
+      ],
+      "failure_phase": "body",
+      "progress": [
+        {
+          "offset_ms": 9667.334,
+          "received_bytes": 3956
+        },
+        {
+          "offset_ms": 9988.311,
+          "received_bytes": 12148
+        },
+        {
+          "offset_ms": 10271.335,
+          "received_bytes": 28532
+        },
+        {
+          "offset_ms": 10866.492,
+          "received_bytes": 44916
+        },
+        {
+          "offset_ms": 11303.157,
+          "received_bytes": 77684
+        },
+        {
+          "offset_ms": 11919.136,
+          "received_bytes": 110452
+        },
+        {
+          "offset_ms": 12212.622,
+          "received_bytes": 139264
+        },
+        {
+          "offset_ms": 12692.82,
+          "received_bytes": 155648
+        },
+        {
+          "offset_ms": 13223.035,
+          "received_bytes": 188416
+        },
+        {
+          "offset_ms": 14206.394,
+          "received_bytes": 204800
+        },
+        {
+          "offset_ms": 15127.675,
+          "received_bytes": 231936
+        },
+        {
+          "offset_ms": 15944.97,
+          "received_bytes": 248320
+        },
+        {
+          "offset_ms": 16466.047,
+          "received_bytes": 264704
+        },
+        {
+          "offset_ms": 17216.731,
+          "received_bytes": 281088
+        },
+        {
+          "offset_ms": 17530.738,
+          "received_bytes": 297472
+        },
+        {
+          "offset_ms": 17793,
+          "received_bytes": 313856
+        },
+        {
+          "offset_ms": 18561.104,
+          "received_bytes": 330240
+        },
+        {
+          "offset_ms": 19839.076,
+          "received_bytes": 363008
+        },
+        {
+          "offset_ms": 20452.691,
+          "received_bytes": 379392
+        },
+        {
+          "offset_ms": 20754.592,
+          "received_bytes": 395776
+        },
+        {
+          "offset_ms": 21989.89,
+          "received_bytes": 412160
+        },
+        {
+          "offset_ms": 22598.769,
+          "received_bytes": 428544
+        },
+        {
+          "offset_ms": 23429.285,
+          "received_bytes": 444928
+        },
+        {
+          "offset_ms": 24006.929,
+          "received_bytes": 494080
+        },
+        {
+          "offset_ms": 24711.122,
+          "received_bytes": 510464
+        },
+        {
+          "offset_ms": 25294.572,
+          "received_bytes": 526848
+        },
+        {
+          "offset_ms": 26170.562,
+          "received_bytes": 559616
+        },
+        {
+          "offset_ms": 26593.78,
+          "received_bytes": 576000
+        },
+        {
+          "offset_ms": 27402.214,
+          "received_bytes": 592384
+        },
+        {
+          "offset_ms": 29054.687,
+          "received_bytes": 608768
+        },
+        {
+          "offset_ms": 29055.096,
+          "received_bytes": 616960
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "n1",
+    "repeat": 1,
+    "network": "wifi",
+    "server_begin_unix": 1795528143.3172762,
+    "index": 14,
+    "exit_code": 1
+  },
+  {
+    "bytes": 1048576,
+    "chunk": 16384,
+    "first_payload_ms": 959.66,
+    "first_response_headers_ms": 959.544,
+    "full_request_ms": 4186.183,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_mbps": 2.685159678277935,
+    "payload_read_ms": 3124.063,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 126,
+        "shape": "http-chunk",
+        "body_bytes": 120
+      },
+      {
+        "bytes": 30,
+        "shape": "http-chunk",
+        "body_bytes": 19
+      }
+    ],
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 1048576,
+      "durations_ms": {
+        "dns": 2.905,
+        "entry_auth_headers": 102.175,
+        "outer_http_eof": 0.006,
+        "tcp_attempts": 392.951,
+        "tls": 160.903,
+        "tls_close_receive": 101.031,
+        "tls_close_send": 0.389
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.064
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.136
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 3.095
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 396.1
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 557.044
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 659.372
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 659.832
+        },
+        {
+          "phase": "body",
+          "offset_ms": 959.524
+        },
+        {
+          "phase": "upload_fin",
+          "offset_ms": 4083.652
+        },
+        {
+          "phase": "download_fin",
+          "offset_ms": 4084.22
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 4084.258
+        },
+        {
+          "phase": "outer_http_eof",
+          "offset_ms": 4084.28
+        },
+        {
+          "phase": "tls_close_send",
+          "offset_ms": 4084.292
+        },
+        {
+          "phase": "tls_close_receive",
+          "offset_ms": 4084.686
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 959.625,
+          "received_bytes": 3956
+        },
+        {
+          "offset_ms": 1345.884,
+          "received_bytes": 73588
+        },
+        {
+          "offset_ms": 1604.253,
+          "received_bytes": 204800
+        },
+        {
+          "offset_ms": 2004.892,
+          "received_bytes": 335872
+        },
+        {
+          "offset_ms": 4082.349,
+          "received_bytes": 1036672
+        },
+        {
+          "offset_ms": 4083.413,
+          "received_bytes": 1048576
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "retry",
+    "repeat": 2,
+    "network": "wifi",
+    "server_begin_unix": 1795528173.6705096,
+    "index": 15,
+    "exit_code": 0
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "first_payload_ms": 2184.368,
+    "first_response_headers_ms": 2184.276,
+    "full_request_ms": 3482.144,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_mbps": 0.21852799706566411,
+    "payload_read_ms": 1199.59,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 113,
+        "shape": "http-chunk",
+        "body_bytes": 107
+      },
+      {
+        "bytes": 42,
+        "shape": "http-chunk",
+        "body_bytes": 31
+      }
+    ],
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "entry_auth_headers": 99.805,
+        "outer_http_eof": 0.006,
+        "tcp_attempts": 1437.452,
+        "tls": 339.391,
+        "tls_close_receive": 97.074,
+        "tls_close_send": 0.252
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.07
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 0.187
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 1437.703
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 1777.199
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 1877.12
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 1877.671
+        },
+        {
+          "phase": "body",
+          "offset_ms": 2184.253
+        },
+        {
+          "phase": "upload_fin",
+          "offset_ms": 3383.891
+        },
+        {
+          "phase": "download_fin",
+          "offset_ms": 3384.277
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 3384.316
+        },
+        {
+          "phase": "outer_http_eof",
+          "offset_ms": 3384.335
+        },
+        {
+          "phase": "tls_close_send",
+          "offset_ms": 3384.348
+        },
+        {
+          "phase": "tls_close_receive",
+          "offset_ms": 3384.605
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 2184.332,
+          "received_bytes": 3958
+        },
+        {
+          "offset_ms": 3382.799,
+          "received_bytes": 24438
+        },
+        {
+          "offset_ms": 3383.84,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "ip",
+    "repeat": 3,
+    "network": "wifi",
+    "server_begin_unix": 1795528178.7478862,
+    "index": 16,
+    "exit_code": 0
+  },
+  {
+    "bytes": 1048576,
+    "chunk": 16384,
+    "first_payload_ms": 2237.583,
+    "first_response_headers_ms": 2038.032,
+    "full_request_ms": 3752.686,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "get",
+    "payload_read_mbps": 4.89423318152275,
+    "payload_read_ms": 1713.978,
+    "payload_verified": true,
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 1048576,
+      "durations_ms": {
+        "dns": 2.52,
+        "tcp_attempts": 366.989,
+        "tls": 1566.215
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.068
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.118
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 2.711
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 369.765
+        },
+        {
+          "phase": "body",
+          "offset_ms": 2038.017
+        },
+        {
+          "phase": "tls_close",
+          "offset_ms": 3752.131
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 2237.545,
+          "received_bytes": 8192
+        },
+        {
+          "offset_ms": 2526.316,
+          "received_bytes": 57344
+        },
+        {
+          "offset_ms": 2831.966,
+          "received_bytes": 139264
+        },
+        {
+          "offset_ms": 3131.39,
+          "received_bytes": 253952
+        },
+        {
+          "offset_ms": 3749.081,
+          "received_bytes": 1007616
+        },
+        {
+          "offset_ms": 3751.669,
+          "received_bytes": 1048576
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "https",
+    "repeat": 2,
+    "network": "wifi",
+    "server_begin_unix": 1795528183.2845511,
+    "index": 17,
+    "exit_code": 0
+  },
+  {
+    "bytes": 1048576,
+    "chunk": 16384,
+    "error": "timeout",
+    "error_category": "timeout",
+    "full_request_ms": 14294.135,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "get",
+    "sample": 1,
+    "trace": {
+      "body_received_bytes": 0,
+      "durations_ms": {
+        "dns": 3.231,
+        "tcp_attempts": 2283.516,
+        "tls": 12006.169
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.066
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.151
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 3.472
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 2287.052
+        }
+      ],
+      "failure_phase": "tls",
+      "progress": null,
+      "setup_attempts": 1,
+      "setup_failures": [
+        {
+          "attempt": 1,
+          "category": "timeout",
+          "phase": "tls"
+        }
+      ]
+    },
+    "workers": 1,
+    "case": "https",
+    "repeat": 1,
+    "network": "wifi",
+    "server_begin_unix": 1795528188.0973337,
+    "index": 18,
+    "exit_code": 1
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "first_payload_ms": 1207.055,
+    "first_response_headers_ms": 1073.262,
+    "full_request_ms": 1688.795,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "get",
+    "payload_read_mbps": 0.4263419140368339,
+    "payload_read_ms": 614.868,
+    "payload_verified": true,
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "dns": 2.662,
+        "tcp_attempts": 354.098,
+        "tls": 387.538
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.068
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.132
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 2.862
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 357.022
+        },
+        {
+          "phase": "body",
+          "offset_ms": 1073.248
+        },
+        {
+          "phase": "tls_close",
+          "offset_ms": 1688.176
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 1207.019,
+          "received_bytes": 8192
+        },
+        {
+          "offset_ms": 1687.113,
+          "received_bytes": 24576
+        },
+        {
+          "offset_ms": 1687.701,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "https",
+    "repeat": 1,
+    "network": "wifi",
+    "server_begin_unix": 1795528203.8801007,
+    "index": 19,
+    "exit_code": 0
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "first_payload_ms": 3001.28,
+    "first_response_headers_ms": 3001.103,
+    "full_request_ms": 4172.64,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_mbps": 0.24457518608291956,
+    "payload_read_ms": 1071.834,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 108,
+        "shape": "http-chunk",
+        "body_bytes": 102
+      },
+      {
+        "bytes": 22,
+        "shape": "http-chunk",
+        "body_bytes": 12
+      }
+    ],
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "dns": 2.568,
+        "entry_auth_headers": 1100.618,
+        "outer_http_eof": 0.006,
+        "tcp_attempts": 279.703,
+        "tls": 1254.427,
+        "tls_close_receive": 98.284,
+        "tls_close_send": 0.317
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.116
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.189
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 2.81
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 282.659
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 1537.177
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 2637.922
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 2638.438
+        },
+        {
+          "phase": "body",
+          "offset_ms": 3001.091
+        },
+        {
+          "phase": "upload_fin",
+          "offset_ms": 4072.978
+        },
+        {
+          "phase": "download_fin",
+          "offset_ms": 4073.367
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 4073.4
+        },
+        {
+          "phase": "outer_http_eof",
+          "offset_ms": 4073.421
+        },
+        {
+          "phase": "tls_close_send",
+          "offset_ms": 4073.434
+        },
+        {
+          "phase": "tls_close_receive",
+          "offset_ms": 4073.756
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 3001.254,
+          "received_bytes": 3958
+        },
+        {
+          "offset_ms": 4071.868,
+          "received_bytes": 24438
+        },
+        {
+          "offset_ms": 4072.923,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "n1",
+    "repeat": 2,
+    "network": "wifi",
+    "server_begin_unix": 1795528206.500532,
+    "index": 20,
+    "exit_code": 0
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "first_payload_ms": 3409.522,
+    "first_response_headers_ms": 3409.402,
+    "full_request_ms": 10475.408,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_mbps": 0.06560981103741709,
+    "payload_read_ms": 3995.5,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 103,
+        "shape": "http-chunk",
+        "body_bytes": 97
+      },
+      {
+        "bytes": 34,
+        "shape": "http-chunk",
+        "body_bytes": 23
+      }
+    ],
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "entry_auth_headers": 285.058,
+        "outer_http_eof": 0.006,
+        "tcp_attempts": 341.011,
+        "tls": 2396.766,
+        "tls_close_receive": 3069.056,
+        "tls_close_send": 0.397
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.053
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 0.129
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 341.272
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 2738.145
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 3023.159
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 3023.532
+        },
+        {
+          "phase": "body",
+          "offset_ms": 3409.39
+        },
+        {
+          "phase": "upload_fin",
+          "offset_ms": 7404.943
+        },
+        {
+          "phase": "download_fin",
+          "offset_ms": 7405.455
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 7405.535
+        },
+        {
+          "phase": "outer_http_eof",
+          "offset_ms": 7405.557
+        },
+        {
+          "phase": "tls_close_send",
+          "offset_ms": 7405.571
+        },
+        {
+          "phase": "tls_close_receive",
+          "offset_ms": 7405.974
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 3409.495,
+          "received_bytes": 3958
+        },
+        {
+          "offset_ms": 4230.219,
+          "received_bytes": 12150
+        },
+        {
+          "offset_ms": 7404.157,
+          "received_bytes": 28534
+        },
+        {
+          "offset_ms": 7404.646,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "ip",
+    "repeat": 2,
+    "network": "wifi",
+    "server_begin_unix": 1795528211.1560822,
+    "index": 21,
+    "exit_code": 0
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "first_payload_ms": 1946.52,
+    "first_response_headers_ms": 1946.399,
+    "full_request_ms": 2195.834,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_mbps": 1.733080345632326,
+    "payload_read_ms": 151.259,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 108,
+        "shape": "http-chunk",
+        "body_bytes": 102
+      },
+      {
+        "bytes": 35,
+        "shape": "http-chunk",
+        "body_bytes": 24
+      }
+    ],
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "dns": 2.834,
+        "entry_auth_headers": 1087.709,
+        "outer_http_eof": 0.006,
+        "tcp_attempts": 343.582,
+        "tls": 246.553,
+        "tls_close_receive": 96.915,
+        "tls_close_send": 0.308
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.072
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.182
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 3.064
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 346.709
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 593.364
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 1681.17
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 1681.682
+        },
+        {
+          "phase": "body",
+          "offset_ms": 1946.376
+        },
+        {
+          "phase": "upload_fin",
+          "offset_ms": 2097.688
+        },
+        {
+          "phase": "download_fin",
+          "offset_ms": 2098.079
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 2098.112
+        },
+        {
+          "phase": "outer_http_eof",
+          "offset_ms": 2098.135
+        },
+        {
+          "phase": "tls_close_send",
+          "offset_ms": 2098.147
+        },
+        {
+          "phase": "tls_close_receive",
+          "offset_ms": 2098.46
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 1946.484,
+          "received_bytes": 3958
+        },
+        {
+          "offset_ms": 2097.633,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "x25519",
+    "repeat": 2,
+    "network": "wifi",
+    "server_begin_unix": 1795528223.2259362,
+    "index": 22,
+    "exit_code": 0
+  },
+  {
+    "bytes": 1048576,
+    "chunk": 16384,
+    "first_payload_ms": 966.745,
+    "first_response_headers_ms": 966.628,
+    "full_request_ms": 11489.472,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_mbps": 0.8049321067676373,
+    "payload_read_ms": 10421.51,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 106,
+        "shape": "http-chunk",
+        "body_bytes": 100
+      },
+      {
+        "bytes": 29,
+        "shape": "http-chunk",
+        "body_bytes": 18
+      }
+    ],
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 1048576,
+      "durations_ms": {
+        "dns": 3.408,
+        "entry_auth_headers": 100.544,
+        "outer_http_eof": 0.006,
+        "tcp_attempts": 329.044,
+        "tls": 161.831,
+        "tls_close_receive": 99.735,
+        "tls_close_send": 0.417
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.057
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.098
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 3.613
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 332.688
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 494.562
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 595.258
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 595.755
+        },
+        {
+          "phase": "body",
+          "offset_ms": 966.618
+        },
+        {
+          "phase": "upload_fin",
+          "offset_ms": 11388.203
+        },
+        {
+          "phase": "download_fin",
+          "offset_ms": 11388.715
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 11388.749
+        },
+        {
+          "phase": "outer_http_eof",
+          "offset_ms": 11388.845
+        },
+        {
+          "phase": "tls_close_send",
+          "offset_ms": 11388.859
+        },
+        {
+          "phase": "tls_close_receive",
+          "offset_ms": 11389.281
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 966.72,
+          "received_bytes": 3956
+        },
+        {
+          "offset_ms": 1300.28,
+          "received_bytes": 40820
+        },
+        {
+          "offset_ms": 1639.207,
+          "received_bytes": 89972
+        },
+        {
+          "offset_ms": 2119.015,
+          "received_bytes": 122880
+        },
+        {
+          "offset_ms": 2377.856,
+          "received_bytes": 155648
+        },
+        {
+          "offset_ms": 2659.758,
+          "received_bytes": 188416
+        },
+        {
+          "offset_ms": 3118.371,
+          "received_bytes": 260864
+        },
+        {
+          "offset_ms": 3734.043,
+          "received_bytes": 335872
+        },
+        {
+          "offset_ms": 4088.611,
+          "received_bytes": 368640
+        },
+        {
+          "offset_ms": 4341.977,
+          "received_bytes": 417792
+        },
+        {
+          "offset_ms": 4856.646,
+          "received_bytes": 434176
+        },
+        {
+          "offset_ms": 5139.087,
+          "received_bytes": 483328
+        },
+        {
+          "offset_ms": 5560.302,
+          "received_bytes": 516096
+        },
+        {
+          "offset_ms": 6012.96,
+          "received_bytes": 548864
+        },
+        {
+          "offset_ms": 6286.188,
+          "received_bytes": 598016
+        },
+        {
+          "offset_ms": 6577.279,
+          "received_bytes": 614400
+        },
+        {
+          "offset_ms": 6923.008,
+          "received_bytes": 647168
+        },
+        {
+          "offset_ms": 7364.07,
+          "received_bytes": 679936
+        },
+        {
+          "offset_ms": 7627.818,
+          "received_bytes": 712704
+        },
+        {
+          "offset_ms": 8803.148,
+          "received_bytes": 729088
+        },
+        {
+          "offset_ms": 9289.038,
+          "received_bytes": 811008
+        },
+        {
+          "offset_ms": 9623.457,
+          "received_bytes": 892928
+        },
+        {
+          "offset_ms": 9956.13,
+          "received_bytes": 925696
+        },
+        {
+          "offset_ms": 10243.927,
+          "received_bytes": 942080
+        },
+        {
+          "offset_ms": 10515.469,
+          "received_bytes": 958464
+        },
+        {
+          "offset_ms": 11281.422,
+          "received_bytes": 991232
+        },
+        {
+          "offset_ms": 11387.739,
+          "received_bytes": 1048576
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "n1",
+    "repeat": 2,
+    "network": "wifi",
+    "server_begin_unix": 1795528225.8360007,
+    "index": 23,
+    "exit_code": 0
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "first_payload_ms": 1165.204,
+    "first_response_headers_ms": 1164.853,
+    "full_request_ms": 1776.633,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "get",
+    "payload_read_mbps": 0.4289194712462756,
+    "payload_read_ms": 611.173,
+    "payload_verified": true,
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "dns": 2.321,
+        "tcp_attempts": 343.875,
+        "tls": 631.731
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.073
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.119
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 2.503
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 346.441
+        },
+        {
+          "phase": "body",
+          "offset_ms": 1164.839
+        },
+        {
+          "phase": "tls_close",
+          "offset_ms": 1776.069
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 1165.178,
+          "received_bytes": 8192
+        },
+        {
+          "offset_ms": 1775.738,
+          "received_bytes": 24576
+        },
+        {
+          "offset_ms": 1775.88,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "https",
+    "repeat": 2,
+    "network": "wifi",
+    "server_begin_unix": 1795528238.8587208,
+    "index": 24,
+    "exit_code": 0
+  },
+  {
+    "bytes": 32768,
+    "chunk": 16384,
+    "first_payload_ms": 2305.656,
+    "first_response_headers_ms": 2305.563,
+    "full_request_ms": 2416.625,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_read_mbps": 32.37144974067671,
+    "payload_read_ms": 8.098,
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 105,
+        "shape": "http-chunk",
+        "body_bytes": 99
+      },
+      {
+        "bytes": 43,
+        "shape": "http-chunk",
+        "body_bytes": 32
+      }
+    ],
+    "sample": 1,
+    "shutdown_eof_observed": true,
+    "trace": {
+      "body_received_bytes": 32768,
+      "durations_ms": {
+        "dns": 3.055,
+        "entry_auth_headers": 976.999,
+        "outer_http_eof": 0.003,
+        "tcp_attempts": 217.645,
+        "tls": 661,
+        "tls_close_receive": 99.527,
+        "tls_close_send": 0.789
+      },
+      "events": [
+        {
+          "phase": "dns_tcp",
+          "offset_ms": 0.056
+        },
+        {
+          "phase": "dns",
+          "offset_ms": 0.103
+        },
+        {
+          "phase": "tcp",
+          "offset_ms": 3.251
+        },
+        {
+          "phase": "tls",
+          "offset_ms": 220.964
+        },
+        {
+          "phase": "entry_auth_headers",
+          "offset_ms": 882.083
+        },
+        {
+          "phase": "target_request",
+          "offset_ms": 1859.065
+        },
+        {
+          "phase": "target_headers",
+          "offset_ms": 1859.501
+        },
+        {
+          "phase": "body",
+          "offset_ms": 2305.55
+        },
+        {
+          "phase": "upload_fin",
+          "offset_ms": 2313.687
+        },
+        {
+          "phase": "download_fin",
+          "offset_ms": 2315.749
+        },
+        {
+          "phase": "outer_http_tls_close",
+          "offset_ms": 2315.79
+        },
+        {
+          "phase": "outer_http_eof",
+          "offset_ms": 2315.808
+        },
+        {
+          "phase": "tls_close_send",
+          "offset_ms": 2315.817
+        },
+        {
+          "phase": "tls_close_receive",
+          "offset_ms": 2316.614
+        }
+      ],
+      "failure_phase": "",
+      "progress": [
+        {
+          "offset_ms": 2305.629,
+          "received_bytes": 3958
+        },
+        {
+          "offset_ms": 2313.646,
+          "received_bytes": 32768
+        }
+      ],
+      "setup_attempts": 1,
+      "setup_failures": null
+    },
+    "workers": 1,
+    "case": "n1",
+    "repeat": 1,
+    "network": "wifi",
+    "server_begin_unix": 1795528241.9992466,
+    "index": 25,
+    "exit_code": 0
+  }
+]

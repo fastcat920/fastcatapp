@@ -1,0 +1,180 @@
+Running as unit: fc-opt-backend-1795415997.service
+/tmp/fc-new-trio/compare: 1 file pushed, 0 skipped. 38.1 MB/s (38898266 bytes in 0.974s)
+/tmp/fc-new-trio/client-1795415997.json: 1 file pushed, 0 skipped. 3.9 MB/s (425 bytes in 0.000s)
+/tmp/fc-new-trio/ca.pem: 1 file pushed, 0 skipped. 135.1 MB/s (334634 bytes in 0.002s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+/tmp/fc-new-trio/resume2-pilot-ports1-1795415997.json: 1 file pushed, 0 skipped. 5.5 MB/s (752 bytes in 0.000s)
+COMPLETE resume2-pilot-ports1
+/tmp/fc-new-trio/resume2-pilot-ports2-1795415997.json: 1 file pushed, 0 skipped. 10.1 MB/s (752 bytes in 0.000s)
+COMPLETE resume2-pilot-ports2
+/tmp/fc-new-trio/rolling-small-b1-p1-next-opt-1795415997.json: 1 file pushed, 0 skipped. 6.2 MB/s (752 bytes in 0.000s)
+COMPLETE rolling-small-b1-p1-next-opt
+/tmp/fc-new-trio/rolling-small-b1-p2-next-base-1795415997.json: 1 file pushed, 0 skipped. 6.6 MB/s (752 bytes in 0.000s)
+COMPLETE rolling-small-b1-p2-next-base
+/tmp/fc-new-trio/rolling-small-b1-p3-tuic-1795415997.json: 1 file pushed, 0 skipped. 5.8 MB/s (752 bytes in 0.000s)
+COMPLETE rolling-small-b1-p3-tuic
+/tmp/fc-new-trio/rolling-small-b2-p1-next-opt-1795415997.json: 1 file pushed, 0 skipped. 6.1 MB/s (752 bytes in 0.000s)
+COMPLETE rolling-small-b2-p1-next-opt
+/tmp/fc-new-trio/rolling-small-b2-p2-tuic-1795415997.json: 1 file pushed, 0 skipped. 5.5 MB/s (752 bytes in 0.000s)
+COMPLETE rolling-small-b2-p2-tuic
+/tmp/fc-new-trio/rolling-small-b2-p3-next-base-1795415997.json: 1 file pushed, 0 skipped. 5.6 MB/s (752 bytes in 0.000s)
+COMPLETE rolling-small-b2-p3-next-base
+/tmp/fc-new-trio/rolling-small-b3-p1-next-base-1795415997.json: 1 file pushed, 0 skipped. 6.6 MB/s (752 bytes in 0.000s)
+COMPLETE rolling-small-b3-p1-next-base
+/tmp/fc-new-trio/rolling-small-b3-p2-next-opt-1795415997.json: 1 file pushed, 0 skipped. 5.9 MB/s (752 bytes in 0.000s)
+COMPLETE rolling-small-b3-p2-next-opt
+/tmp/fc-new-trio/rolling-small-b3-p3-tuic-1795415997.json: 1 file pushed, 0 skipped. 4.5 MB/s (752 bytes in 0.000s)
+COMPLETE rolling-small-b3-p3-tuic
+/tmp/fc-new-trio/rolling-small-b4-p1-next-base-1795415997.json: 1 file pushed, 0 skipped. 6.2 MB/s (752 bytes in 0.000s)
+COMPLETE rolling-small-b4-p1-next-base
+/tmp/fc-new-trio/rolling-small-b4-p2-tuic-1795415997.json: 1 file pushed, 0 skipped. 6.5 MB/s (752 bytes in 0.000s)
+COMPLETE rolling-small-b4-p2-tuic
+/tmp/fc-new-trio/rolling-small-b4-p3-next-opt-1795415997.json: 1 file pushed, 0 skipped. 6.9 MB/s (752 bytes in 0.000s)
+COMPLETE rolling-small-b4-p3-next-opt
+/tmp/fc-new-trio/rolling-small-b5-p1-tuic-1795415997.json: 1 file pushed, 0 skipped. 6.2 MB/s (752 bytes in 0.000s)
+COMPLETE rolling-small-b5-p1-tuic
+/tmp/fc-new-trio/rolling-small-b5-p2-next-opt-1795415997.json: 1 file pushed, 0 skipped. 6.6 MB/s (752 bytes in 0.000s)
+COMPLETE rolling-small-b5-p2-next-opt
+/tmp/fc-new-trio/rolling-small-b5-p3-next-base-1795415997.json: 1 file pushed, 0 skipped. 5.7 MB/s (752 bytes in 0.000s)
+COMPLETE rolling-small-b5-p3-next-base
+/tmp/fc-new-trio/rolling-small-b6-p1-tuic-1795415997.json: 1 file pushed, 0 skipped. 5.7 MB/s (752 bytes in 0.000s)
+COMPLETE rolling-small-b6-p1-tuic
+/tmp/fc-new-trio/rolling-small-b6-p2-next-base-1795415997.json: 1 file pushed, 0 skipped. 6.2 MB/s (752 bytes in 0.000s)
+COMPLETE rolling-small-b6-p2-next-base
+/tmp/fc-new-trio/rolling-small-b6-p3-next-opt-1795415997.json: 1 file pushed, 0 skipped. 5.8 MB/s (752 bytes in 0.000s)
+COMPLETE rolling-small-b6-p3-next-opt
+/tmp/fc-new-trio/mixed-b1-p1-next-opt-1795415997.json: 1 file pushed, 0 skipped. 6.7 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b1-p1-next-opt
+/tmp/fc-new-trio/mixed-b1-p2-next-base-1795415997.json: 1 file pushed, 0 skipped. 5.3 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b1-p2-next-base
+/tmp/fc-new-trio/mixed-b1-p3-tuic-1795415997.json: 1 file pushed, 0 skipped. 7.0 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b1-p3-tuic
+/tmp/fc-new-trio/mixed-b2-p1-next-opt-1795415997.json: 1 file pushed, 0 skipped. 7.7 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b2-p1-next-opt
+/tmp/fc-new-trio/mixed-b2-p2-tuic-1795415997.json: 1 file pushed, 0 skipped. 8.1 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b2-p2-tuic
+/tmp/fc-new-trio/mixed-b2-p3-next-base-1795415997.json: 1 file pushed, 0 skipped. 6.3 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b2-p3-next-base
+/tmp/fc-new-trio/mixed-b3-p1-next-base-1795415997.json: 1 file pushed, 0 skipped. 5.0 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b3-p1-next-base
+/tmp/fc-new-trio/mixed-b3-p2-next-opt-1795415997.json: 1 file pushed, 0 skipped. 7.0 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b3-p2-next-opt
+/tmp/fc-new-trio/mixed-b3-p3-tuic-1795415997.json: 1 file pushed, 0 skipped. 5.8 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b3-p3-tuic
+/tmp/fc-new-trio/mixed-b4-p1-next-base-1795415997.json: 1 file pushed, 0 skipped. 6.3 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b4-p1-next-base
+/tmp/fc-new-trio/mixed-b4-p2-tuic-1795415997.json: 1 file pushed, 0 skipped. 6.3 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b4-p2-tuic
+/tmp/fc-new-trio/mixed-b4-p3-next-opt-1795415997.json: 1 file pushed, 0 skipped. 6.0 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b4-p3-next-opt
+/tmp/fc-new-trio/mixed-b5-p1-tuic-1795415997.json: 1 file pushed, 0 skipped. 4.2 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b5-p1-tuic
+/tmp/fc-new-trio/mixed-b5-p2-next-opt-1795415997.json: 1 file pushed, 0 skipped. 5.8 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b5-p2-next-opt
+/tmp/fc-new-trio/mixed-b5-p3-next-base-1795415997.json: 1 file pushed, 0 skipped. 5.9 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b5-p3-next-base
+/tmp/fc-new-trio/mixed-b6-p1-tuic-1795415997.json: 1 file pushed, 0 skipped. 6.1 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b6-p1-tuic
+/tmp/fc-new-trio/mixed-b6-p2-next-base-1795415997.json: 1 file pushed, 0 skipped. 7.3 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b6-p2-next-base
+/tmp/fc-new-trio/mixed-b6-p3-next-opt-1795415997.json: 1 file pushed, 0 skipped. 5.4 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b6-p3-next-opt
+/tmp/fc-new-trio/echo-b1-p1-next-opt-1795415997.json: 1 file pushed, 0 skipped. 5.8 MB/s (752 bytes in 0.000s)
+COMPLETE echo-b1-p1-next-opt
+/tmp/fc-new-trio/echo-b1-p2-next-base-1795415997.json: 1 file pushed, 0 skipped. 10.3 MB/s (752 bytes in 0.000s)
+COMPLETE echo-b1-p2-next-base
+/tmp/fc-new-trio/echo-b1-p3-tuic-1795415997.json: 1 file pushed, 0 skipped. 6.2 MB/s (752 bytes in 0.000s)
+COMPLETE echo-b1-p3-tuic
+/tmp/fc-new-trio/echo-b2-p1-next-opt-1795415997.json: 1 file pushed, 0 skipped. 6.9 MB/s (752 bytes in 0.000s)
+COMPLETE echo-b2-p1-next-opt
+/tmp/fc-new-trio/echo-b2-p2-tuic-1795415997.json: 1 file pushed, 0 skipped. 7.4 MB/s (752 bytes in 0.000s)
+COMPLETE echo-b2-p2-tuic
+/tmp/fc-new-trio/echo-b2-p3-next-base-1795415997.json: 1 file pushed, 0 skipped. 5.3 MB/s (752 bytes in 0.000s)
+COMPLETE echo-b2-p3-next-base
+/tmp/fc-new-trio/echo-b3-p1-next-base-1795415997.json: 1 file pushed, 0 skipped. 6.2 MB/s (752 bytes in 0.000s)
+COMPLETE echo-b3-p1-next-base
+/tmp/fc-new-trio/echo-b3-p2-next-opt-1795415997.json: 1 file pushed, 0 skipped. 6.2 MB/s (752 bytes in 0.000s)
+COMPLETE echo-b3-p2-next-opt
+/tmp/fc-new-trio/echo-b3-p3-tuic-1795415997.json: 1 file pushed, 0 skipped. 5.6 MB/s (752 bytes in 0.000s)
+COMPLETE echo-b3-p3-tuic
+/tmp/fc-new-trio/echo-b4-p1-next-base-1795415997.json: 1 file pushed, 0 skipped. 5.4 MB/s (752 bytes in 0.000s)
+COMPLETE echo-b4-p1-next-base
+/tmp/fc-new-trio/echo-b4-p2-tuic-1795415997.json: 1 file pushed, 0 skipped. 5.8 MB/s (752 bytes in 0.000s)
+COMPLETE echo-b4-p2-tuic
+/tmp/fc-new-trio/echo-b4-p3-next-opt-1795415997.json: 1 file pushed, 0 skipped. 6.2 MB/s (752 bytes in 0.000s)
+COMPLETE echo-b4-p3-next-opt
+/tmp/fc-new-trio/echo-b5-p1-tuic-1795415997.json: 1 file pushed, 0 skipped. 5.5 MB/s (752 bytes in 0.000s)
+COMPLETE echo-b5-p1-tuic
+/tmp/fc-new-trio/echo-b5-p2-next-opt-1795415997.json: 1 file pushed, 0 skipped. 6.4 MB/s (752 bytes in 0.000s)
+COMPLETE echo-b5-p2-next-opt
+/tmp/fc-new-trio/echo-b5-p3-next-base-1795415997.json: 1 file pushed, 0 skipped. 7.3 MB/s (752 bytes in 0.000s)
+COMPLETE echo-b5-p3-next-base
+/tmp/fc-new-trio/echo-b6-p1-tuic-1795415997.json: 1 file pushed, 0 skipped. 5.6 MB/s (752 bytes in 0.000s)
+COMPLETE echo-b6-p1-tuic
+/tmp/fc-new-trio/echo-b6-p2-next-base-1795415997.json: 1 file pushed, 0 skipped. 5.8 MB/s (752 bytes in 0.000s)
+COMPLETE echo-b6-p2-next-base
+/tmp/fc-new-trio/echo-b6-p3-next-opt-1795415997.json: 1 file pushed, 0 skipped. 5.7 MB/s (752 bytes in 0.000s)
+COMPLETE echo-b6-p3-next-opt
+/tmp/fc-new-trio/idle-b1-p1-next-opt-1795415997.json: 1 file pushed, 0 skipped. 6.4 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b1-p1-next-opt
+/tmp/fc-new-trio/idle-b1-p2-next-base-1795415997.json: 1 file pushed, 0 skipped. 6.3 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b1-p2-next-base
+/tmp/fc-new-trio/idle-b1-p3-tuic-1795415997.json: 1 file pushed, 0 skipped. 5.1 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b1-p3-tuic
+/tmp/fc-new-trio/idle-b2-p1-next-opt-1795415997.json: 1 file pushed, 0 skipped. 6.0 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b2-p1-next-opt
+/tmp/fc-new-trio/idle-b2-p2-tuic-1795415997.json: 1 file pushed, 0 skipped. 4.1 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b2-p2-tuic
+/tmp/fc-new-trio/idle-b2-p3-next-base-1795415997.json: 1 file pushed, 0 skipped. 6.6 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b2-p3-next-base
+/tmp/fc-new-trio/idle-b3-p1-next-base-1795415997.json: 1 file pushed, 0 skipped. 5.1 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b3-p1-next-base
+/tmp/fc-new-trio/idle-b3-p2-next-opt-1795415997.json: 1 file pushed, 0 skipped. 4.7 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b3-p2-next-opt
+/tmp/fc-new-trio/idle-b3-p3-tuic-1795415997.json: 1 file pushed, 0 skipped. 6.7 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b3-p3-tuic
+/tmp/fc-new-trio/idle-b4-p1-next-base-1795415997.json: 1 file pushed, 0 skipped. 8.9 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b4-p1-next-base
+/tmp/fc-new-trio/idle-b4-p2-tuic-1795415997.json: 1 file pushed, 0 skipped. 8.6 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b4-p2-tuic
+/tmp/fc-new-trio/idle-b4-p3-next-opt-1795415997.json: 1 file pushed, 0 skipped. 4.1 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b4-p3-next-opt
+/tmp/fc-new-trio/idle-b5-p1-tuic-1795415997.json: 1 file pushed, 0 skipped. 7.7 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b5-p1-tuic
+/tmp/fc-new-trio/idle-b5-p2-next-opt-1795415997.json: 1 file pushed, 0 skipped. 6.2 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b5-p2-next-opt
+/tmp/fc-new-trio/idle-b5-p3-next-base-1795415997.json: 1 file pushed, 0 skipped. 5.5 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b5-p3-next-base
+/tmp/fc-new-trio/idle-b6-p1-tuic-1795415997.json: 1 file pushed, 0 skipped. 7.0 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b6-p1-tuic
+/tmp/fc-new-trio/idle-b6-p2-next-base-1795415997.json: 1 file pushed, 0 skipped. 7.7 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b6-p2-next-base
+/tmp/fc-new-trio/idle-b6-p3-next-opt-1795415997.json: 1 file pushed, 0 skipped. 6.6 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b6-p3-next-opt
+/tmp/fc-new-trio/web-example-b1-p1-next-opt-1795415997.json: 1 file pushed, 0 skipped. 6.1 MB/s (752 bytes in 0.000s)
+COMPLETE web-example-b1-p1-next-opt
+/tmp/fc-new-trio/web-example-b1-p2-next-base-1795415997.json: 1 file pushed, 0 skipped. 5.7 MB/s (752 bytes in 0.000s)
+COMPLETE web-example-b1-p2-next-base
+/tmp/fc-new-trio/web-example-b1-p3-tuic-1795415997.json: 1 file pushed, 0 skipped. 6.9 MB/s (752 bytes in 0.000s)
+COMPLETE web-example-b1-p3-tuic
+/tmp/fc-new-trio/web-example-b2-p1-tuic-1795415997.json: 1 file pushed, 0 skipped. 6.0 MB/s (752 bytes in 0.000s)
+COMPLETE web-example-b2-p1-tuic
+/tmp/fc-new-trio/web-example-b2-p2-next-base-1795415997.json: 1 file pushed, 0 skipped. 6.2 MB/s (752 bytes in 0.000s)
+COMPLETE web-example-b2-p2-next-base
+/tmp/fc-new-trio/web-example-b2-p3-next-opt-1795415997.json: 1 file pushed, 0 skipped. 6.2 MB/s (752 bytes in 0.000s)
+COMPLETE web-example-b2-p3-next-opt
+/tmp/fc-new-trio/web-google-b1-p1-next-opt-1795415997.json: 1 file pushed, 0 skipped. 6.8 MB/s (752 bytes in 0.000s)
+COMPLETE web-google-b1-p1-next-opt
+/tmp/fc-new-trio/web-google-b1-p2-next-base-1795415997.json: 1 file pushed, 0 skipped. 6.4 MB/s (752 bytes in 0.000s)
+COMPLETE web-google-b1-p2-next-base
+/tmp/fc-new-trio/web-google-b1-p3-tuic-1795415997.json: 1 file pushed, 0 skipped. 7.3 MB/s (752 bytes in 0.000s)
+COMPLETE web-google-b1-p3-tuic
+/tmp/fc-new-trio/web-google-b2-p1-tuic-1795415997.json: 1 file pushed, 0 skipped. 5.5 MB/s (752 bytes in 0.000s)
+COMPLETE web-google-b2-p1-tuic
+/tmp/fc-new-trio/web-google-b2-p2-next-base-1795415997.json: 1 file pushed, 0 skipped. 4.2 MB/s (752 bytes in 0.000s)
+COMPLETE web-google-b2-p2-next-base
+/tmp/fc-new-trio/web-google-b2-p3-next-opt-1795415997.json: 1 file pushed, 0 skipped. 6.1 MB/s (752 bytes in 0.000s)
+COMPLETE web-google-b2-p3-next-opt
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+VPN restored: True
+RECOVERY TRIO COMPLETE

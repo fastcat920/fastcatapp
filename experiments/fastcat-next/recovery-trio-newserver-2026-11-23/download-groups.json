@@ -1,0 +1,1556 @@
+[
+  {
+    "source": "single16-b1-p1-next-opt",
+    "metric": "single16",
+    "version": "next-opt",
+    "block": 1,
+    "dest_port": 19458,
+    "success": 1,
+    "jobs": 1,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30412,
+    "mbps": 4.413314744179929,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "single16-b2-p1-next-opt",
+    "metric": "single16",
+    "version": "next-opt",
+    "block": 2,
+    "dest_port": 19451,
+    "success": 1,
+    "jobs": 1,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30714,
+    "mbps": 4.369920166699225,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "single16-b3-p2-next-opt",
+    "metric": "single16",
+    "version": "next-opt",
+    "block": 3,
+    "dest_port": 19458,
+    "success": 1,
+    "jobs": 1,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30146,
+    "mbps": 4.452256617793405,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "single16-b4-p3-next-opt",
+    "metric": "single16",
+    "version": "next-opt",
+    "block": 4,
+    "dest_port": 19451,
+    "success": 1,
+    "jobs": 1,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30134,
+    "mbps": 4.454029601115019,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "single16-b5-p2-next-opt",
+    "metric": "single16",
+    "version": "next-opt",
+    "block": 5,
+    "dest_port": 19458,
+    "success": 1,
+    "jobs": 1,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 31249,
+    "mbps": 4.295104739351659,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "single16-b6-p3-next-opt",
+    "metric": "single16",
+    "version": "next-opt",
+    "block": 6,
+    "dest_port": 19451,
+    "success": 1,
+    "jobs": 1,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30486,
+    "mbps": 4.402602112445058,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "parallel4-b1-p1-next-opt",
+    "metric": "parallel4",
+    "version": "next-opt",
+    "block": 1,
+    "dest_port": 19458,
+    "success": 4,
+    "jobs": 4,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30339,
+    "mbps": 4.423933814562115,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 230056,
+      "live_wire_received": 17130678,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        2,
+        2
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel4-b2-p1-next-opt",
+    "metric": "parallel4",
+    "version": "next-opt",
+    "block": 2,
+    "dest_port": 19451,
+    "success": 4,
+    "jobs": 4,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30619,
+    "mbps": 4.383478493745714,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 223484,
+      "live_wire_received": 17131248,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        2,
+        2
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel4-b3-p2-next-opt",
+    "metric": "parallel4",
+    "version": "next-opt",
+    "block": 3,
+    "dest_port": 19458,
+    "success": 4,
+    "jobs": 4,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30216,
+    "mbps": 4.441942282234578,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 227292,
+      "live_wire_received": 17132250,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        2,
+        2
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel4-b4-p3-next-opt",
+    "metric": "parallel4",
+    "version": "next-opt",
+    "block": 4,
+    "dest_port": 19451,
+    "success": 4,
+    "jobs": 4,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 29944,
+    "mbps": 4.482291210259151,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 223452,
+      "live_wire_received": 17131236,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        2,
+        2
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel4-b5-p2-next-opt",
+    "metric": "parallel4",
+    "version": "next-opt",
+    "block": 5,
+    "dest_port": 19458,
+    "success": 4,
+    "jobs": 4,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30138,
+    "mbps": 4.453438449797598,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 214738,
+      "live_wire_received": 17131298,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        2,
+        2
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel4-b6-p3-next-opt",
+    "metric": "parallel4",
+    "version": "next-opt",
+    "block": 6,
+    "dest_port": 19451,
+    "success": 4,
+    "jobs": 4,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30387,
+    "mbps": 4.416945667555205,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 227694,
+      "live_wire_received": 17131057,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        2,
+        2
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel8-b1-p1-next-opt",
+    "metric": "parallel8",
+    "version": "next-opt",
+    "block": 1,
+    "dest_port": 19458,
+    "success": 8,
+    "jobs": 8,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30502,
+    "mbps": 4.400292702117894,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 226334,
+      "live_wire_received": 17141321,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        4,
+        4
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel8-b2-p1-next-opt",
+    "metric": "parallel8",
+    "version": "next-opt",
+    "block": 2,
+    "dest_port": 19451,
+    "success": 8,
+    "jobs": 8,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30350,
+    "mbps": 4.422330411861615,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 227291,
+      "live_wire_received": 17140131,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        4,
+        4
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel8-b3-p2-next-opt",
+    "metric": "parallel8",
+    "version": "next-opt",
+    "block": 3,
+    "dest_port": 19458,
+    "success": 8,
+    "jobs": 8,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30726,
+    "mbps": 4.368213499967455,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 230848,
+      "live_wire_received": 17144965,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        4,
+        4
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel8-b4-p3-next-opt",
+    "metric": "parallel8",
+    "version": "next-opt",
+    "block": 4,
+    "dest_port": 19451,
+    "success": 8,
+    "jobs": 8,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30090,
+    "mbps": 4.4605426387504155,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 210766,
+      "live_wire_received": 17139254,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        4,
+        4
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel8-b5-p2-next-opt",
+    "metric": "parallel8",
+    "version": "next-opt",
+    "block": 5,
+    "dest_port": 19458,
+    "success": 8,
+    "jobs": 8,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 29602,
+    "mbps": 4.534076346192824,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 207270,
+      "live_wire_received": 17139807,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        4,
+        4
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel8-b6-p3-next-opt",
+    "metric": "parallel8",
+    "version": "next-opt",
+    "block": 6,
+    "dest_port": 19451,
+    "success": 8,
+    "jobs": 8,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30804,
+    "mbps": 4.357152577587326,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 220233,
+      "live_wire_received": 17146406,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        4,
+        4
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "rolling-b1-p1-next-opt",
+    "metric": "rolling",
+    "version": "next-opt",
+    "block": 1,
+    "dest_port": 19458,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 50331648,
+    "elapsed_ms": 90398,
+    "mbps": 4.454226686431116,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 641923,
+      "live_wire_received": 51356166,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        7,
+        5
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "rolling-b2-p1-next-opt",
+    "metric": "rolling",
+    "version": "next-opt",
+    "block": 2,
+    "dest_port": 19451,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 50331648,
+    "elapsed_ms": 89730,
+    "mbps": 4.4873864259445,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 650312,
+      "live_wire_received": 51354383,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        6,
+        6
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "rolling-b3-p2-next-opt",
+    "metric": "rolling",
+    "version": "next-opt",
+    "block": 3,
+    "dest_port": 19458,
+    "success": 6,
+    "jobs": 12,
+    "verified_bytes": 25165824,
+    "elapsed_ms": 150003,
+    "mbps": 1.3421504369912602,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 0,
+      "live_wire_received": 0,
+      "live_sessions": 0,
+      "tcp_assignments": [
+        5,
+        5
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "rolling-small-b1-p1-next-opt",
+    "metric": "rolling-small",
+    "version": "next-opt",
+    "block": 1,
+    "dest_port": 19458,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 12582912,
+    "elapsed_ms": 57349,
+    "mbps": 1.7552755235487978,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 191792,
+      "live_wire_received": 12874893,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        6,
+        6
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "rolling-small-b2-p1-next-opt",
+    "metric": "rolling-small",
+    "version": "next-opt",
+    "block": 2,
+    "dest_port": 19451,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 12582912,
+    "elapsed_ms": 56787,
+    "mbps": 1.7726468381847957,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 186639,
+      "live_wire_received": 12873590,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        5,
+        7
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "rolling-small-b3-p2-next-opt",
+    "metric": "rolling-small",
+    "version": "next-opt",
+    "block": 3,
+    "dest_port": 19458,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 12582912,
+    "elapsed_ms": 57081,
+    "mbps": 1.7635166868134757,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 189117,
+      "live_wire_received": 12871835,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        4,
+        8
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "rolling-small-b4-p3-next-opt",
+    "metric": "rolling-small",
+    "version": "next-opt",
+    "block": 4,
+    "dest_port": 19451,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 12582912,
+    "elapsed_ms": 56784,
+    "mbps": 1.7727404902789516,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 184859,
+      "live_wire_received": 12877870,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        5,
+        7
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "rolling-small-b5-p2-next-opt",
+    "metric": "rolling-small",
+    "version": "next-opt",
+    "block": 5,
+    "dest_port": 19458,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 12582912,
+    "elapsed_ms": 56016,
+    "mbps": 1.7970454155955442,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 182181,
+      "live_wire_received": 12871802,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        8,
+        4
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "rolling-small-b6-p3-next-opt",
+    "metric": "rolling-small",
+    "version": "next-opt",
+    "block": 6,
+    "dest_port": 19451,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 12582912,
+    "elapsed_ms": 56216,
+    "mbps": 1.790652056354063,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 186755,
+      "live_wire_received": 12872039,
+      "live_sessions": 2,
+      "tcp_assignments": [
+        6,
+        6
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "single16-b1-p2-next-base",
+    "metric": "single16",
+    "version": "next-base",
+    "block": 1,
+    "dest_port": 19458,
+    "success": 1,
+    "jobs": 1,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30565,
+    "mbps": 4.391222902012105,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "single16-b2-p3-next-base",
+    "metric": "single16",
+    "version": "next-base",
+    "block": 2,
+    "dest_port": 19451,
+    "success": 1,
+    "jobs": 1,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30403,
+    "mbps": 4.414621188698484,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "single16-b3-p1-next-base",
+    "metric": "single16",
+    "version": "next-base",
+    "block": 3,
+    "dest_port": 19458,
+    "success": 1,
+    "jobs": 1,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 29901,
+    "mbps": 4.488737099093676,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "single16-b4-p1-next-base",
+    "metric": "single16",
+    "version": "next-base",
+    "block": 4,
+    "dest_port": 19451,
+    "success": 1,
+    "jobs": 1,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 31153,
+    "mbps": 4.308340384553655,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "single16-b5-p3-next-base",
+    "metric": "single16",
+    "version": "next-base",
+    "block": 5,
+    "dest_port": 19458,
+    "success": 1,
+    "jobs": 1,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30042,
+    "mbps": 4.467669529325611,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "single16-b6-p2-next-base",
+    "metric": "single16",
+    "version": "next-base",
+    "block": 6,
+    "dest_port": 19451,
+    "success": 1,
+    "jobs": 1,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30542,
+    "mbps": 4.394529762294545,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "parallel4-b1-p2-next-base",
+    "metric": "parallel4",
+    "version": "next-base",
+    "block": 1,
+    "dest_port": 19458,
+    "success": 4,
+    "jobs": 4,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30534,
+    "mbps": 4.395681142333136,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 192166,
+      "live_wire_received": 17120642,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        4,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel4-b2-p3-next-base",
+    "metric": "parallel4",
+    "version": "next-base",
+    "block": 2,
+    "dest_port": 19451,
+    "success": 4,
+    "jobs": 4,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30571,
+    "mbps": 4.390361061136371,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 203700,
+      "live_wire_received": 17120900,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        4,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel4-b3-p1-next-base",
+    "metric": "parallel4",
+    "version": "next-base",
+    "block": 3,
+    "dest_port": 19458,
+    "success": 4,
+    "jobs": 4,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30131,
+    "mbps": 4.454473067604792,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 192823,
+      "live_wire_received": 17120513,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        4,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel4-b4-p1-next-base",
+    "metric": "parallel4",
+    "version": "next-base",
+    "block": 4,
+    "dest_port": 19451,
+    "success": 4,
+    "jobs": 4,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30210,
+    "mbps": 4.442824495200265,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 197727,
+      "live_wire_received": 17120598,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        4,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel4-b5-p3-next-base",
+    "metric": "parallel4",
+    "version": "next-base",
+    "block": 5,
+    "dest_port": 19458,
+    "success": 4,
+    "jobs": 4,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30328,
+    "mbps": 4.425538380374571,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 197999,
+      "live_wire_received": 17120859,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        4,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel4-b6-p2-next-base",
+    "metric": "parallel4",
+    "version": "next-base",
+    "block": 6,
+    "dest_port": 19451,
+    "success": 4,
+    "jobs": 4,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30108,
+    "mbps": 4.457875913378504,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 197703,
+      "live_wire_received": 17120957,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        4,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel8-b1-p2-next-base",
+    "metric": "parallel8",
+    "version": "next-base",
+    "block": 1,
+    "dest_port": 19458,
+    "success": 8,
+    "jobs": 8,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30638,
+    "mbps": 4.380760101834323,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 212222,
+      "live_wire_received": 17129127,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        8,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel8-b2-p3-next-base",
+    "metric": "parallel8",
+    "version": "next-base",
+    "block": 2,
+    "dest_port": 19451,
+    "success": 8,
+    "jobs": 8,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30973,
+    "mbps": 4.333378361798987,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 213753,
+      "live_wire_received": 17129919,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        8,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel8-b3-p1-next-base",
+    "metric": "parallel8",
+    "version": "next-base",
+    "block": 3,
+    "dest_port": 19458,
+    "success": 8,
+    "jobs": 8,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30157,
+    "mbps": 4.4506326226083495,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 205305,
+      "live_wire_received": 17129416,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        8,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel8-b4-p1-next-base",
+    "metric": "parallel8",
+    "version": "next-base",
+    "block": 4,
+    "dest_port": 19451,
+    "success": 8,
+    "jobs": 8,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 31310,
+    "mbps": 4.286736761418077,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 206659,
+      "live_wire_received": 17131209,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        8,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel8-b5-p3-next-base",
+    "metric": "parallel8",
+    "version": "next-base",
+    "block": 5,
+    "dest_port": 19458,
+    "success": 8,
+    "jobs": 8,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 31156,
+    "mbps": 4.307925536012325,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 163962,
+      "live_wire_received": 17131605,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        8,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "parallel8-b6-p2-next-base",
+    "metric": "parallel8",
+    "version": "next-base",
+    "block": 6,
+    "dest_port": 19451,
+    "success": 8,
+    "jobs": 8,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30360,
+    "mbps": 4.4208737812911725,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 204367,
+      "live_wire_received": 17129001,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        8,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "rolling-b1-p2-next-base",
+    "metric": "rolling",
+    "version": "next-base",
+    "block": 1,
+    "dest_port": 19458,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 50331648,
+    "elapsed_ms": 92067,
+    "mbps": 4.37348000912379,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 646633,
+      "live_wire_received": 51351231,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "rolling-b2-p3-next-base",
+    "metric": "rolling",
+    "version": "next-base",
+    "block": 2,
+    "dest_port": 19451,
+    "success": 4,
+    "jobs": 12,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 150002,
+    "mbps": 0.894772923027693,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 0,
+      "live_wire_received": 0,
+      "live_sessions": 0,
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "rolling-b3-p1-next-base",
+    "metric": "rolling",
+    "version": "next-base",
+    "block": 3,
+    "dest_port": 19458,
+    "success": 6,
+    "jobs": 12,
+    "verified_bytes": 25165824,
+    "elapsed_ms": 150001,
+    "mbps": 1.3421683322111186,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 0,
+      "live_wire_received": 0,
+      "live_sessions": 0,
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "rolling-small-b1-p2-next-base",
+    "metric": "rolling-small",
+    "version": "next-base",
+    "block": 1,
+    "dest_port": 19458,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 12582912,
+    "elapsed_ms": 56971,
+    "mbps": 1.7669216970037387,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 174334,
+      "live_wire_received": 12861665,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "rolling-small-b2-p3-next-base",
+    "metric": "rolling-small",
+    "version": "next-base",
+    "block": 2,
+    "dest_port": 19451,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 12582912,
+    "elapsed_ms": 56664,
+    "mbps": 1.776494705633206,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 166897,
+      "live_wire_received": 12864949,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "rolling-small-b3-p1-next-base",
+    "metric": "rolling-small",
+    "version": "next-base",
+    "block": 3,
+    "dest_port": 19458,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 12582912,
+    "elapsed_ms": 57192,
+    "mbps": 1.7600939991607218,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 170908,
+      "live_wire_received": 12864259,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "rolling-small-b4-p1-next-base",
+    "metric": "rolling-small",
+    "version": "next-base",
+    "block": 4,
+    "dest_port": 19451,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 12582912,
+    "elapsed_ms": 57056,
+    "mbps": 1.7642893998878295,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 169880,
+      "live_wire_received": 12861249,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "rolling-small-b5-p3-next-base",
+    "metric": "rolling-small",
+    "version": "next-base",
+    "block": 5,
+    "dest_port": 19458,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 12582912,
+    "elapsed_ms": 57094,
+    "mbps": 1.7631151434476477,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 169944,
+      "live_wire_received": 12862230,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "rolling-small-b6-p2-next-base",
+    "metric": "rolling-small",
+    "version": "next-base",
+    "block": 6,
+    "dest_port": 19451,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 12582912,
+    "elapsed_ms": 55957,
+    "mbps": 1.7989401862144145,
+    "error": null,
+    "lane_usage": {
+      "live_wire_sent": 163334,
+      "live_wire_received": 12862433,
+      "live_sessions": 1,
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "source": "single16-b1-p3-tuic",
+    "metric": "single16",
+    "version": "tuic",
+    "block": 1,
+    "dest_port": 19451,
+    "success": 1,
+    "jobs": 1,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 40932,
+    "mbps": 3.279041532297469,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "single16-b2-p2-tuic",
+    "metric": "single16",
+    "version": "tuic",
+    "block": 2,
+    "dest_port": 19458,
+    "success": 1,
+    "jobs": 1,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30109,
+    "mbps": 4.457727855458501,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "single16-b3-p3-tuic",
+    "metric": "single16",
+    "version": "tuic",
+    "block": 3,
+    "dest_port": 19451,
+    "success": 1,
+    "jobs": 1,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30331,
+    "mbps": 4.4251006560944255,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "single16-b4-p2-tuic",
+    "metric": "single16",
+    "version": "tuic",
+    "block": 4,
+    "dest_port": 19458,
+    "success": 1,
+    "jobs": 1,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30530,
+    "mbps": 4.396257058630855,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "single16-b5-p1-tuic",
+    "metric": "single16",
+    "version": "tuic",
+    "block": 5,
+    "dest_port": 19451,
+    "success": 1,
+    "jobs": 1,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30116,
+    "mbps": 4.45669172532873,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "single16-b6-p1-tuic",
+    "metric": "single16",
+    "version": "tuic",
+    "block": 6,
+    "dest_port": 19458,
+    "success": 1,
+    "jobs": 1,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30169,
+    "mbps": 4.448862342139282,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "parallel4-b1-p3-tuic",
+    "metric": "parallel4",
+    "version": "tuic",
+    "block": 1,
+    "dest_port": 19451,
+    "success": 4,
+    "jobs": 4,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30244,
+    "mbps": 4.437829916677688,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "parallel4-b2-p2-tuic",
+    "metric": "parallel4",
+    "version": "tuic",
+    "block": 2,
+    "dest_port": 19458,
+    "success": 4,
+    "jobs": 4,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 31440,
+    "mbps": 4.269011704834606,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "parallel4-b3-p3-tuic",
+    "metric": "parallel4",
+    "version": "tuic",
+    "block": 3,
+    "dest_port": 19451,
+    "success": 4,
+    "jobs": 4,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30117,
+    "mbps": 4.456543746057044,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "parallel4-b4-p2-tuic",
+    "metric": "parallel4",
+    "version": "tuic",
+    "block": 4,
+    "dest_port": 19458,
+    "success": 4,
+    "jobs": 4,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30284,
+    "mbps": 4.431968300092458,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "parallel4-b5-p1-tuic",
+    "metric": "parallel4",
+    "version": "tuic",
+    "block": 5,
+    "dest_port": 19451,
+    "success": 4,
+    "jobs": 4,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30318,
+    "mbps": 4.42699808694505,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "parallel4-b6-p1-tuic",
+    "metric": "parallel4",
+    "version": "tuic",
+    "block": 6,
+    "dest_port": 19458,
+    "success": 4,
+    "jobs": 4,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30549,
+    "mbps": 4.39352279943697,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "parallel8-b1-p3-tuic",
+    "metric": "parallel8",
+    "version": "tuic",
+    "block": 1,
+    "dest_port": 19451,
+    "success": 8,
+    "jobs": 8,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30491,
+    "mbps": 4.40188016135909,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "parallel8-b2-p2-tuic",
+    "metric": "parallel8",
+    "version": "tuic",
+    "block": 2,
+    "dest_port": 19458,
+    "success": 8,
+    "jobs": 8,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30647,
+    "mbps": 4.379473618951284,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "parallel8-b3-p3-tuic",
+    "metric": "parallel8",
+    "version": "tuic",
+    "block": 3,
+    "dest_port": 19451,
+    "success": 8,
+    "jobs": 8,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 31773,
+    "mbps": 4.224269914707456,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "parallel8-b4-p2-tuic",
+    "metric": "parallel8",
+    "version": "tuic",
+    "block": 4,
+    "dest_port": 19458,
+    "success": 8,
+    "jobs": 8,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30529,
+    "mbps": 4.3964010612859905,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "parallel8-b5-p1-tuic",
+    "metric": "parallel8",
+    "version": "tuic",
+    "block": 5,
+    "dest_port": 19451,
+    "success": 8,
+    "jobs": 8,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 30767,
+    "mbps": 4.362392433451425,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "parallel8-b6-p1-tuic",
+    "metric": "parallel8",
+    "version": "tuic",
+    "block": 6,
+    "dest_port": 19458,
+    "success": 8,
+    "jobs": 8,
+    "verified_bytes": 16777216,
+    "elapsed_ms": 32252,
+    "mbps": 4.161531936003969,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "rolling-b1-p3-tuic",
+    "metric": "rolling",
+    "version": "tuic",
+    "block": 1,
+    "dest_port": 19451,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 50331648,
+    "elapsed_ms": 90843,
+    "mbps": 4.4324073841682905,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "rolling-b2-p2-tuic",
+    "metric": "rolling",
+    "version": "tuic",
+    "block": 2,
+    "dest_port": 19458,
+    "success": 0,
+    "jobs": 12,
+    "verified_bytes": 0,
+    "elapsed_ms": 180000,
+    "mbps": 0.0,
+    "error": "harness deadline 180s; no final completion report received; unobserved bytes credited zero",
+    "lane_usage": null
+  },
+  {
+    "source": "rolling-b3-p3-tuic",
+    "metric": "rolling",
+    "version": "tuic",
+    "block": 3,
+    "dest_port": 19451,
+    "success": 0,
+    "jobs": 12,
+    "verified_bytes": 0,
+    "elapsed_ms": 180000,
+    "mbps": 0.0,
+    "error": "harness deadline 180s; no final completion report received; unobserved bytes credited zero",
+    "lane_usage": null
+  },
+  {
+    "source": "rolling-small-b1-p3-tuic",
+    "metric": "rolling-small",
+    "version": "tuic",
+    "block": 1,
+    "dest_port": 19451,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 12582912,
+    "elapsed_ms": 56297,
+    "mbps": 1.7880756701067553,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "rolling-small-b2-p2-tuic",
+    "metric": "rolling-small",
+    "version": "tuic",
+    "block": 2,
+    "dest_port": 19458,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 12582912,
+    "elapsed_ms": 57340,
+    "mbps": 1.7555510289501222,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "rolling-small-b3-p3-tuic",
+    "metric": "rolling-small",
+    "version": "tuic",
+    "block": 3,
+    "dest_port": 19451,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 12582912,
+    "elapsed_ms": 56431,
+    "mbps": 1.7838297389732594,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "rolling-small-b4-p2-tuic",
+    "metric": "rolling-small",
+    "version": "tuic",
+    "block": 4,
+    "dest_port": 19458,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 12582912,
+    "elapsed_ms": 60288,
+    "mbps": 1.6697070063694268,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "rolling-small-b5-p1-tuic",
+    "metric": "rolling-small",
+    "version": "tuic",
+    "block": 5,
+    "dest_port": 19451,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 12582912,
+    "elapsed_ms": 56622,
+    "mbps": 1.777812440394193,
+    "error": null,
+    "lane_usage": null
+  },
+  {
+    "source": "rolling-small-b6-p1-tuic",
+    "metric": "rolling-small",
+    "version": "tuic",
+    "block": 6,
+    "dest_port": 19458,
+    "success": 12,
+    "jobs": 12,
+    "verified_bytes": 12582912,
+    "elapsed_ms": 56563,
+    "mbps": 1.779666849353818,
+    "error": null,
+    "lane_usage": null
+  }
+]

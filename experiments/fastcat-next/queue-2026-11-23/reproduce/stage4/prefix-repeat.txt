@@ -1,0 +1,1 @@
+ok  	core/fastcatnext	4.887s

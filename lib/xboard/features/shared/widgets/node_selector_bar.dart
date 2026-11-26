@@ -573,10 +573,13 @@ class _DelayBadge extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final delay = ref.watch(getDelayProvider(proxyName: proxyName));
+    final delay = ref.watch(getDelayResultProvider(proxyName: proxyName));
     return Padding(
       padding: const EdgeInsets.only(right: 6),
-      child: LatencyIndicator(delayValue: delay),
+      child: LatencyIndicator(
+        delayValue: delay?.value,
+        timedOut: delay?.effectiveFailureKind == DelayFailureKind.timeout,
+      ),
     );
   }
 }

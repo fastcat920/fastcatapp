@@ -1,0 +1,115 @@
+{
+  "method": "paired whole-block bootstrap10000draws,10blocks; exploratory, no multiple-comparison correction, not formal significance",
+  "results": [
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "next-base/next-opt",
+      "estimate": 0.5074209098244484,
+      "exploratory_ci95": [
+        0.3440880356281887,
+        1.2351214761390854
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "tuic/next-opt",
+      "estimate": 0.7177284490507507,
+      "exploratory_ci95": [
+        0.4434977043606228,
+        1.3444220341659867
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "hysteria2/next-opt",
+      "estimate": 0.9909903883539795,
+      "exploratory_ci95": [
+        0.7257092194514344,
+        1.5571266162203727
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "vless-vision/next-opt",
+      "estimate": 2.2411931568759433,
+      "exploratory_ci95": [
+        1.6503119159801007,
+        4.01614952431396
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "tuic/next-base",
+      "estimate": 1.4144636832153055,
+      "exploratory_ci95": [
+        0.7527608321153016,
+        1.8316461900753354
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "hysteria2/next-base",
+      "estimate": 1.9529947804019954,
+      "exploratory_ci95": [
+        0.9067551440109967,
+        2.588023209015294
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "vless-vision/next-base",
+      "estimate": 4.416832482625371,
+      "exploratory_ci95": [
+        2.5750722982126097,
+        5.810741596074974
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "hysteria2/tuic",
+      "estimate": 1.380731653684117,
+      "exploratory_ci95": [
+        0.8884341637010675,
+        1.9778085621678478
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "vless-vision/tuic",
+      "estimate": 3.1226199265754175,
+      "exploratory_ci95": [
+        2.0709533108778184,
+        4.7799507726021355
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    },
+    {
+      "metric": "mixed/mixed/p95",
+      "ratio": "vless-vision/hysteria2",
+      "estimate": 2.2615690154155104,
+      "exploratory_ci95": [
+        1.627941984523101,
+        3.78691441964702
+      ],
+      "higher_is_better": false,
+      "blocks": 10
+    }
+  ]
+}

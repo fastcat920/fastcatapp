@@ -1,0 +1,4012 @@
+[
+  {
+    "mode": "speed",
+    "case": "single32-b1-p1-next-opt",
+    "metric": "single32",
+    "version": "next-opt",
+    "MemoryPeak": "10035200",
+    "CPUUsageNSec": "727860000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b1-p2-next-base",
+    "metric": "single32",
+    "version": "next-base",
+    "MemoryPeak": "11120640",
+    "CPUUsageNSec": "597556000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b1-p3-vless-vision",
+    "metric": "single32",
+    "version": "vless-vision",
+    "MemoryPeak": "10866688",
+    "CPUUsageNSec": "37747000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b1-p4-tuic",
+    "metric": "single32",
+    "version": "tuic",
+    "MemoryPeak": "14495744",
+    "CPUUsageNSec": "641784000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b1-p5-hysteria2",
+    "metric": "single32",
+    "version": "hysteria2",
+    "MemoryPeak": "14786560",
+    "CPUUsageNSec": "636210000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b2-p1-next-base",
+    "metric": "single32",
+    "version": "next-base",
+    "MemoryPeak": "9138176",
+    "CPUUsageNSec": "572970000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b2-p2-tuic",
+    "metric": "single32",
+    "version": "tuic",
+    "MemoryPeak": "13901824",
+    "CPUUsageNSec": "801535000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b2-p3-next-opt",
+    "metric": "single32",
+    "version": "next-opt",
+    "MemoryPeak": "10309632",
+    "CPUUsageNSec": "592972000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b2-p4-hysteria2",
+    "metric": "single32",
+    "version": "hysteria2",
+    "MemoryPeak": "13860864",
+    "CPUUsageNSec": "762495000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b2-p5-vless-vision",
+    "metric": "single32",
+    "version": "vless-vision",
+    "MemoryPeak": "12898304",
+    "CPUUsageNSec": "29358000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b3-p1-tuic",
+    "metric": "single32",
+    "version": "tuic",
+    "MemoryPeak": "13381632",
+    "CPUUsageNSec": "948683000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b3-p2-hysteria2",
+    "metric": "single32",
+    "version": "hysteria2",
+    "MemoryPeak": "14761984",
+    "CPUUsageNSec": "646345000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b3-p3-next-base",
+    "metric": "single32",
+    "version": "next-base",
+    "MemoryPeak": "9314304",
+    "CPUUsageNSec": "761203000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b3-p4-vless-vision",
+    "metric": "single32",
+    "version": "vless-vision",
+    "MemoryPeak": "11046912",
+    "CPUUsageNSec": "37316000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b3-p5-next-opt",
+    "metric": "single32",
+    "version": "next-opt",
+    "MemoryPeak": "11206656",
+    "CPUUsageNSec": "733749000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b4-p1-hysteria2",
+    "metric": "single32",
+    "version": "hysteria2",
+    "MemoryPeak": "15130624",
+    "CPUUsageNSec": "605896000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b4-p2-vless-vision",
+    "metric": "single32",
+    "version": "vless-vision",
+    "MemoryPeak": "9015296",
+    "CPUUsageNSec": "30325000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b4-p3-tuic",
+    "metric": "single32",
+    "version": "tuic",
+    "MemoryPeak": "16089088",
+    "CPUUsageNSec": "749008000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b4-p4-next-opt",
+    "metric": "single32",
+    "version": "next-opt",
+    "MemoryPeak": "9994240",
+    "CPUUsageNSec": "602109000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b4-p5-next-base",
+    "metric": "single32",
+    "version": "next-base",
+    "MemoryPeak": "8609792",
+    "CPUUsageNSec": "1002036000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b5-p1-vless-vision",
+    "metric": "single32",
+    "version": "vless-vision",
+    "MemoryPeak": "10862592",
+    "CPUUsageNSec": "35753000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b5-p2-next-opt",
+    "metric": "single32",
+    "version": "next-opt",
+    "MemoryPeak": "11227136",
+    "CPUUsageNSec": "662218000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b5-p3-hysteria2",
+    "metric": "single32",
+    "version": "hysteria2",
+    "MemoryPeak": "15306752",
+    "CPUUsageNSec": "666417000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b5-p4-next-base",
+    "metric": "single32",
+    "version": "next-base",
+    "MemoryPeak": "8802304",
+    "CPUUsageNSec": "779796000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b5-p5-tuic",
+    "metric": "single32",
+    "version": "tuic",
+    "MemoryPeak": "14565376",
+    "CPUUsageNSec": "747151000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b6-p1-hysteria2",
+    "metric": "single32",
+    "version": "hysteria2",
+    "MemoryPeak": "13303808",
+    "CPUUsageNSec": "780942000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b6-p2-tuic",
+    "metric": "single32",
+    "version": "tuic",
+    "MemoryPeak": "13369344",
+    "CPUUsageNSec": "953299000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b6-p3-vless-vision",
+    "metric": "single32",
+    "version": "vless-vision",
+    "MemoryPeak": "12865536",
+    "CPUUsageNSec": "30025000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b6-p4-next-base",
+    "metric": "single32",
+    "version": "next-base",
+    "MemoryPeak": "10080256",
+    "CPUUsageNSec": "734365000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b6-p5-next-opt",
+    "metric": "single32",
+    "version": "next-opt",
+    "MemoryPeak": "10088448",
+    "CPUUsageNSec": "984120000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b7-p1-vless-vision",
+    "metric": "single32",
+    "version": "vless-vision",
+    "MemoryPeak": "10973184",
+    "CPUUsageNSec": "38280000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b7-p2-hysteria2",
+    "metric": "single32",
+    "version": "hysteria2",
+    "MemoryPeak": "17309696",
+    "CPUUsageNSec": "774795000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b7-p3-next-opt",
+    "metric": "single32",
+    "version": "next-opt",
+    "MemoryPeak": "12496896",
+    "CPUUsageNSec": "538908000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b7-p4-tuic",
+    "metric": "single32",
+    "version": "tuic",
+    "MemoryPeak": "14569472",
+    "CPUUsageNSec": "648424000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b7-p5-next-base",
+    "metric": "single32",
+    "version": "next-base",
+    "MemoryPeak": "10088448",
+    "CPUUsageNSec": "1152406000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b8-p1-next-opt",
+    "metric": "single32",
+    "version": "next-opt",
+    "MemoryPeak": "10641408",
+    "CPUUsageNSec": "550008000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b8-p2-vless-vision",
+    "metric": "single32",
+    "version": "vless-vision",
+    "MemoryPeak": "10784768",
+    "CPUUsageNSec": "41644000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b8-p3-next-base",
+    "metric": "single32",
+    "version": "next-base",
+    "MemoryPeak": "9363456",
+    "CPUUsageNSec": "614564000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b8-p4-hysteria2",
+    "metric": "single32",
+    "version": "hysteria2",
+    "MemoryPeak": "17022976",
+    "CPUUsageNSec": "607531000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b8-p5-tuic",
+    "metric": "single32",
+    "version": "tuic",
+    "MemoryPeak": "14897152",
+    "CPUUsageNSec": "634003000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b9-p1-next-base",
+    "metric": "single32",
+    "version": "next-base",
+    "MemoryPeak": "8892416",
+    "CPUUsageNSec": "622944000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b9-p2-next-opt",
+    "metric": "single32",
+    "version": "next-opt",
+    "MemoryPeak": "10604544",
+    "CPUUsageNSec": "629559000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b9-p3-tuic",
+    "metric": "single32",
+    "version": "tuic",
+    "MemoryPeak": "15282176",
+    "CPUUsageNSec": "954843000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b9-p4-vless-vision",
+    "metric": "single32",
+    "version": "vless-vision",
+    "MemoryPeak": "12881920",
+    "CPUUsageNSec": "30171000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b9-p5-hysteria2",
+    "metric": "single32",
+    "version": "hysteria2",
+    "MemoryPeak": "15028224",
+    "CPUUsageNSec": "621066000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b10-p1-tuic",
+    "metric": "single32",
+    "version": "tuic",
+    "MemoryPeak": "14512128",
+    "CPUUsageNSec": "599573000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b10-p2-next-base",
+    "metric": "single32",
+    "version": "next-base",
+    "MemoryPeak": "10571776",
+    "CPUUsageNSec": "660618000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b10-p3-hysteria2",
+    "metric": "single32",
+    "version": "hysteria2",
+    "MemoryPeak": "15568896",
+    "CPUUsageNSec": "931077000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b10-p4-next-opt",
+    "metric": "single32",
+    "version": "next-opt",
+    "MemoryPeak": "8933376",
+    "CPUUsageNSec": "889017000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "single32-b10-p5-vless-vision",
+    "metric": "single32",
+    "version": "vless-vision",
+    "MemoryPeak": "12918784",
+    "CPUUsageNSec": "35019000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b1-p1-next-opt",
+    "metric": "parallel4",
+    "version": "next-opt",
+    "MemoryPeak": "18116608",
+    "CPUUsageNSec": "876802000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b1-p2-next-base",
+    "metric": "parallel4",
+    "version": "next-base",
+    "MemoryPeak": "10846208",
+    "CPUUsageNSec": "730006000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b1-p3-vless-vision",
+    "metric": "parallel4",
+    "version": "vless-vision",
+    "MemoryPeak": "24760320",
+    "CPUUsageNSec": "45548000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b1-p4-tuic",
+    "metric": "parallel4",
+    "version": "tuic",
+    "MemoryPeak": "23519232",
+    "CPUUsageNSec": "1169704000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b1-p5-hysteria2",
+    "metric": "parallel4",
+    "version": "hysteria2",
+    "MemoryPeak": "25706496",
+    "CPUUsageNSec": "932335000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b2-p1-next-base",
+    "metric": "parallel4",
+    "version": "next-base",
+    "MemoryPeak": "18669568",
+    "CPUUsageNSec": "881151000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b2-p2-tuic",
+    "metric": "parallel4",
+    "version": "tuic",
+    "MemoryPeak": "25456640",
+    "CPUUsageNSec": "739982000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b2-p3-next-opt",
+    "metric": "parallel4",
+    "version": "next-opt",
+    "MemoryPeak": "12058624",
+    "CPUUsageNSec": "947930000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b2-p4-hysteria2",
+    "metric": "parallel4",
+    "version": "hysteria2",
+    "MemoryPeak": "21008384",
+    "CPUUsageNSec": "647566000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b2-p5-vless-vision",
+    "metric": "parallel4",
+    "version": "vless-vision",
+    "MemoryPeak": "23121920",
+    "CPUUsageNSec": "57380000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b3-p1-tuic",
+    "metric": "parallel4",
+    "version": "tuic",
+    "MemoryPeak": "24043520",
+    "CPUUsageNSec": "589546000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b3-p2-hysteria2",
+    "metric": "parallel4",
+    "version": "hysteria2",
+    "MemoryPeak": "28516352",
+    "CPUUsageNSec": "745329000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b3-p3-next-base",
+    "metric": "parallel4",
+    "version": "next-base",
+    "MemoryPeak": "12521472",
+    "CPUUsageNSec": "718773000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b3-p4-vless-vision",
+    "metric": "parallel4",
+    "version": "vless-vision",
+    "MemoryPeak": "22507520",
+    "CPUUsageNSec": "70345000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b3-p5-next-opt",
+    "metric": "parallel4",
+    "version": "next-opt",
+    "MemoryPeak": "14798848",
+    "CPUUsageNSec": "1043272000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b4-p1-hysteria2",
+    "metric": "parallel4",
+    "version": "hysteria2",
+    "MemoryPeak": "23347200",
+    "CPUUsageNSec": "754802000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b4-p2-vless-vision",
+    "metric": "parallel4",
+    "version": "vless-vision",
+    "MemoryPeak": "22016000",
+    "CPUUsageNSec": "57901000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b4-p3-tuic",
+    "metric": "parallel4",
+    "version": "tuic",
+    "MemoryPeak": "25837568",
+    "CPUUsageNSec": "650771000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b4-p4-next-opt",
+    "metric": "parallel4",
+    "version": "next-opt",
+    "MemoryPeak": "13860864",
+    "CPUUsageNSec": "698337000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b4-p5-next-base",
+    "metric": "parallel4",
+    "version": "next-base",
+    "MemoryPeak": "18591744",
+    "CPUUsageNSec": "929946000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b5-p1-vless-vision",
+    "metric": "parallel4",
+    "version": "vless-vision",
+    "MemoryPeak": "25706496",
+    "CPUUsageNSec": "56821000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b5-p2-next-opt",
+    "metric": "parallel4",
+    "version": "next-opt",
+    "MemoryPeak": "13668352",
+    "CPUUsageNSec": "1038823000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b5-p3-hysteria2",
+    "metric": "parallel4",
+    "version": "hysteria2",
+    "MemoryPeak": "22581248",
+    "CPUUsageNSec": "1218403000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b5-p4-next-base",
+    "metric": "parallel4",
+    "version": "next-base",
+    "MemoryPeak": "13938688",
+    "CPUUsageNSec": "739012000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b5-p5-tuic",
+    "metric": "parallel4",
+    "version": "tuic",
+    "MemoryPeak": "20852736",
+    "CPUUsageNSec": "1024018000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b6-p1-hysteria2",
+    "metric": "parallel4",
+    "version": "hysteria2",
+    "MemoryPeak": "21012480",
+    "CPUUsageNSec": "1096850000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b6-p2-tuic",
+    "metric": "parallel4",
+    "version": "tuic",
+    "MemoryPeak": "24322048",
+    "CPUUsageNSec": "624188000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b6-p3-vless-vision",
+    "metric": "parallel4",
+    "version": "vless-vision",
+    "MemoryPeak": "22175744",
+    "CPUUsageNSec": "59806000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b6-p4-next-base",
+    "metric": "parallel4",
+    "version": "next-base",
+    "MemoryPeak": "10534912",
+    "CPUUsageNSec": "1033396000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b6-p5-next-opt",
+    "metric": "parallel4",
+    "version": "next-opt",
+    "MemoryPeak": "21180416",
+    "CPUUsageNSec": "840914000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b7-p1-vless-vision",
+    "metric": "parallel4",
+    "version": "vless-vision",
+    "MemoryPeak": "24653824",
+    "CPUUsageNSec": "47457000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b7-p2-hysteria2",
+    "metric": "parallel4",
+    "version": "hysteria2",
+    "MemoryPeak": "25010176",
+    "CPUUsageNSec": "617290000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b7-p3-next-opt",
+    "metric": "parallel4",
+    "version": "next-opt",
+    "MemoryPeak": "11116544",
+    "CPUUsageNSec": "1320613000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b7-p4-tuic",
+    "metric": "parallel4",
+    "version": "tuic",
+    "MemoryPeak": "24379392",
+    "CPUUsageNSec": "588280000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b7-p5-next-base",
+    "metric": "parallel4",
+    "version": "next-base",
+    "MemoryPeak": "11866112",
+    "CPUUsageNSec": "1099982000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b8-p1-next-opt",
+    "metric": "parallel4",
+    "version": "next-opt",
+    "MemoryPeak": "10358784",
+    "CPUUsageNSec": "1129610000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b8-p2-vless-vision",
+    "metric": "parallel4",
+    "version": "vless-vision",
+    "MemoryPeak": "28512256",
+    "CPUUsageNSec": "43657000",
+    "TasksCurrent": "5"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b8-p3-next-base",
+    "metric": "parallel4",
+    "version": "next-base",
+    "MemoryPeak": "16404480",
+    "CPUUsageNSec": "640543000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b8-p4-hysteria2",
+    "metric": "parallel4",
+    "version": "hysteria2",
+    "MemoryPeak": "24367104",
+    "CPUUsageNSec": "570940000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b8-p5-tuic",
+    "metric": "parallel4",
+    "version": "tuic",
+    "MemoryPeak": "26279936",
+    "CPUUsageNSec": "581416000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b9-p1-next-base",
+    "metric": "parallel4",
+    "version": "next-base",
+    "MemoryPeak": "19234816",
+    "CPUUsageNSec": "529820000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b9-p2-next-opt",
+    "metric": "parallel4",
+    "version": "next-opt",
+    "MemoryPeak": "18087936",
+    "CPUUsageNSec": "1032086000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b9-p3-tuic",
+    "metric": "parallel4",
+    "version": "tuic",
+    "MemoryPeak": "26398720",
+    "CPUUsageNSec": "651096000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b9-p4-vless-vision",
+    "metric": "parallel4",
+    "version": "vless-vision",
+    "MemoryPeak": "18632704",
+    "CPUUsageNSec": "49723000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b9-p5-hysteria2",
+    "metric": "parallel4",
+    "version": "hysteria2",
+    "MemoryPeak": "24662016",
+    "CPUUsageNSec": "582679000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b10-p1-tuic",
+    "metric": "parallel4",
+    "version": "tuic",
+    "MemoryPeak": "23920640",
+    "CPUUsageNSec": "722365000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b10-p2-next-base",
+    "metric": "parallel4",
+    "version": "next-base",
+    "MemoryPeak": "17670144",
+    "CPUUsageNSec": "566709000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b10-p3-hysteria2",
+    "metric": "parallel4",
+    "version": "hysteria2",
+    "MemoryPeak": "23830528",
+    "CPUUsageNSec": "1305079000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b10-p4-next-opt",
+    "metric": "parallel4",
+    "version": "next-opt",
+    "MemoryPeak": "18747392",
+    "CPUUsageNSec": "858864000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel4-b10-p5-vless-vision",
+    "metric": "parallel4",
+    "version": "vless-vision",
+    "MemoryPeak": "28733440",
+    "CPUUsageNSec": "45426000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b1-p1-next-opt",
+    "metric": "parallel8",
+    "version": "next-opt",
+    "MemoryPeak": "16232448",
+    "CPUUsageNSec": "1005017000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b1-p2-next-base",
+    "metric": "parallel8",
+    "version": "next-base",
+    "MemoryPeak": "25890816",
+    "CPUUsageNSec": "567654000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b1-p3-vless-vision",
+    "metric": "parallel8",
+    "version": "vless-vision",
+    "MemoryPeak": "30994432",
+    "CPUUsageNSec": "68967000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b1-p4-tuic",
+    "metric": "parallel8",
+    "version": "tuic",
+    "MemoryPeak": "36700160",
+    "CPUUsageNSec": "1006278000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b1-p5-hysteria2",
+    "metric": "parallel8",
+    "version": "hysteria2",
+    "MemoryPeak": "32350208",
+    "CPUUsageNSec": "777344000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b2-p1-next-base",
+    "metric": "parallel8",
+    "version": "next-base",
+    "MemoryPeak": "8937472",
+    "CPUUsageNSec": "1065353000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b2-p2-tuic",
+    "metric": "parallel8",
+    "version": "tuic",
+    "MemoryPeak": "26660864",
+    "CPUUsageNSec": "883153000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b2-p3-next-opt",
+    "metric": "parallel8",
+    "version": "next-opt",
+    "MemoryPeak": "26128384",
+    "CPUUsageNSec": "845673000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b2-p4-hysteria2",
+    "metric": "parallel8",
+    "version": "hysteria2",
+    "MemoryPeak": "28979200",
+    "CPUUsageNSec": "783763000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b2-p5-vless-vision",
+    "metric": "parallel8",
+    "version": "vless-vision",
+    "MemoryPeak": "31555584",
+    "CPUUsageNSec": "78380000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b3-p1-tuic",
+    "metric": "parallel8",
+    "version": "tuic",
+    "MemoryPeak": "31440896",
+    "CPUUsageNSec": "1387785000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b3-p2-hysteria2",
+    "metric": "parallel8",
+    "version": "hysteria2",
+    "MemoryPeak": "34545664",
+    "CPUUsageNSec": "659362000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b3-p3-next-base",
+    "metric": "parallel8",
+    "version": "next-base",
+    "MemoryPeak": "14315520",
+    "CPUUsageNSec": "801740000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b3-p4-vless-vision",
+    "metric": "parallel8",
+    "version": "vless-vision",
+    "MemoryPeak": "34086912",
+    "CPUUsageNSec": "72252000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b3-p5-next-opt",
+    "metric": "parallel8",
+    "version": "next-opt",
+    "MemoryPeak": "21270528",
+    "CPUUsageNSec": "751284000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b4-p1-hysteria2",
+    "metric": "parallel8",
+    "version": "hysteria2",
+    "MemoryPeak": "31137792",
+    "CPUUsageNSec": "915552000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b4-p2-vless-vision",
+    "metric": "parallel8",
+    "version": "vless-vision",
+    "MemoryPeak": "32620544",
+    "CPUUsageNSec": "74960000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b4-p3-tuic",
+    "metric": "parallel8",
+    "version": "tuic",
+    "MemoryPeak": "33894400",
+    "CPUUsageNSec": "754133000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b4-p4-next-opt",
+    "metric": "parallel8",
+    "version": "next-opt",
+    "MemoryPeak": "14639104",
+    "CPUUsageNSec": "1018790000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b4-p5-next-base",
+    "metric": "parallel8",
+    "version": "next-base",
+    "MemoryPeak": "8388608",
+    "CPUUsageNSec": "1034050000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b5-p1-vless-vision",
+    "metric": "parallel8",
+    "version": "vless-vision",
+    "MemoryPeak": "33628160",
+    "CPUUsageNSec": "73062000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b5-p2-next-opt",
+    "metric": "parallel8",
+    "version": "next-opt",
+    "MemoryPeak": "17375232",
+    "CPUUsageNSec": "847391000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b5-p3-hysteria2",
+    "metric": "parallel8",
+    "version": "hysteria2",
+    "MemoryPeak": "36638720",
+    "CPUUsageNSec": "734521000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b5-p4-next-base",
+    "metric": "parallel8",
+    "version": "next-base",
+    "MemoryPeak": "8404992",
+    "CPUUsageNSec": "1175787000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b5-p5-tuic",
+    "metric": "parallel8",
+    "version": "tuic",
+    "MemoryPeak": "23183360",
+    "CPUUsageNSec": "1444201000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b6-p1-hysteria2",
+    "metric": "parallel8",
+    "version": "hysteria2",
+    "MemoryPeak": "28770304",
+    "CPUUsageNSec": "949938000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b6-p2-tuic",
+    "metric": "parallel8",
+    "version": "tuic",
+    "MemoryPeak": "34242560",
+    "CPUUsageNSec": "660846000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b6-p3-vless-vision",
+    "metric": "parallel8",
+    "version": "vless-vision",
+    "MemoryPeak": "35364864",
+    "CPUUsageNSec": "68964000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b6-p4-next-base",
+    "metric": "parallel8",
+    "version": "next-base",
+    "MemoryPeak": "8507392",
+    "CPUUsageNSec": "1215579000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b6-p5-next-opt",
+    "metric": "parallel8",
+    "version": "next-opt",
+    "MemoryPeak": "21684224",
+    "CPUUsageNSec": "777122000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b7-p1-vless-vision",
+    "metric": "parallel8",
+    "version": "vless-vision",
+    "MemoryPeak": "36302848",
+    "CPUUsageNSec": "63811000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b7-p2-hysteria2",
+    "metric": "parallel8",
+    "version": "hysteria2",
+    "MemoryPeak": "30220288",
+    "CPUUsageNSec": "1087800000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b7-p3-next-opt",
+    "metric": "parallel8",
+    "version": "next-opt",
+    "MemoryPeak": "27774976",
+    "CPUUsageNSec": "809798000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b7-p4-tuic",
+    "metric": "parallel8",
+    "version": "tuic",
+    "MemoryPeak": "35311616",
+    "CPUUsageNSec": "665574000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b7-p5-next-base",
+    "metric": "parallel8",
+    "version": "next-base",
+    "MemoryPeak": "8486912",
+    "CPUUsageNSec": "1191759000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b8-p1-next-opt",
+    "metric": "parallel8",
+    "version": "next-opt",
+    "MemoryPeak": "14745600",
+    "CPUUsageNSec": "1088566000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b8-p2-vless-vision",
+    "metric": "parallel8",
+    "version": "vless-vision",
+    "MemoryPeak": "31404032",
+    "CPUUsageNSec": "78300000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b8-p3-next-base",
+    "metric": "parallel8",
+    "version": "next-base",
+    "MemoryPeak": "18092032",
+    "CPUUsageNSec": "727237000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b8-p4-hysteria2",
+    "metric": "parallel8",
+    "version": "hysteria2",
+    "MemoryPeak": "25481216",
+    "CPUUsageNSec": "1069813000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b8-p5-tuic",
+    "metric": "parallel8",
+    "version": "tuic",
+    "MemoryPeak": "30765056",
+    "CPUUsageNSec": "1181266000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b9-p1-next-base",
+    "metric": "parallel8",
+    "version": "next-base",
+    "MemoryPeak": "8982528",
+    "CPUUsageNSec": "1066944000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b9-p2-next-opt",
+    "metric": "parallel8",
+    "version": "next-opt",
+    "MemoryPeak": "29675520",
+    "CPUUsageNSec": "776710000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b9-p3-tuic",
+    "metric": "parallel8",
+    "version": "tuic",
+    "MemoryPeak": "29581312",
+    "CPUUsageNSec": "628419000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b9-p4-vless-vision",
+    "metric": "parallel8",
+    "version": "vless-vision",
+    "MemoryPeak": "32501760",
+    "CPUUsageNSec": "59745000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b9-p5-hysteria2",
+    "metric": "parallel8",
+    "version": "hysteria2",
+    "MemoryPeak": "35663872",
+    "CPUUsageNSec": "716737000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b10-p1-tuic",
+    "metric": "parallel8",
+    "version": "tuic",
+    "MemoryPeak": "34820096",
+    "CPUUsageNSec": "689818000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b10-p2-next-base",
+    "metric": "parallel8",
+    "version": "next-base",
+    "MemoryPeak": "10121216",
+    "CPUUsageNSec": "927238000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b10-p3-hysteria2",
+    "metric": "parallel8",
+    "version": "hysteria2",
+    "MemoryPeak": "26996736",
+    "CPUUsageNSec": "1424701000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b10-p4-next-opt",
+    "metric": "parallel8",
+    "version": "next-opt",
+    "MemoryPeak": "29667328",
+    "CPUUsageNSec": "771192000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "parallel8-b10-p5-vless-vision",
+    "metric": "parallel8",
+    "version": "vless-vision",
+    "MemoryPeak": "35876864",
+    "CPUUsageNSec": "80421000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b1-p1-next-opt",
+    "metric": "rolling",
+    "version": "next-opt",
+    "MemoryPeak": "15396864",
+    "CPUUsageNSec": "1313139000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b1-p2-next-base",
+    "metric": "rolling",
+    "version": "next-base",
+    "MemoryPeak": "11988992",
+    "CPUUsageNSec": "1225883000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b1-p3-vless-vision",
+    "metric": "rolling",
+    "version": "vless-vision",
+    "MemoryPeak": "20381696",
+    "CPUUsageNSec": "65013000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b1-p4-tuic",
+    "metric": "rolling",
+    "version": "tuic",
+    "MemoryPeak": "27844608",
+    "CPUUsageNSec": "1001362000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b1-p5-hysteria2",
+    "metric": "rolling",
+    "version": "hysteria2",
+    "MemoryPeak": "27500544",
+    "CPUUsageNSec": "1094677000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b2-p1-next-base",
+    "metric": "rolling",
+    "version": "next-base",
+    "MemoryPeak": "17121280",
+    "CPUUsageNSec": "1206234000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b2-p2-tuic",
+    "metric": "rolling",
+    "version": "tuic",
+    "MemoryPeak": "27684864",
+    "CPUUsageNSec": "972170000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b2-p3-next-opt",
+    "metric": "rolling",
+    "version": "next-opt",
+    "MemoryPeak": "12120064",
+    "CPUUsageNSec": "1534631000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b2-p4-hysteria2",
+    "metric": "rolling",
+    "version": "hysteria2",
+    "MemoryPeak": "29548544",
+    "CPUUsageNSec": "1110476000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b2-p5-vless-vision",
+    "metric": "rolling",
+    "version": "vless-vision",
+    "MemoryPeak": "21282816",
+    "CPUUsageNSec": "66604000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b3-p1-tuic",
+    "metric": "rolling",
+    "version": "tuic",
+    "MemoryPeak": "26894336",
+    "CPUUsageNSec": "1422895000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b3-p2-hysteria2",
+    "metric": "rolling",
+    "version": "hysteria2",
+    "MemoryPeak": "28667904",
+    "CPUUsageNSec": "1054693000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b3-p3-next-base",
+    "metric": "rolling",
+    "version": "next-base",
+    "MemoryPeak": "21778432",
+    "CPUUsageNSec": "1412180000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b3-p4-vless-vision",
+    "metric": "rolling",
+    "version": "vless-vision",
+    "MemoryPeak": "20152320",
+    "CPUUsageNSec": "64963000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b3-p5-next-opt",
+    "metric": "rolling",
+    "version": "next-opt",
+    "MemoryPeak": "13197312",
+    "CPUUsageNSec": "1391286000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b4-p1-hysteria2",
+    "metric": "rolling",
+    "version": "hysteria2",
+    "MemoryPeak": "28184576",
+    "CPUUsageNSec": "916324000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b4-p2-vless-vision",
+    "metric": "rolling",
+    "version": "vless-vision",
+    "MemoryPeak": "19251200",
+    "CPUUsageNSec": "50003000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b4-p3-tuic",
+    "metric": "rolling",
+    "version": "tuic",
+    "MemoryPeak": "27598848",
+    "CPUUsageNSec": "1045643000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b4-p4-next-opt",
+    "metric": "rolling",
+    "version": "next-opt",
+    "MemoryPeak": "15093760",
+    "CPUUsageNSec": "1234204000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b4-p5-next-base",
+    "metric": "rolling",
+    "version": "next-base",
+    "MemoryPeak": "15605760",
+    "CPUUsageNSec": "1016919000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b5-p1-vless-vision",
+    "metric": "rolling",
+    "version": "vless-vision",
+    "MemoryPeak": "20742144",
+    "CPUUsageNSec": "57609000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b5-p2-next-opt",
+    "metric": "rolling",
+    "version": "next-opt",
+    "MemoryPeak": "9879552",
+    "CPUUsageNSec": "2543890000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b5-p3-hysteria2",
+    "metric": "rolling",
+    "version": "hysteria2",
+    "MemoryPeak": "27693056",
+    "CPUUsageNSec": "1059490000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b5-p4-next-base",
+    "metric": "rolling",
+    "version": "next-base",
+    "MemoryPeak": "14376960",
+    "CPUUsageNSec": "1958219000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b5-p5-tuic",
+    "metric": "rolling",
+    "version": "tuic",
+    "MemoryPeak": "27787264",
+    "CPUUsageNSec": "1111471000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b6-p1-hysteria2",
+    "metric": "rolling",
+    "version": "hysteria2",
+    "MemoryPeak": "27594752",
+    "CPUUsageNSec": "1084388000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b6-p2-tuic",
+    "metric": "rolling",
+    "version": "tuic",
+    "MemoryPeak": "27512832",
+    "CPUUsageNSec": "1011802000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b6-p3-vless-vision",
+    "metric": "rolling",
+    "version": "vless-vision",
+    "MemoryPeak": "20631552",
+    "CPUUsageNSec": "84578000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b6-p4-next-base",
+    "metric": "rolling",
+    "version": "next-base",
+    "MemoryPeak": "12156928",
+    "CPUUsageNSec": "1269238000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b6-p5-next-opt",
+    "metric": "rolling",
+    "version": "next-opt",
+    "MemoryPeak": "14196736",
+    "CPUUsageNSec": "1092823000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b7-p1-vless-vision",
+    "metric": "rolling",
+    "version": "vless-vision",
+    "MemoryPeak": "18731008",
+    "CPUUsageNSec": "46502000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b7-p2-hysteria2",
+    "metric": "rolling",
+    "version": "hysteria2",
+    "MemoryPeak": "27119616",
+    "CPUUsageNSec": "1325229000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b7-p3-next-opt",
+    "metric": "rolling",
+    "version": "next-opt",
+    "MemoryPeak": "13168640",
+    "CPUUsageNSec": "1345370000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b7-p4-tuic",
+    "metric": "rolling",
+    "version": "tuic",
+    "MemoryPeak": "25784320",
+    "CPUUsageNSec": "1500317000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b7-p5-next-base",
+    "metric": "rolling",
+    "version": "next-base",
+    "MemoryPeak": "14479360",
+    "CPUUsageNSec": "1016885000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b8-p1-next-opt",
+    "metric": "rolling",
+    "version": "next-opt",
+    "MemoryPeak": "16265216",
+    "CPUUsageNSec": "1352381000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b8-p2-vless-vision",
+    "metric": "rolling",
+    "version": "vless-vision",
+    "MemoryPeak": "17395712",
+    "CPUUsageNSec": "55360000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b8-p3-next-base",
+    "metric": "rolling",
+    "version": "next-base",
+    "MemoryPeak": "12296192",
+    "CPUUsageNSec": "1264184000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b8-p4-hysteria2",
+    "metric": "rolling",
+    "version": "hysteria2",
+    "MemoryPeak": "27357184",
+    "CPUUsageNSec": "1046353000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b8-p5-tuic",
+    "metric": "rolling",
+    "version": "tuic",
+    "MemoryPeak": "28233728",
+    "CPUUsageNSec": "991650000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b9-p1-next-base",
+    "metric": "rolling",
+    "version": "next-base",
+    "MemoryPeak": "11341824",
+    "CPUUsageNSec": "1442596000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b9-p2-next-opt",
+    "metric": "rolling",
+    "version": "next-opt",
+    "MemoryPeak": "17412096",
+    "CPUUsageNSec": "1174922000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b9-p3-tuic",
+    "metric": "rolling",
+    "version": "tuic",
+    "MemoryPeak": "26910720",
+    "CPUUsageNSec": "1007041000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b9-p4-vless-vision",
+    "metric": "rolling",
+    "version": "vless-vision",
+    "MemoryPeak": "21037056",
+    "CPUUsageNSec": "51610000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b9-p5-hysteria2",
+    "metric": "rolling",
+    "version": "hysteria2",
+    "MemoryPeak": "26292224",
+    "CPUUsageNSec": "1341548000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b10-p1-tuic",
+    "metric": "rolling",
+    "version": "tuic",
+    "MemoryPeak": "25862144",
+    "CPUUsageNSec": "1477605000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b10-p2-next-base",
+    "metric": "rolling",
+    "version": "next-base",
+    "MemoryPeak": "15482880",
+    "CPUUsageNSec": "1271583000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b10-p3-hysteria2",
+    "metric": "rolling",
+    "version": "hysteria2",
+    "MemoryPeak": "27250688",
+    "CPUUsageNSec": "891099000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b10-p4-next-opt",
+    "metric": "rolling",
+    "version": "next-opt",
+    "MemoryPeak": "12787712",
+    "CPUUsageNSec": "1473475000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "rolling-b10-p5-vless-vision",
+    "metric": "rolling",
+    "version": "vless-vision",
+    "MemoryPeak": "19877888",
+    "CPUUsageNSec": "64967000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b1-p1-next-opt",
+    "metric": "echo",
+    "version": "next-opt",
+    "MemoryPeak": "23711744",
+    "CPUUsageNSec": "2032851000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b1-p2-next-base",
+    "metric": "echo",
+    "version": "next-base",
+    "MemoryPeak": "22528000",
+    "CPUUsageNSec": "1697373000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b1-p3-vless-vision",
+    "metric": "echo",
+    "version": "vless-vision",
+    "MemoryPeak": "25001984",
+    "CPUUsageNSec": "788440000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b1-p4-tuic",
+    "metric": "echo",
+    "version": "tuic",
+    "MemoryPeak": "51421184",
+    "CPUUsageNSec": "2087795000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b1-p5-hysteria2",
+    "metric": "echo",
+    "version": "hysteria2",
+    "MemoryPeak": "35033088",
+    "CPUUsageNSec": "1606323000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b2-p1-next-base",
+    "metric": "echo",
+    "version": "next-base",
+    "MemoryPeak": "20905984",
+    "CPUUsageNSec": "1646673000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b2-p2-tuic",
+    "metric": "echo",
+    "version": "tuic",
+    "MemoryPeak": "38789120",
+    "CPUUsageNSec": "1913887000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b2-p3-next-opt",
+    "metric": "echo",
+    "version": "next-opt",
+    "MemoryPeak": "18489344",
+    "CPUUsageNSec": "1766434000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b2-p4-hysteria2",
+    "metric": "echo",
+    "version": "hysteria2",
+    "MemoryPeak": "39579648",
+    "CPUUsageNSec": "1865784000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b2-p5-vless-vision",
+    "metric": "echo",
+    "version": "vless-vision",
+    "MemoryPeak": "36741120",
+    "CPUUsageNSec": "722769000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b3-p1-tuic",
+    "metric": "echo",
+    "version": "tuic",
+    "MemoryPeak": "50593792",
+    "CPUUsageNSec": "1930065000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b3-p2-hysteria2",
+    "metric": "echo",
+    "version": "hysteria2",
+    "MemoryPeak": "44511232",
+    "CPUUsageNSec": "1753354000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b3-p3-next-base",
+    "metric": "echo",
+    "version": "next-base",
+    "MemoryPeak": "24924160",
+    "CPUUsageNSec": "1643300000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b3-p4-vless-vision",
+    "metric": "echo",
+    "version": "vless-vision",
+    "MemoryPeak": "27463680",
+    "CPUUsageNSec": "755531000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b3-p5-next-opt",
+    "metric": "echo",
+    "version": "next-opt",
+    "MemoryPeak": "18751488",
+    "CPUUsageNSec": "1586307000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b4-p1-hysteria2",
+    "metric": "echo",
+    "version": "hysteria2",
+    "MemoryPeak": "44392448",
+    "CPUUsageNSec": "1566002000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b4-p2-vless-vision",
+    "metric": "echo",
+    "version": "vless-vision",
+    "MemoryPeak": "29966336",
+    "CPUUsageNSec": "593707000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b4-p3-tuic",
+    "metric": "echo",
+    "version": "tuic",
+    "MemoryPeak": "41553920",
+    "CPUUsageNSec": "1577462000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b4-p4-next-opt",
+    "metric": "echo",
+    "version": "next-opt",
+    "MemoryPeak": "19722240",
+    "CPUUsageNSec": "1695210000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b4-p5-next-base",
+    "metric": "echo",
+    "version": "next-base",
+    "MemoryPeak": "26636288",
+    "CPUUsageNSec": "1536885000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b5-p1-vless-vision",
+    "metric": "echo",
+    "version": "vless-vision",
+    "MemoryPeak": "35385344",
+    "CPUUsageNSec": "858482000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b5-p2-next-opt",
+    "metric": "echo",
+    "version": "next-opt",
+    "MemoryPeak": "23007232",
+    "CPUUsageNSec": "1743897000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b5-p3-hysteria2",
+    "metric": "echo",
+    "version": "hysteria2",
+    "MemoryPeak": "38182912",
+    "CPUUsageNSec": "1784709000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b5-p4-next-base",
+    "metric": "echo",
+    "version": "next-base",
+    "MemoryPeak": "24150016",
+    "CPUUsageNSec": "1741819000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b5-p5-tuic",
+    "metric": "echo",
+    "version": "tuic",
+    "MemoryPeak": "42651648",
+    "CPUUsageNSec": "1892280000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b6-p1-hysteria2",
+    "metric": "echo",
+    "version": "hysteria2",
+    "MemoryPeak": "43106304",
+    "CPUUsageNSec": "1752422000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b6-p2-tuic",
+    "metric": "echo",
+    "version": "tuic",
+    "MemoryPeak": "35405824",
+    "CPUUsageNSec": "1779143000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b6-p3-vless-vision",
+    "metric": "echo",
+    "version": "vless-vision",
+    "MemoryPeak": "34541568",
+    "CPUUsageNSec": "827070000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b6-p4-next-base",
+    "metric": "echo",
+    "version": "next-base",
+    "MemoryPeak": "21880832",
+    "CPUUsageNSec": "1625778000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b6-p5-next-opt",
+    "metric": "echo",
+    "version": "next-opt",
+    "MemoryPeak": "27574272",
+    "CPUUsageNSec": "1843545000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b7-p1-vless-vision",
+    "metric": "echo",
+    "version": "vless-vision",
+    "MemoryPeak": "34287616",
+    "CPUUsageNSec": "849762000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b7-p2-hysteria2",
+    "metric": "echo",
+    "version": "hysteria2",
+    "MemoryPeak": "32374784",
+    "CPUUsageNSec": "1790953000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b7-p3-next-opt",
+    "metric": "echo",
+    "version": "next-opt",
+    "MemoryPeak": "20676608",
+    "CPUUsageNSec": "2026748000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b7-p4-tuic",
+    "metric": "echo",
+    "version": "tuic",
+    "MemoryPeak": "44847104",
+    "CPUUsageNSec": "1817396000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b7-p5-next-base",
+    "metric": "echo",
+    "version": "next-base",
+    "MemoryPeak": "22495232",
+    "CPUUsageNSec": "1670119000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b8-p1-next-opt",
+    "metric": "echo",
+    "version": "next-opt",
+    "MemoryPeak": "22085632",
+    "CPUUsageNSec": "1688795000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b8-p2-vless-vision",
+    "metric": "echo",
+    "version": "vless-vision",
+    "MemoryPeak": "36638720",
+    "CPUUsageNSec": "741867000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b8-p3-next-base",
+    "metric": "echo",
+    "version": "next-base",
+    "MemoryPeak": "18104320",
+    "CPUUsageNSec": "1563006000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b8-p4-hysteria2",
+    "metric": "echo",
+    "version": "hysteria2",
+    "MemoryPeak": "40955904",
+    "CPUUsageNSec": "1735408000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b8-p5-tuic",
+    "metric": "echo",
+    "version": "tuic",
+    "MemoryPeak": "47001600",
+    "CPUUsageNSec": "1846277000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b9-p1-next-base",
+    "metric": "echo",
+    "version": "next-base",
+    "MemoryPeak": "21168128",
+    "CPUUsageNSec": "1774061000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b9-p2-next-opt",
+    "metric": "echo",
+    "version": "next-opt",
+    "MemoryPeak": "21651456",
+    "CPUUsageNSec": "1803287000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b9-p3-tuic",
+    "metric": "echo",
+    "version": "tuic",
+    "MemoryPeak": "37969920",
+    "CPUUsageNSec": "1947313000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b9-p4-vless-vision",
+    "metric": "echo",
+    "version": "vless-vision",
+    "MemoryPeak": "34181120",
+    "CPUUsageNSec": "773599000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b9-p5-hysteria2",
+    "metric": "echo",
+    "version": "hysteria2",
+    "MemoryPeak": "36573184",
+    "CPUUsageNSec": "1686843000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b10-p1-tuic",
+    "metric": "echo",
+    "version": "tuic",
+    "MemoryPeak": "38944768",
+    "CPUUsageNSec": "1752333000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b10-p2-next-base",
+    "metric": "echo",
+    "version": "next-base",
+    "MemoryPeak": "20160512",
+    "CPUUsageNSec": "1718104000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b10-p3-hysteria2",
+    "metric": "echo",
+    "version": "hysteria2",
+    "MemoryPeak": "39182336",
+    "CPUUsageNSec": "1932281000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b10-p4-next-opt",
+    "metric": "echo",
+    "version": "next-opt",
+    "MemoryPeak": "20443136",
+    "CPUUsageNSec": "1819950000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "speed",
+    "case": "echo-b10-p5-vless-vision",
+    "metric": "echo",
+    "version": "vless-vision",
+    "MemoryPeak": "24989696",
+    "CPUUsageNSec": "756019000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b1-p1-next-opt",
+    "metric": "latency",
+    "version": "next-opt",
+    "CPUUsageNSec": "192605000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b1-p2-next-base",
+    "metric": "latency",
+    "version": "next-base",
+    "CPUUsageNSec": "168369000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b1-p3-vless-vision",
+    "metric": "latency",
+    "version": "vless-vision",
+    "CPUUsageNSec": "276917000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b1-p4-tuic",
+    "metric": "latency",
+    "version": "tuic",
+    "CPUUsageNSec": "253304000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b1-p5-hysteria2",
+    "metric": "latency",
+    "version": "hysteria2",
+    "CPUUsageNSec": "279295000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b2-p1-next-base",
+    "metric": "latency",
+    "version": "next-base",
+    "CPUUsageNSec": "164828000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b2-p2-tuic",
+    "metric": "latency",
+    "version": "tuic",
+    "CPUUsageNSec": "267427000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b2-p3-next-opt",
+    "metric": "latency",
+    "version": "next-opt",
+    "CPUUsageNSec": "202868000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b2-p4-hysteria2",
+    "metric": "latency",
+    "version": "hysteria2",
+    "CPUUsageNSec": "337296000",
+    "TasksCurrent": "8"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b2-p5-vless-vision",
+    "metric": "latency",
+    "version": "vless-vision",
+    "CPUUsageNSec": "318200000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b3-p1-tuic",
+    "metric": "latency",
+    "version": "tuic",
+    "CPUUsageNSec": "286269000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b3-p2-hysteria2",
+    "metric": "latency",
+    "version": "hysteria2",
+    "CPUUsageNSec": "431967000",
+    "TasksCurrent": "8"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b3-p3-next-base",
+    "metric": "latency",
+    "version": "next-base",
+    "CPUUsageNSec": "283419000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b3-p4-vless-vision",
+    "metric": "latency",
+    "version": "vless-vision",
+    "CPUUsageNSec": "323616000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b3-p5-next-opt",
+    "metric": "latency",
+    "version": "next-opt",
+    "CPUUsageNSec": "265601000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b4-p1-hysteria2",
+    "metric": "latency",
+    "version": "hysteria2",
+    "CPUUsageNSec": "435548000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b4-p2-vless-vision",
+    "metric": "latency",
+    "version": "vless-vision",
+    "CPUUsageNSec": "372084000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b4-p3-tuic",
+    "metric": "latency",
+    "version": "tuic",
+    "CPUUsageNSec": "363057000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b4-p4-next-opt",
+    "metric": "latency",
+    "version": "next-opt",
+    "CPUUsageNSec": "246204000",
+    "TasksCurrent": "8"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b4-p5-next-base",
+    "metric": "latency",
+    "version": "next-base",
+    "CPUUsageNSec": "234183000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b5-p1-vless-vision",
+    "metric": "latency",
+    "version": "vless-vision",
+    "CPUUsageNSec": "349476000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b5-p2-next-opt",
+    "metric": "latency",
+    "version": "next-opt",
+    "CPUUsageNSec": "263830000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b5-p3-hysteria2",
+    "metric": "latency",
+    "version": "hysteria2",
+    "CPUUsageNSec": "366875000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b5-p4-next-base",
+    "metric": "latency",
+    "version": "next-base",
+    "CPUUsageNSec": "256443000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b5-p5-tuic",
+    "metric": "latency",
+    "version": "tuic",
+    "CPUUsageNSec": "319827000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b6-p1-hysteria2",
+    "metric": "latency",
+    "version": "hysteria2",
+    "CPUUsageNSec": "355855000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b6-p2-tuic",
+    "metric": "latency",
+    "version": "tuic",
+    "CPUUsageNSec": "305729000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b6-p3-vless-vision",
+    "metric": "latency",
+    "version": "vless-vision",
+    "CPUUsageNSec": "320314000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b6-p4-next-base",
+    "metric": "latency",
+    "version": "next-base",
+    "CPUUsageNSec": "254701000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b6-p5-next-opt",
+    "metric": "latency",
+    "version": "next-opt",
+    "CPUUsageNSec": "198064000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b7-p1-vless-vision",
+    "metric": "latency",
+    "version": "vless-vision",
+    "CPUUsageNSec": "389145000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b7-p2-hysteria2",
+    "metric": "latency",
+    "version": "hysteria2",
+    "CPUUsageNSec": "501573000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b7-p3-next-opt",
+    "metric": "latency",
+    "version": "next-opt",
+    "CPUUsageNSec": "314072000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b7-p4-tuic",
+    "metric": "latency",
+    "version": "tuic",
+    "CPUUsageNSec": "367490000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b7-p5-next-base",
+    "metric": "latency",
+    "version": "next-base",
+    "CPUUsageNSec": "249569000",
+    "TasksCurrent": "8"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b8-p1-next-opt",
+    "metric": "latency",
+    "version": "next-opt",
+    "CPUUsageNSec": "301586000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b8-p2-vless-vision",
+    "metric": "latency",
+    "version": "vless-vision",
+    "CPUUsageNSec": "369678000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b8-p3-next-base",
+    "metric": "latency",
+    "version": "next-base",
+    "CPUUsageNSec": "240412000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b8-p4-hysteria2",
+    "metric": "latency",
+    "version": "hysteria2",
+    "CPUUsageNSec": "421767000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b8-p5-tuic",
+    "metric": "latency",
+    "version": "tuic",
+    "CPUUsageNSec": "331251000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b9-p1-next-base",
+    "metric": "latency",
+    "version": "next-base",
+    "CPUUsageNSec": "275551000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b9-p2-next-opt",
+    "metric": "latency",
+    "version": "next-opt",
+    "CPUUsageNSec": "243506000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b9-p3-tuic",
+    "metric": "latency",
+    "version": "tuic",
+    "CPUUsageNSec": "398738000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b9-p4-vless-vision",
+    "metric": "latency",
+    "version": "vless-vision",
+    "CPUUsageNSec": "382507000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b9-p5-hysteria2",
+    "metric": "latency",
+    "version": "hysteria2",
+    "CPUUsageNSec": "384671000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b10-p1-tuic",
+    "metric": "latency",
+    "version": "tuic",
+    "CPUUsageNSec": "335000000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b10-p2-next-base",
+    "metric": "latency",
+    "version": "next-base",
+    "CPUUsageNSec": "203893000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b10-p3-hysteria2",
+    "metric": "latency",
+    "version": "hysteria2",
+    "CPUUsageNSec": "284082000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b10-p4-next-opt",
+    "metric": "latency",
+    "version": "next-opt",
+    "CPUUsageNSec": "233610000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "latency-b10-p5-vless-vision",
+    "metric": "latency",
+    "version": "vless-vision",
+    "CPUUsageNSec": "310317000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b1-p1-next-opt",
+    "metric": "batch8",
+    "version": "next-opt",
+    "CPUUsageNSec": "116821000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b1-p2-next-base",
+    "metric": "batch8",
+    "version": "next-base",
+    "CPUUsageNSec": "89383000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b1-p3-vless-vision",
+    "metric": "batch8",
+    "version": "vless-vision",
+    "CPUUsageNSec": "230765000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b1-p4-tuic",
+    "metric": "batch8",
+    "version": "tuic",
+    "CPUUsageNSec": "188822000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b1-p5-hysteria2",
+    "metric": "batch8",
+    "version": "hysteria2",
+    "CPUUsageNSec": "172285000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b2-p1-next-base",
+    "metric": "batch8",
+    "version": "next-base",
+    "CPUUsageNSec": "115324000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b2-p2-tuic",
+    "metric": "batch8",
+    "version": "tuic",
+    "CPUUsageNSec": "176736000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b2-p3-next-opt",
+    "metric": "batch8",
+    "version": "next-opt",
+    "CPUUsageNSec": "152207000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b2-p4-hysteria2",
+    "metric": "batch8",
+    "version": "hysteria2",
+    "CPUUsageNSec": "227731000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b2-p5-vless-vision",
+    "metric": "batch8",
+    "version": "vless-vision",
+    "CPUUsageNSec": "275437000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b3-p1-tuic",
+    "metric": "batch8",
+    "version": "tuic",
+    "CPUUsageNSec": "161835000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b3-p2-hysteria2",
+    "metric": "batch8",
+    "version": "hysteria2",
+    "CPUUsageNSec": "189584000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b3-p3-next-base",
+    "metric": "batch8",
+    "version": "next-base",
+    "CPUUsageNSec": "147689000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b3-p4-vless-vision",
+    "metric": "batch8",
+    "version": "vless-vision",
+    "CPUUsageNSec": "298218000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b3-p5-next-opt",
+    "metric": "batch8",
+    "version": "next-opt",
+    "CPUUsageNSec": "127857000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b4-p1-hysteria2",
+    "metric": "batch8",
+    "version": "hysteria2",
+    "CPUUsageNSec": "228531000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b4-p2-vless-vision",
+    "metric": "batch8",
+    "version": "vless-vision",
+    "CPUUsageNSec": "346540000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b4-p3-tuic",
+    "metric": "batch8",
+    "version": "tuic",
+    "CPUUsageNSec": "201375000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b4-p4-next-opt",
+    "metric": "batch8",
+    "version": "next-opt",
+    "CPUUsageNSec": "156192000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b4-p5-next-base",
+    "metric": "batch8",
+    "version": "next-base",
+    "CPUUsageNSec": "142870000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b5-p1-vless-vision",
+    "metric": "batch8",
+    "version": "vless-vision",
+    "CPUUsageNSec": "273811000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b5-p2-next-opt",
+    "metric": "batch8",
+    "version": "next-opt",
+    "CPUUsageNSec": "169004000",
+    "TasksCurrent": "8"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b5-p3-hysteria2",
+    "metric": "batch8",
+    "version": "hysteria2",
+    "CPUUsageNSec": "245571000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b5-p4-next-base",
+    "metric": "batch8",
+    "version": "next-base",
+    "CPUUsageNSec": "141489000",
+    "TasksCurrent": "8"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b5-p5-tuic",
+    "metric": "batch8",
+    "version": "tuic",
+    "CPUUsageNSec": "229067000",
+    "TasksCurrent": "8"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b6-p1-hysteria2",
+    "metric": "batch8",
+    "version": "hysteria2",
+    "CPUUsageNSec": "202004000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b6-p2-tuic",
+    "metric": "batch8",
+    "version": "tuic",
+    "CPUUsageNSec": "230489000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b6-p3-vless-vision",
+    "metric": "batch8",
+    "version": "vless-vision",
+    "CPUUsageNSec": "293939000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b6-p4-next-base",
+    "metric": "batch8",
+    "version": "next-base",
+    "CPUUsageNSec": "188686000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b6-p5-next-opt",
+    "metric": "batch8",
+    "version": "next-opt",
+    "CPUUsageNSec": "153312000",
+    "TasksCurrent": "8"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b7-p1-vless-vision",
+    "metric": "batch8",
+    "version": "vless-vision",
+    "CPUUsageNSec": "357827000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b7-p2-hysteria2",
+    "metric": "batch8",
+    "version": "hysteria2",
+    "CPUUsageNSec": "306652000",
+    "TasksCurrent": "8"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b7-p3-next-opt",
+    "metric": "batch8",
+    "version": "next-opt",
+    "CPUUsageNSec": "171910000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b7-p4-tuic",
+    "metric": "batch8",
+    "version": "tuic",
+    "CPUUsageNSec": "264632000",
+    "TasksCurrent": "8"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b7-p5-next-base",
+    "metric": "batch8",
+    "version": "next-base",
+    "CPUUsageNSec": "179022000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b8-p1-next-opt",
+    "metric": "batch8",
+    "version": "next-opt",
+    "CPUUsageNSec": "208662000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b8-p2-vless-vision",
+    "metric": "batch8",
+    "version": "vless-vision",
+    "CPUUsageNSec": "380651000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b8-p3-next-base",
+    "metric": "batch8",
+    "version": "next-base",
+    "CPUUsageNSec": "114205000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b8-p4-hysteria2",
+    "metric": "batch8",
+    "version": "hysteria2",
+    "CPUUsageNSec": "247136000",
+    "TasksCurrent": "8"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b8-p5-tuic",
+    "metric": "batch8",
+    "version": "tuic",
+    "CPUUsageNSec": "202096000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b9-p1-next-base",
+    "metric": "batch8",
+    "version": "next-base",
+    "CPUUsageNSec": "160930000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b9-p2-next-opt",
+    "metric": "batch8",
+    "version": "next-opt",
+    "CPUUsageNSec": "167612000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b9-p3-tuic",
+    "metric": "batch8",
+    "version": "tuic",
+    "CPUUsageNSec": "259920000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b9-p4-vless-vision",
+    "metric": "batch8",
+    "version": "vless-vision",
+    "CPUUsageNSec": "264485000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b9-p5-hysteria2",
+    "metric": "batch8",
+    "version": "hysteria2",
+    "CPUUsageNSec": "207623000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b10-p1-tuic",
+    "metric": "batch8",
+    "version": "tuic",
+    "CPUUsageNSec": "211058000",
+    "TasksCurrent": "8"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b10-p2-next-base",
+    "metric": "batch8",
+    "version": "next-base",
+    "CPUUsageNSec": "185482000",
+    "TasksCurrent": "8"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b10-p3-hysteria2",
+    "metric": "batch8",
+    "version": "hysteria2",
+    "CPUUsageNSec": "329761000",
+    "TasksCurrent": "8"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b10-p4-next-opt",
+    "metric": "batch8",
+    "version": "next-opt",
+    "CPUUsageNSec": "141535000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "batch8-b10-p5-vless-vision",
+    "metric": "batch8",
+    "version": "vless-vision",
+    "CPUUsageNSec": "284009000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b1-p1-next-opt",
+    "metric": "idle",
+    "version": "next-opt",
+    "CPUUsageNSec": "63408000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b1-p2-next-base",
+    "metric": "idle",
+    "version": "next-base",
+    "CPUUsageNSec": "63926000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b1-p3-vless-vision",
+    "metric": "idle",
+    "version": "vless-vision",
+    "CPUUsageNSec": "112831000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b1-p4-tuic",
+    "metric": "idle",
+    "version": "tuic",
+    "CPUUsageNSec": "122600000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b1-p5-hysteria2",
+    "metric": "idle",
+    "version": "hysteria2",
+    "CPUUsageNSec": "130796000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b2-p1-next-base",
+    "metric": "idle",
+    "version": "next-base",
+    "CPUUsageNSec": "79617000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b2-p2-tuic",
+    "metric": "idle",
+    "version": "tuic",
+    "CPUUsageNSec": "95964000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b2-p3-next-opt",
+    "metric": "idle",
+    "version": "next-opt",
+    "CPUUsageNSec": "59596000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b2-p4-hysteria2",
+    "metric": "idle",
+    "version": "hysteria2",
+    "CPUUsageNSec": "122514000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b2-p5-vless-vision",
+    "metric": "idle",
+    "version": "vless-vision",
+    "CPUUsageNSec": "123383000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b3-p1-tuic",
+    "metric": "idle",
+    "version": "tuic",
+    "CPUUsageNSec": "116725000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b3-p2-hysteria2",
+    "metric": "idle",
+    "version": "hysteria2",
+    "CPUUsageNSec": "132783000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b3-p3-next-base",
+    "metric": "idle",
+    "version": "next-base",
+    "CPUUsageNSec": "97903000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b3-p4-vless-vision",
+    "metric": "idle",
+    "version": "vless-vision",
+    "CPUUsageNSec": "149709000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b3-p5-next-opt",
+    "metric": "idle",
+    "version": "next-opt",
+    "CPUUsageNSec": "63723000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b4-p1-hysteria2",
+    "metric": "idle",
+    "version": "hysteria2",
+    "CPUUsageNSec": "143307000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b4-p2-vless-vision",
+    "metric": "idle",
+    "version": "vless-vision",
+    "CPUUsageNSec": "138521000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b4-p3-tuic",
+    "metric": "idle",
+    "version": "tuic",
+    "CPUUsageNSec": "116297000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b4-p4-next-opt",
+    "metric": "idle",
+    "version": "next-opt",
+    "CPUUsageNSec": "67147000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b4-p5-next-base",
+    "metric": "idle",
+    "version": "next-base",
+    "CPUUsageNSec": "60737000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b5-p1-vless-vision",
+    "metric": "idle",
+    "version": "vless-vision",
+    "CPUUsageNSec": "112507000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b5-p2-next-opt",
+    "metric": "idle",
+    "version": "next-opt",
+    "CPUUsageNSec": "73569000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b5-p3-hysteria2",
+    "metric": "idle",
+    "version": "hysteria2",
+    "CPUUsageNSec": "175665000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b5-p4-next-base",
+    "metric": "idle",
+    "version": "next-base",
+    "CPUUsageNSec": "65206000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b5-p5-tuic",
+    "metric": "idle",
+    "version": "tuic",
+    "CPUUsageNSec": "127396000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b6-p1-hysteria2",
+    "metric": "idle",
+    "version": "hysteria2",
+    "CPUUsageNSec": "104211000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b6-p2-tuic",
+    "metric": "idle",
+    "version": "tuic",
+    "CPUUsageNSec": "116400000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b6-p3-vless-vision",
+    "metric": "idle",
+    "version": "vless-vision",
+    "CPUUsageNSec": "95073000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b6-p4-next-base",
+    "metric": "idle",
+    "version": "next-base",
+    "CPUUsageNSec": "62361000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b6-p5-next-opt",
+    "metric": "idle",
+    "version": "next-opt",
+    "CPUUsageNSec": "52851000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b7-p1-vless-vision",
+    "metric": "idle",
+    "version": "vless-vision",
+    "CPUUsageNSec": "115785000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b7-p2-hysteria2",
+    "metric": "idle",
+    "version": "hysteria2",
+    "CPUUsageNSec": "150815000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b7-p3-next-opt",
+    "metric": "idle",
+    "version": "next-opt",
+    "CPUUsageNSec": "68226000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b7-p4-tuic",
+    "metric": "idle",
+    "version": "tuic",
+    "CPUUsageNSec": "120934000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b7-p5-next-base",
+    "metric": "idle",
+    "version": "next-base",
+    "CPUUsageNSec": "62243000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b8-p1-next-opt",
+    "metric": "idle",
+    "version": "next-opt",
+    "CPUUsageNSec": "52767000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b8-p2-vless-vision",
+    "metric": "idle",
+    "version": "vless-vision",
+    "CPUUsageNSec": "124201000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b8-p3-next-base",
+    "metric": "idle",
+    "version": "next-base",
+    "CPUUsageNSec": "49154000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b8-p4-hysteria2",
+    "metric": "idle",
+    "version": "hysteria2",
+    "CPUUsageNSec": "115058000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b8-p5-tuic",
+    "metric": "idle",
+    "version": "tuic",
+    "CPUUsageNSec": "101645000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b9-p1-next-base",
+    "metric": "idle",
+    "version": "next-base",
+    "CPUUsageNSec": "69449000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b9-p2-next-opt",
+    "metric": "idle",
+    "version": "next-opt",
+    "CPUUsageNSec": "65982000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b9-p3-tuic",
+    "metric": "idle",
+    "version": "tuic",
+    "CPUUsageNSec": "113008000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b9-p4-vless-vision",
+    "metric": "idle",
+    "version": "vless-vision",
+    "CPUUsageNSec": "145402000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b9-p5-hysteria2",
+    "metric": "idle",
+    "version": "hysteria2",
+    "CPUUsageNSec": "178807000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b10-p1-tuic",
+    "metric": "idle",
+    "version": "tuic",
+    "CPUUsageNSec": "159828000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b10-p2-next-base",
+    "metric": "idle",
+    "version": "next-base",
+    "CPUUsageNSec": "94304000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b10-p3-hysteria2",
+    "metric": "idle",
+    "version": "hysteria2",
+    "CPUUsageNSec": "133195000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b10-p4-next-opt",
+    "metric": "idle",
+    "version": "next-opt",
+    "CPUUsageNSec": "77933000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency",
+    "case": "idle-b10-p5-vless-vision",
+    "metric": "idle",
+    "version": "vless-vision",
+    "CPUUsageNSec": "135368000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b1-p1-next-opt",
+    "metric": "mixed",
+    "version": "next-opt",
+    "CPUUsageNSec": "1767903000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b1-p2-next-base",
+    "metric": "mixed",
+    "version": "next-base",
+    "CPUUsageNSec": "2080579000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b1-p3-vless-vision",
+    "metric": "mixed",
+    "version": "vless-vision",
+    "CPUUsageNSec": "169697000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b1-p4-tuic",
+    "metric": "mixed",
+    "version": "tuic",
+    "CPUUsageNSec": "2229430000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b1-p5-hysteria2",
+    "metric": "mixed",
+    "version": "hysteria2",
+    "CPUUsageNSec": "2396407000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b2-p1-next-base",
+    "metric": "mixed",
+    "version": "next-base",
+    "CPUUsageNSec": "2192371000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b2-p2-tuic",
+    "metric": "mixed",
+    "version": "tuic",
+    "CPUUsageNSec": "2332512000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b2-p3-next-opt",
+    "metric": "mixed",
+    "version": "next-opt",
+    "CPUUsageNSec": "1488526000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b2-p4-hysteria2",
+    "metric": "mixed",
+    "version": "hysteria2",
+    "CPUUsageNSec": "2149341000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b2-p5-vless-vision",
+    "metric": "mixed",
+    "version": "vless-vision",
+    "CPUUsageNSec": "168415000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b3-p1-tuic",
+    "metric": "mixed",
+    "version": "tuic",
+    "CPUUsageNSec": "1996933000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b3-p2-hysteria2",
+    "metric": "mixed",
+    "version": "hysteria2",
+    "CPUUsageNSec": "1950633000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b3-p3-next-base",
+    "metric": "mixed",
+    "version": "next-base",
+    "CPUUsageNSec": "1714780000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b3-p4-vless-vision",
+    "metric": "mixed",
+    "version": "vless-vision",
+    "CPUUsageNSec": "198547000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b3-p5-next-opt",
+    "metric": "mixed",
+    "version": "next-opt",
+    "CPUUsageNSec": "1913840000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b4-p1-hysteria2",
+    "metric": "mixed",
+    "version": "hysteria2",
+    "CPUUsageNSec": "2575412000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b4-p2-vless-vision",
+    "metric": "mixed",
+    "version": "vless-vision",
+    "CPUUsageNSec": "173890000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b4-p3-tuic",
+    "metric": "mixed",
+    "version": "tuic",
+    "CPUUsageNSec": "2057991000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b4-p4-next-opt",
+    "metric": "mixed",
+    "version": "next-opt",
+    "CPUUsageNSec": "1521836000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b4-p5-next-base",
+    "metric": "mixed",
+    "version": "next-base",
+    "CPUUsageNSec": "2293187000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b5-p1-vless-vision",
+    "metric": "mixed",
+    "version": "vless-vision",
+    "CPUUsageNSec": "237695000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b5-p2-next-opt",
+    "metric": "mixed",
+    "version": "next-opt",
+    "CPUUsageNSec": "1610168000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b5-p3-hysteria2",
+    "metric": "mixed",
+    "version": "hysteria2",
+    "CPUUsageNSec": "2168561000",
+    "TasksCurrent": "8"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b5-p4-next-base",
+    "metric": "mixed",
+    "version": "next-base",
+    "CPUUsageNSec": "2164487000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b5-p5-tuic",
+    "metric": "mixed",
+    "version": "tuic",
+    "CPUUsageNSec": "2429986000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b6-p1-hysteria2",
+    "metric": "mixed",
+    "version": "hysteria2",
+    "CPUUsageNSec": "2144432000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b6-p2-tuic",
+    "metric": "mixed",
+    "version": "tuic",
+    "CPUUsageNSec": "2437616000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b6-p3-vless-vision",
+    "metric": "mixed",
+    "version": "vless-vision",
+    "CPUUsageNSec": "261151000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b6-p4-next-base",
+    "metric": "mixed",
+    "version": "next-base",
+    "CPUUsageNSec": "1663852000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b6-p5-next-opt",
+    "metric": "mixed",
+    "version": "next-opt",
+    "CPUUsageNSec": "1442118000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b7-p1-vless-vision",
+    "metric": "mixed",
+    "version": "vless-vision",
+    "CPUUsageNSec": "200403000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b7-p2-hysteria2",
+    "metric": "mixed",
+    "version": "hysteria2",
+    "CPUUsageNSec": "1748357000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b7-p3-next-opt",
+    "metric": "mixed",
+    "version": "next-opt",
+    "CPUUsageNSec": "1576269000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b7-p4-tuic",
+    "metric": "mixed",
+    "version": "tuic",
+    "CPUUsageNSec": "2085403000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b7-p5-next-base",
+    "metric": "mixed",
+    "version": "next-base",
+    "CPUUsageNSec": "1809223000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b8-p1-next-opt",
+    "metric": "mixed",
+    "version": "next-opt",
+    "CPUUsageNSec": "1537923000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b8-p2-vless-vision",
+    "metric": "mixed",
+    "version": "vless-vision",
+    "CPUUsageNSec": "165310000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b8-p3-next-base",
+    "metric": "mixed",
+    "version": "next-base",
+    "CPUUsageNSec": "2111198000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b8-p4-hysteria2",
+    "metric": "mixed",
+    "version": "hysteria2",
+    "CPUUsageNSec": "2303065000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b8-p5-tuic",
+    "metric": "mixed",
+    "version": "tuic",
+    "CPUUsageNSec": "1858750000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b9-p1-next-base",
+    "metric": "mixed",
+    "version": "next-base",
+    "CPUUsageNSec": "1772224000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b9-p2-next-opt",
+    "metric": "mixed",
+    "version": "next-opt",
+    "CPUUsageNSec": "1927413000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b9-p3-tuic",
+    "metric": "mixed",
+    "version": "tuic",
+    "CPUUsageNSec": "2197394000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b9-p4-vless-vision",
+    "metric": "mixed",
+    "version": "vless-vision",
+    "CPUUsageNSec": "226761000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b9-p5-hysteria2",
+    "metric": "mixed",
+    "version": "hysteria2",
+    "CPUUsageNSec": "2399597000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b10-p1-tuic",
+    "metric": "mixed",
+    "version": "tuic",
+    "CPUUsageNSec": "2332674000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b10-p2-next-base",
+    "metric": "mixed",
+    "version": "next-base",
+    "CPUUsageNSec": "2025611000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b10-p3-hysteria2",
+    "metric": "mixed",
+    "version": "hysteria2",
+    "CPUUsageNSec": "2396825000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b10-p4-next-opt",
+    "metric": "mixed",
+    "version": "next-opt",
+    "CPUUsageNSec": "1608026000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "mixed-b10-p5-vless-vision",
+    "metric": "mixed",
+    "version": "vless-vision",
+    "CPUUsageNSec": "253721000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-example-b1-p1-next-opt",
+    "metric": "web-example",
+    "version": "next-opt",
+    "CPUUsageNSec": "2203127000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-example-b1-p2-next-base",
+    "metric": "web-example",
+    "version": "next-base",
+    "CPUUsageNSec": "2467728000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-example-b1-p3-tuic",
+    "metric": "web-example",
+    "version": "tuic",
+    "CPUUsageNSec": "2208252000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-example-b1-p4-hysteria2",
+    "metric": "web-example",
+    "version": "hysteria2",
+    "CPUUsageNSec": "1995086000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-example-b1-p5-vless-vision",
+    "metric": "web-example",
+    "version": "vless-vision",
+    "CPUUsageNSec": "289061000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-example-b2-p1-vless-vision",
+    "metric": "web-example",
+    "version": "vless-vision",
+    "CPUUsageNSec": "256025000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-example-b2-p2-hysteria2",
+    "metric": "web-example",
+    "version": "hysteria2",
+    "CPUUsageNSec": "1921119000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-example-b2-p3-tuic",
+    "metric": "web-example",
+    "version": "tuic",
+    "CPUUsageNSec": "2122153000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-example-b2-p4-next-base",
+    "metric": "web-example",
+    "version": "next-base",
+    "CPUUsageNSec": "1826705000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-example-b2-p5-next-opt",
+    "metric": "web-example",
+    "version": "next-opt",
+    "CPUUsageNSec": "2089996000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-google-b1-p1-next-opt",
+    "metric": "web-google",
+    "version": "next-opt",
+    "CPUUsageNSec": "1851671000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-google-b1-p2-next-base",
+    "metric": "web-google",
+    "version": "next-base",
+    "CPUUsageNSec": "2052644000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-google-b1-p3-tuic",
+    "metric": "web-google",
+    "version": "tuic",
+    "CPUUsageNSec": "2224760000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-google-b1-p4-hysteria2",
+    "metric": "web-google",
+    "version": "hysteria2",
+    "CPUUsageNSec": "2230437000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-google-b1-p5-vless-vision",
+    "metric": "web-google",
+    "version": "vless-vision",
+    "CPUUsageNSec": "297644000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-google-b2-p1-vless-vision",
+    "metric": "web-google",
+    "version": "vless-vision",
+    "CPUUsageNSec": "266008000",
+    "TasksCurrent": "6"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-google-b2-p2-hysteria2",
+    "metric": "web-google",
+    "version": "hysteria2",
+    "CPUUsageNSec": "2061037000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-google-b2-p3-tuic",
+    "metric": "web-google",
+    "version": "tuic",
+    "CPUUsageNSec": "2121218000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-google-b2-p4-next-base",
+    "metric": "web-google",
+    "version": "next-base",
+    "CPUUsageNSec": "2290642000",
+    "TasksCurrent": "7"
+  },
+  {
+    "mode": "latency-loaded",
+    "case": "web-google-b2-p5-next-opt",
+    "metric": "web-google",
+    "version": "next-opt",
+    "CPUUsageNSec": "1664663000",
+    "TasksCurrent": "7"
+  }
+]

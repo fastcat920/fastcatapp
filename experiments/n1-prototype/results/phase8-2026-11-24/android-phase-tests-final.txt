@@ -1,0 +1,15 @@
+=== RUN   TestSetupCancellationDuringTLS
+--- PASS: TestSetupCancellationDuringTLS (0.07s)
+=== RUN   TestBodyFailurePhaseAndPartialByteCount
+--- PASS: TestBodyFailurePhaseAndPartialByteCount (0.04s)
+=== RUN   TestTraceSeparatesDNSAndTCP
+--- PASS: TestTraceSeparatesDNSAndTCP (0.07s)
+=== RUN   TestSyntheticDNSFailureStage
+--- PASS: TestSyntheticDNSFailureStage (0.00s)
+=== RUN   TestSyntheticTCPFailureStage
+--- PASS: TestSyntheticTCPFailureStage (0.00s)
+=== RUN   TestRetryOnlyBeforeAuthentication
+--- PASS: TestRetryOnlyBeforeAuthentication (0.08s)
+=== RUN   TestTransientTLSRetryIsBoundedAndRecorded
+--- PASS: TestTransientTLSRetryIsBoundedAndRecorded (0.23s)
+PASS

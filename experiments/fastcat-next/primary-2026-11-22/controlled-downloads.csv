@@ -1,0 +1,33 @@
+elapsed_ms,expected_bytes_each,jobs,lane_usage,phase,protocol,received_bytes,round,success,test,verified_bytes,verified_mbps,version,workers
+9772,4194304,4,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c1-b1-p1-next-base,16777216,13.734595323164298,next-base,4
+11077,4194304,4,"{'tcp_assignments': [2, 2], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c1-b1-p2-next-opt,16777216,12.116687636486365,next-opt,4
+29819,4194304,4,,parallel_download,quic,16777216,1,4,controlled-c1-b1-p3-tuic,16777216,4.500944834702473,tuic,4
+14558,4194304,4,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c1-b1-p4-next-primary,16777216,9.219067835010389,next-primary,4
+7660,4194304,4,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c1-b2-p1-next-opt,16777216,17.520209857832615,next-opt,4
+8918,4194304,4,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c1-b2-p2-next-primary,16777216,15.050054910172367,next-primary,4
+5448,4194304,4,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c1-b2-p3-next-base,16777216,24.63611935786831,next-base,4
+8633,4194304,4,,parallel_download,quic,16777216,1,4,controlled-c1-b2-p4-tuic,16777216,15.545642376955957,tuic,4
+5815,4194304,4,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c1-b3-p1-next-primary,16777216,23.07858480389569,next-primary,4
+90001,4194304,4,,parallel_download,quic,9928704,1,0,controlled-c1-b3-p2-tuic,0,0,tuic,4
+16322,4194304,4,"{'tcp_assignments': [2, 2], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c1-b3-p3-next-opt,16777216,8.22273166412165,next-opt,4
+5269,4194304,4,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c1-b3-p4-next-base,16777216,25.469896852274527,next-base,4
+18188,4194304,4,,parallel_download,quic,16777216,1,4,controlled-c1-b4-p1-tuic,16777216,7.379365744054296,tuic,4
+6383,4194304,4,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c1-b4-p2-next-base,16777216,21.02447565099667,next-base,4
+5142,4194304,4,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c1-b4-p3-next-primary,16777216,26.10139538512089,next-primary,4
+5752,4194304,4,"{'tcp_assignments': [2, 2], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c1-b4-p4-next-opt,16777216,23.33334876341317,next-opt,4
+4984,4194304,4,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c2-b1-p1-next-base,16777216,26.924522965997227,next-base,4
+17271,4194304,4,"{'tcp_assignments': [2, 2], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c2-b1-p2-next-opt,16777216,7.77095483740072,next-opt,4
+5279,4194304,4,,parallel_download,quic,16777216,1,4,controlled-c2-b1-p3-tuic,16777216,25.42421679207711,tuic,4
+90004,4194304,4,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,11223040,1,0,controlled-c2-b1-p4-next-primary,0,0,next-primary,4
+23290,4194304,4,"{'tcp_assignments': [2, 2], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c2-b2-p1-next-opt,16777216,5.762696486535078,next-opt,4
+13483,4194304,4,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c2-b2-p2-next-primary,16777216,9.954051478550017,next-primary,4
+17339,4194304,4,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c2-b2-p3-next-base,16777216,7.74047320756409,next-base,4
+5042,4194304,4,,parallel_download,quic,16777216,1,4,controlled-c2-b2-p4-tuic,16777216,26.6199251213297,tuic,4
+15136,4194304,4,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c2-b3-p1-next-primary,16777216,8.867282090676436,next-primary,4
+90001,4194304,4,,parallel_download,quic,13860864,1,0,controlled-c2-b3-p2-tuic,0,0,tuic,4
+24545,4194304,4,"{'tcp_assignments': [2, 2], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c2-b3-p3-next-opt,16777216,5.468191764125705,next-opt,4
+23185,4194304,4,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c2-b3-p4-next-base,16777216,5.7888385866927345,next-base,4
+10548,4194304,4,,parallel_download,quic,16777216,1,4,controlled-c2-b4-p1-tuic,16777216,12.724067079921237,tuic,4
+27646,4194304,4,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c2-b4-p2-next-base,16777216,4.854828266324947,next-base,4
+19476,4194304,4,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c2-b4-p3-next-primary,16777216,6.8911449970183565,next-primary,4
+6153,4194304,4,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",parallel_download,quic,16777216,1,4,controlled-c2-b4-p4-next-opt,16777216,21.810330635149025,next-opt,4

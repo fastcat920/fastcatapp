@@ -1,0 +1,17 @@
+{
+  "events": [
+    {
+      "count": 12,
+      "event": "sockets-opened"
+    },
+    {
+      "closed": 4,
+      "pending": 8,
+      "requested": 12,
+      "scope": "partial TLS headers; single source; sockets released on exit"
+    }
+  ],
+  "server_established_during_hold": 8,
+  "exit_code": 0,
+  "observation": "concurrent reads, common 2s deadline; old short-window result retained"
+}

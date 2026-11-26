@@ -1,0 +1,75 @@
+{
+  "connections": 256,
+  "concurrency": 16,
+  "payload_bytes_each_direction": 16777216,
+  "batch_seconds": 0.242,
+  "connection_p50_ms": 14.19,
+  "connection_p95_ms": 21.549,
+  "sustained_seconds": 3.024,
+  "sustained_rounds": 56,
+  "sustained_payload_bytes_each_direction": 458752,
+  "payload_mismatches": 0,
+  "resource_samples": [
+    {
+      "elapsed_seconds": 0.02,
+      "processes": [
+        {
+          "pid": 64624,
+          "rss_kib": 13920,
+          "cpu_percent": 0.0
+        },
+        {
+          "pid": 64625,
+          "rss_kib": 16128,
+          "cpu_percent": 0.0
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 1.046,
+      "processes": [
+        {
+          "pid": 64624,
+          "rss_kib": 20864,
+          "cpu_percent": 10.9
+        },
+        {
+          "pid": 64625,
+          "rss_kib": 19936,
+          "cpu_percent": 4.0
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 2.066,
+      "processes": [
+        {
+          "pid": 64624,
+          "rss_kib": 20864,
+          "cpu_percent": 0.3
+        },
+        {
+          "pid": 64625,
+          "rss_kib": 19936,
+          "cpu_percent": 0.5
+        }
+      ]
+    },
+    {
+      "elapsed_seconds": 3.086,
+      "processes": [
+        {
+          "pid": 64624,
+          "rss_kib": 20864,
+          "cpu_percent": 0.2
+        },
+        {
+          "pid": 64625,
+          "rss_kib": 19936,
+          "cpu_percent": 0.3
+        }
+      ]
+    }
+  ],
+  "resource_note": "ps RSS KiB and lifetime CPU percentage; macOS loopback only"
+}

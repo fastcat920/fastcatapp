@@ -1,0 +1,5 @@
+{
+  "exit_code": 0,
+  "stdout": "{\"bytes\":32768,\"chunk\":16384,\"first_payload_ms\":2085.179,\"first_response_headers_ms\":2085.146,\"full_request_ms\":2495.157,\"gap_ms\":0,\"header_kind\":\"application-response\",\"kind\":\"matched-n1\",\"payload_verified\":true,\"request_writes\":[{\"bytes\":267,\"shape\":\"request-headers\"},{\"bytes\":116,\"shape\":\"http-chunk\",\"body_bytes\":110},{\"bytes\":37,\"shape\":\"http-chunk\",\"body_bytes\":26}],\"shutdown_eof_observed\":true}\n",
+  "stderr": ""
+}

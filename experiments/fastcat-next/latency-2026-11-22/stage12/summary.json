@@ -1,0 +1,107 @@
+{
+  "stage": "stage12",
+  "rows": 1698,
+  "summary": {
+    "next-opt": {
+      "loaded_success": 72,
+      "loaded_total": 72,
+      "loaded_p50": 372.181,
+      "loaded_p95": 764.209,
+      "mixed_groups": 6,
+      "foreground_success": 72,
+      "foreground_total": 72,
+      "background_success": 12,
+      "background_total": 12,
+      "parallel": {
+        "groups": 6,
+        "success": 24,
+        "jobs": 24,
+        "aggregate_mbps": 8.81870351956898,
+        "median_mbps": 9.407426271586967
+      },
+      "rolling": {
+        "groups": 6,
+        "success": 72,
+        "jobs": 72,
+        "aggregate_mbps": 17.746886139923017,
+        "median_mbps": 21.31956434274745
+      },
+      "cold": {
+        "success": 36,
+        "total": 36,
+        "p50": 750.706,
+        "p95": 3601.593
+      },
+      "warm": {
+        "success": 36,
+        "total": 36,
+        "p50": 361.652,
+        "p95": 1026.042
+      },
+      "batch": {
+        "success": 36,
+        "total": 36,
+        "p50": 368.78,
+        "p95": 904.494
+      }
+    },
+    "next-latency": {
+      "loaded_success": 72,
+      "loaded_total": 72,
+      "loaded_p50": 422.854,
+      "loaded_p95": 766.611,
+      "mixed_groups": 6,
+      "foreground_success": 72,
+      "foreground_total": 72,
+      "background_success": 12,
+      "background_total": 12,
+      "parallel": {
+        "groups": 6,
+        "success": 24,
+        "jobs": 24,
+        "aggregate_mbps": 7.477588471252414,
+        "median_mbps": 9.392448072906632
+      },
+      "rolling": {
+        "groups": 6,
+        "success": 72,
+        "jobs": 72,
+        "aggregate_mbps": 17.784772780141637,
+        "median_mbps": 18.208454905636913
+      },
+      "cold": {
+        "success": 36,
+        "total": 36,
+        "p50": 784.056,
+        "p95": 1821.331
+      },
+      "warm": {
+        "success": 36,
+        "total": 36,
+        "p50": 373.39,
+        "p95": 1050.615
+      },
+      "batch": {
+        "success": 36,
+        "total": 36,
+        "p50": 375.549,
+        "p95": 702.526
+      }
+    }
+  },
+  "gate": {
+    "next-latency": {
+      "passed": false,
+      "checks": {
+        "enough_samples": true,
+        "loaded_p95": false,
+        "foreground_completion": true,
+        "background_completion": true,
+        "parallel_complete": true,
+        "parallel_throughput": false,
+        "rolling_complete": true,
+        "rolling_throughput": true
+      }
+    }
+  }
+}

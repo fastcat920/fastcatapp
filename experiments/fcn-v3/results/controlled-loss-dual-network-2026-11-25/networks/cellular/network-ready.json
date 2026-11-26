@@ -1,0 +1,10 @@
+{
+  "default_net_id": 360,
+  "validated": true,
+  "transports": [
+    "CELLULAR"
+  ],
+  "observed_unix_ms": 1795597471328,
+  "exit_code": 0,
+  "probe_error": null
+}

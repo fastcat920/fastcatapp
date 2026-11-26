@@ -454,12 +454,11 @@ class DiagnosticBundleService {
       final name = node.name;
       if (!seen.add(name)) continue;
       nodeIndex++;
-      final delay = node.delayMs;
-      final value = delay == null
-          ? 'not_tested'
-          : delay < 0
-              ? 'timeout'
-              : '${delay}ms';
+      final value = switch (node.delayMs) {
+        null => 'not_tested',
+        < 0 => node.timedOut ? 'timeout' : 'failed',
+        final delay => '${delay}ms',
+      };
       buffer.writeln('- node_$nodeIndex: $value');
     }
     if (seen.isEmpty) buffer.writeln('status: no_available_nodes');
@@ -498,6 +497,7 @@ class DiagnosticBundleService {
       buffer,
       l10n.xboardNetworkDiagnosticsIpConnectivity,
       snapshot.ipResults,
+      note: l10n.xboardNetworkDiagnosticsNativeRouteNote,
     );
     if (snapshot.nodeResult.isNotEmpty) {
       _writeNetworkItems(
@@ -528,6 +528,7 @@ class DiagnosticBundleService {
       buffer,
       l10n.xboardNetworkDiagnosticsDirectHttps,
       snapshot.directResults,
+      note: l10n.xboardNetworkDiagnosticsNativeRouteNote,
     );
     _writeNetworkItems(
       buffer,
@@ -539,6 +540,15 @@ class DiagnosticBundleService {
       l10n.xboardNetworkDiagnosticsLocalProxy,
       snapshot.localProxyResults,
     );
+    final download = snapshot.download;
+    if (download != null) {
+      buffer
+        ..writeln()
+        ..writeln('${l10n.xboardNetworkDiagnosticsDownloadSpeed}:');
+      for (final line in download.describe(l10n)) {
+        buffer.writeln('  $line');
+      }
+    }
   }
 
   static void _writeSection(
@@ -565,8 +575,9 @@ class DiagnosticBundleService {
   static void _writeNetworkItems(
     StringBuffer buffer,
     String title,
-    List<NetworkDiagnosticItem> items,
-  ) {
+    List<NetworkDiagnosticItem> items, {
+    String? note,
+  }) {
     buffer
       ..writeln()
       ..writeln('$title:');
@@ -574,6 +585,7 @@ class DiagnosticBundleService {
       buffer.writeln('  -');
       return;
     }
+    if (note != null) buffer.writeln('  $note');
     for (final item in items) {
       final elapsed = item.elapsedMs > 0 ? '${item.elapsedMs}ms' : '—';
       buffer.writeln(

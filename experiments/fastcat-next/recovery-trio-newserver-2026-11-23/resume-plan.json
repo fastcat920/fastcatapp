@@ -1,0 +1,243 @@
+{
+  "date": "2026-11-23",
+  "variants": {
+    "next-opt": "recovery-aware two-lane adaptive Next, no prefix/budget",
+    "next-base": "Next single lane, baseline QUIC",
+    "tuic": "CatNode V2Core TUIC v5, explicit server BBR and client BBR; zero RTT and fast-open off"
+  },
+  "orders": [
+    [
+      "next-opt",
+      "next-base",
+      "tuic"
+    ],
+    [
+      "next-opt",
+      "tuic",
+      "next-base"
+    ],
+    [
+      "next-base",
+      "next-opt",
+      "tuic"
+    ],
+    [
+      "next-base",
+      "tuic",
+      "next-opt"
+    ],
+    [
+      "tuic",
+      "next-opt",
+      "next-base"
+    ],
+    [
+      "tuic",
+      "next-base",
+      "next-opt"
+    ]
+  ],
+  "metrics": [
+    [
+      "latency",
+      6,
+      [
+        "-samples",
+        "12",
+        "-pools",
+        "1",
+        "-batches",
+        "3",
+        "-workers",
+        "4"
+      ],
+      false,
+      450
+    ],
+    [
+      "batch8",
+      6,
+      [
+        "-workload",
+        "batch-only",
+        "-samples",
+        "1",
+        "-pools",
+        "1",
+        "-batches",
+        "3",
+        "-workers",
+        "8"
+      ],
+      false,
+      180
+    ],
+    [
+      "single16",
+      6,
+      [
+        "-download-bytes",
+        "16777216",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "90s"
+      ],
+      true,
+      120
+    ],
+    [
+      "parallel4",
+      6,
+      [
+        "-download-bytes",
+        "4194304",
+        "-download-workers",
+        "4",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "90s"
+      ],
+      true,
+      120
+    ],
+    [
+      "parallel8",
+      6,
+      [
+        "-download-bytes",
+        "2097152",
+        "-download-workers",
+        "8",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "90s"
+      ],
+      true,
+      120
+    ],
+    [
+      "rolling",
+      6,
+      [
+        "-download-bytes",
+        "4194304",
+        "-download-workers",
+        "4",
+        "-download-jobs",
+        "12",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "150s"
+      ],
+      true,
+      180
+    ],
+    [
+      "mixed",
+      6,
+      [
+        "-mixed-ready",
+        "-mixed-download-bytes",
+        "16777216",
+        "-samples",
+        "12",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "90s"
+      ],
+      true,
+      120
+    ],
+    [
+      "echo",
+      6,
+      [
+        "-bulk-only",
+        "-bulk-rounds",
+        "1",
+        "-bulk-seconds",
+        "5",
+        "-bulk-target",
+        "154.37.155.240:19445"
+      ],
+      true,
+      100
+    ],
+    [
+      "idle",
+      6,
+      [
+        "-idle-seconds",
+        "20"
+      ],
+      false,
+      100
+    ],
+    [
+      "web-example",
+      2,
+      [
+        "-mixed-ready",
+        "-mixed-download-bytes",
+        "16777216",
+        "-mixed-foreground-target",
+        "example.com:443",
+        "-samples",
+        "12",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "90s"
+      ],
+      true,
+      120
+    ],
+    [
+      "web-google",
+      2,
+      [
+        "-mixed-ready",
+        "-mixed-download-bytes",
+        "16777216",
+        "-mixed-foreground-target",
+        "www.google.com:443",
+        "-samples",
+        "12",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "90s"
+      ],
+      true,
+      120
+    ]
+  ],
+  "trace": false,
+  "lane_diagnostics": false,
+  "request_snapshots": false,
+  "server_restart_each_case": true,
+  "cooldown_seconds": 5,
+  "port_crossover": "blocks 1/3/5: Next19458 TUIC19451; blocks2/4/6 swap ports; all 6 orders once per primary metric",
+  "client_go": "1.26.2",
+  "server_go": "1.27.3",
+  "readiness": "mixed and web wait for each background to receive 256KiB, maximum 5 seconds",
+  "scope": "Android native core CLI over Wi-Fi; formal App VPN temporarily off; no production changes; certificates verified",
+  "notes": [
+    "End-to-end firstbyte includes proxy/target TLS/HTTP, not ping",
+    "Cold creates new client; warm reuses entry but creates target TLS each request",
+    "No packet-level or lane JSON trace during performance",
+    "TUIC native pool vs Next1/2 lanes: not an equal-connection-count algorithm experiment",
+    "Echo is simultaneous bidirectional echo, not pure upload",
+    "No post-hoc removal of slow or incomplete cases"
+  ],
+  "sha256": {
+    "compare": "f1e33d2296e08feeae321c51246b7a502d799ac1a3fc89a5025571e01ddb14ed",
+    "next-diagnostic": "5140bce7edf5934c9b12b4519921b35e7c571f22df6f0c930b0e62e7c1c43f7f",
+    "tuic-server": "a588992ca0c54f27fa51dd1a1be6273c622b0d3747df2005c96628d4c9d5105c"
+  }
+}

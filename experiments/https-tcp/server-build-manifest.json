@@ -1,0 +1,15 @@
+[
+  {
+    "path": "/Users/pizihu/Projects/FastCatAPP/experiments/https-tcp/artifacts/fastcat-https-linux-amd64",
+    "bytes": 6217890,
+    "sha256": "fa802f83eead12df5f44c759218a0c65f8d5f1fd0749e156bd6cea924261f35d",
+    "runtime_verified": true,
+    "verified_on": "Linux with QEMU x86_64 user-mode"
+  },
+  {
+    "path": "/Users/pizihu/Projects/FastCatAPP/experiments/https-tcp/artifacts/fastcat-https-macos-arm64",
+    "bytes": 5881938,
+    "sha256": "f508f7dc89727d59bacd8b13e90d88a4bdcc3446509ca75e41a2a91dc0d2bc24",
+    "runtime_verified": true
+  }
+]

@@ -1,0 +1,15 @@
+Started fastcat-n1-compare-capture-main.service - [systemd-run] /usr/bin/tcpdump -i any -nn -B 4096 -s 96 -c 1000000 -w /opt/fastcat-n1-lab/threeway-main-headers.pcap "(tcp port 18466) or (udp port 18468) or (udp port 18469)".
+tcpdump: WARNING: any: That device doesn't support promiscuous mode
+(Promiscuous mode not supported on the "any" device)
+tcpdump: listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 96 bytes
+226558 packets captured
+226559 packets received by filter
+0 packets dropped by kernel
+Stopping fastcat-n1-compare-capture-main.service - [systemd-run] /usr/bin/tcpdump -i any -nn -B 4096 -s 96 -c 1000000 -w /opt/fastcat-n1-lab/threeway-main-headers.pcap "(tcp port 18466) or (udp port 18468) or (udp port 18469)"...
+fastcat-n1-compare-capture-main.service: Deactivated successfully.
+Stopped fastcat-n1-compare-capture-main.service - [systemd-run] /usr/bin/tcpdump -i any -nn -B 4096 -s 96 -c 1000000 -w /opt/fastcat-n1-lab/threeway-main-headers.pcap "(tcp port 18466) or (udp port 18468) or (udp port 18469)".
+{"active_connections":0,"active_jobs":0,"active_sessions":0,"elapsed_ms":1474000,"fd_count":8,"goroutines":2,"heap_alloc":2236960,"heap_sys":8060928,"num_gc":56,"os_threads":4,"pause_total_ns":6121069,"pid":739610,"rss_kib":13216,"total_alloc":158716584}
+{"active_connections":0,"active_jobs":0,"active_sessions":0,"elapsed_ms":1475000,"fd_count":8,"goroutines":2,"heap_alloc":2252552,"heap_sys":8060928,"num_gc":56,"os_threads":4,"pause_total_ns":6121069,"pid":739610,"rss_kib":13216,"total_alloc":158732176}
+{"active_connections":0,"active_jobs":0,"active_sessions":0,"elapsed_ms":1476000,"fd_count":8,"goroutines":2,"heap_alloc":2268144,"heap_sys":8060928,"num_gc":56,"os_threads":4,"pause_total_ns":6121069,"pid":739610,"rss_kib":13216,"total_alloc":158747768}
+{"active_connections":0,"active_jobs":0,"active_sessions":0,"elapsed_ms":1477000,"fd_count":8,"goroutines":2,"heap_alloc":2283736,"heap_sys":8060928,"num_gc":56,"os_threads":4,"pause_total_ns":6121069,"pid":739610,"rss_kib":13216,"total_alloc":158763360}
+{"active_connections":0,"active_jobs":0,"active_sessions":0,"elapsed_ms":1478000,"fd_count":8,"goroutines":2,"heap_alloc":2299328,"heap_sys":8060928,"num_gc":56,"os_threads":4,"pause_total_ns":6121069,"pid":739610,"rss_kib":13200,"total_alloc":158778952}

@@ -1,0 +1,8 @@
+Nov 19 11:48:01.853216 PacketTunnel(Foundation)[5849] <Notice>: [PacketTunnel] ERROR: ClashCore_init failed with code 5
+Nov 19 11:49:20.405936 PacketTunnel(Foundation)[5852] <Notice>: [PacketTunnel] Tunnel started (active mode, port 7890)
+Nov 19 11:55:02.985698 Runner(Flutter)[5859] <Notice>: flutter: [快猫][11:55:02][INFO] [profile_import_provider.dart] 保留当前本地测试配置，不用订阅刷新替换
+Nov 19 11:55:04.298795 Runner(Flutter)[5859] <Notice>: flutter: [快猫][11:55:04][INFO] [profile_import_provider.dart] 保留当前本地测试配置，不用订阅刷新替换
+Nov 19 11:55:07.438619 PacketTunnel(Foundation)[5862] <Notice>: [PacketTunnel] Tunnel started (active mode, port 7890)
+Nov 19 11:55:18.357928 Runner(Flutter)[5863] <Notice>: flutter: [快猫][11:55:18][INFO] [profile_import_provider.dart] 保留当前本地测试配置，不用订阅刷新替换
+Nov 19 11:55:20.939741 Runner(Flutter)[5863] <Notice>: flutter: [快猫][11:55:20][INFO] [profile_import_provider.dart] 保留当前本地测试配置，不用订阅刷新替换
+Nov 19 11:55:25.696815 PacketTunnel(Foundation)[5864] <Notice>: [PacketTunnel] Tunnel started (active mode, port 7890)

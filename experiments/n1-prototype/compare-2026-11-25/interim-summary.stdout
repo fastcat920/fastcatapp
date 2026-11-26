@@ -1,0 +1,134 @@
+{
+  "n1": {
+    "success": 42,
+    "total": 42,
+    "cold": {
+      "n": 18,
+      "p50": 1261.31,
+      "p95": 5669.607,
+      "mean": 2048.265,
+      "min": 504.01,
+      "max": 8078.543
+    },
+    "warm": {
+      "n": 21,
+      "p50": 1210.03,
+      "p95": 4465.654,
+      "mean": 1829.249,
+      "min": 460.932,
+      "max": 9319.849
+    },
+    "single_mbps": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "four_mbps": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "upload": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "mean": null,
+      "min": null,
+      "max": null
+    }
+  },
+  "hysteria2": {
+    "success": 42,
+    "total": 42,
+    "cold": {
+      "n": 18,
+      "p50": 755.35,
+      "p95": 2019.348,
+      "mean": 1070.872,
+      "min": 364.869,
+      "max": 3222.585
+    },
+    "warm": {
+      "n": 21,
+      "p50": 105.007,
+      "p95": 234.531,
+      "mean": 133.272,
+      "min": 97.574,
+      "max": 307.91
+    },
+    "single_mbps": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "four_mbps": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "upload": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "mean": null,
+      "min": null,
+      "max": null
+    }
+  },
+  "tuic": {
+    "success": 50,
+    "total": 50,
+    "cold": {
+      "n": 18,
+      "p50": 554.439,
+      "p95": 1845.583,
+      "mean": 823.698,
+      "min": 274.864,
+      "max": 4664.561
+    },
+    "warm": {
+      "n": 21,
+      "p50": 99.385,
+      "p95": 109.37,
+      "mean": 105.112,
+      "min": 97.664,
+      "max": 207.496
+    },
+    "single_mbps": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "four_mbps": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "mean": null,
+      "min": null,
+      "max": null
+    },
+    "upload": {
+      "n": 0,
+      "p50": null,
+      "p95": null,
+      "mean": null,
+      "min": null,
+      "max": null
+    }
+  }
+}

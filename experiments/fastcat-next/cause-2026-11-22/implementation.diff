@@ -1,0 +1,644 @@
+--- before/fastcatnext/client.go
++++ after/fastcatnext/client.go
+@@ -18,6 +18,7 @@
+ 
+ type physical struct {
+ 	q                 *quic.Conn
++	stats             *quicTrace
+ 	pc                net.PacketConn
+ 	tcp               *tls.Conn
+ 	h2                *http2.ClientConn
+@@ -285,6 +286,8 @@
+ 		qc := profileQUICConfig(c.cfg.idle(), c.cfg.QUICProfile)
+ 		stats := new(quicTrace)
+ 		if c.cfg.Trace != nil {
++			stats.prefix = c.cfg.PrefixTrace
++			p.stats = stats
+ 			stats.trace = c.cfg.Trace
+ 			stats.started = time.Now()
+ 			stats.side = "client"
+@@ -395,6 +398,12 @@
+ 	if e != nil {
+ 		return nil, e
+ 	}
++	tag := ""
++	if c.cfg.Trace != nil {
++		var nonce [16]byte
++		copy(nonce[:], head[len(head)-48:len(head)-32])
++		tag = diagnosticTag(nonce)
++	}
+ 	if p.q != nil {
+ 		stream, e := p.q.OpenStreamSync(ctx)
+ 		if e != nil {
+@@ -402,7 +411,7 @@
+ 		}
+ 		if c.cfg.CoalesceOpen {
+ 			transferred = true
+-			return &quicConn{Stream: stream, local: p.q.LocalAddr(), remote: p.q.RemoteAddr(), pendingHeader: head, onClose: func() { c.release(p) }}, nil
++			return &quicConn{physical: p, traced: c.cfg.Trace != nil, tag: tag, openedAt: time.Now().UnixMicro(), Stream: stream, local: p.q.LocalAddr(), remote: p.q.RemoteAddr(), pendingHeader: head, onClose: func() { c.release(p) }}, nil
+ 		}
+ 		deadline, _ := ctx.Deadline()
+ 		stream.SetWriteDeadline(deadline)
+@@ -413,7 +422,7 @@
+ 		}
+ 		stream.SetWriteDeadline(time.Time{})
+ 		transferred = true
+-		return &quicConn{Stream: stream, local: p.q.LocalAddr(), remote: p.q.RemoteAddr(), onClose: func() { c.release(p) }}, nil
++		return &quicConn{physical: p, traced: c.cfg.Trace != nil, tag: tag, openedAt: time.Now().UnixMicro(), Stream: stream, local: p.q.LocalAddr(), remote: p.q.RemoteAddr(), onClose: func() { c.release(p) }}, nil
+ 	}
+ 	// A fixed ClientConn cannot silently reconnect or replay a POST. Its exporter
+ 	// always matches this exact TLS connection. Concurrent requests remain streams.
+@@ -460,10 +469,15 @@
+ }
+ 
+ type quicConn struct {
+-	writeMu       sync.Mutex
+-	pendingHeader []byte
+-	prefixDone    atomic.Bool
+-	prefixErr     error
++	physical                                               *physical
++	traced                                                 bool
++	tag                                                    string
++	openedAt                                               int64
++	statusStart, statusEnd, firstData, readWait, writeWait atomic.Int64
++	writeMu                                                sync.Mutex
++	pendingHeader                                          []byte
++	prefixDone                                             atomic.Bool
++	prefixErr                                              error
+ 	*quic.Stream
+ 	once          sync.Once
+ 	status        error
+@@ -475,6 +489,10 @@
+ // The first write combines OPEN with at most 16 KiB of business data. Reads
+ // and half-close flush OPEN alone, preserving server-first protocols.
+ func (c *quicConn) Write(b []byte) (int, error) {
++	if c.traced {
++		start := time.Now()
++		defer func() { c.writeWait.Add(time.Since(start).Microseconds()) }()
++	}
+ 	c.writeMu.Lock()
+ 	defer c.writeMu.Unlock()
+ 	if c.prefixErr != nil {
+@@ -539,10 +557,18 @@
+ 	return e
+ }
+ func (c *quicConn) Read(b []byte) (int, error) {
++	if c.traced {
++		start := time.Now()
++		defer func() { c.readWait.Add(time.Since(start).Microseconds()) }()
++	}
+ 	if err := c.flushOpen(); err != nil {
+ 		return 0, err
+ 	}
+ 	c.once.Do(func() {
++		if c.traced {
++			c.statusStart.Store(time.Now().UnixMicro())
++			defer func() { c.statusEnd.Store(time.Now().UnixMicro()) }()
++		}
+ 		var status [1]byte
+ 		_, c.status = io.ReadFull(c.Stream, status[:])
+ 		if c.status == nil {
+@@ -560,7 +586,11 @@
+ 	if c.status != nil {
+ 		return 0, c.status
+ 	}
+-	return c.Stream.Read(b)
++	n, e := c.Stream.Read(b)
++	if c.traced && n > 0 {
++		c.firstData.CompareAndSwap(0, time.Now().UnixMicro())
++	}
++	return n, e
+ }
+ func (c *quicConn) Close() error {
+ 	c.closeOnce.Do(func() {
+--- before/fastcatnext/config.go
++++ after/fastcatnext/config.go
+@@ -38,6 +38,7 @@
+ 	IdleTimeout                               time.Duration
+ 	ConnectTimeout                            time.Duration
+ 	Trace                                     Trace
++	PrefixTrace                               bool
+ }
+ 
+ func (c Config) validate() error {
+@@ -116,6 +117,7 @@
+ 	DialContext  func(context.Context, string, string) (net.Conn, error)
+ 	Counters     *Counters
+ 	Trace        Trace
++	PrefixTrace  bool
+ }
+ 
+ func publicIP(ip netip.Addr) bool {
+--- before/fastcatnext/next_test.go
++++ after/fastcatnext/next_test.go
+@@ -22,9 +22,16 @@
+ 	return fixtureProfile(t, carrier, idle, copies, "")
+ }
+ func fixtureProfile(t *testing.T, carrier string, idle time.Duration, copies int, profile string) (*Client, *Server, func()) {
++	return fixtureProfileConfig(t, carrier, idle, copies, profile, nil)
++}
++func fixtureProfileConfig(t *testing.T, carrier string, idle time.Duration, copies int, profile string, configure func(*ServerConfig)) (*Client, *Server, func()) {
+ 	t.Helper()
+ 	key := bytes.Repeat([]byte{7}, 32)
+-	s, e := NewServer(ServerConfig{Accounts: map[string][]byte{"test": key}, QUICProfile: profile, AllowPrivate: true, IdleTimeout: idle, Congestion: "bbr"})
++	cfg := ServerConfig{Accounts: map[string][]byte{"test": key}, QUICProfile: profile, AllowPrivate: true, IdleTimeout: idle, Congestion: "bbr"}
++	if configure != nil {
++		configure(&cfg)
++	}
++	s, e := NewServer(cfg)
+ 	if e != nil {
+ 		t.Fatal(e)
+ 	}
+--- before/fastcatnext/prefix_trace_test.go
++++ after/fastcatnext/prefix_trace_test.go
+@@ -0,0 +1,29 @@
++package fastcatnext
++
++import (
++	"github.com/metacubex/quic-go/qlog"
++	"testing"
++	"time"
++)
++
++func TestPrefixTraceMetadataAndBound(t *testing.T) {
++	var events []Event
++	s := &quicTrace{prefix: true, side: "server", session: 1, started: time.Now(), trace: func(e Event) { events = append(events, e) }}
++	h := qlog.PacketHeader{PacketType: qlog.PacketType("1RTT"), PacketNumber: 7}
++	s.RecordEvent(qlog.PacketSent{Header: h, Frames: []qlog.Frame{{Frame: &qlog.StreamFrame{StreamID: 4, Offset: 0, Length: 1}}}})
++	s.RecordEvent(qlog.PacketLost{Header: h})
++	s.RecordEvent(qlog.PacketReceived{Header: h, Frames: []qlog.Frame{{Frame: &qlog.StreamFrame{StreamID: 4, Offset: 0, Length: 1}}}})
++	if len(events) != 3 || events[0].Packet != 7 || events[0].FrameLength != 1 || events[1].Stage != "server_stream_prefix_lost" || events[2].Stage != "server_stream_prefix_received" {
++		t.Fatal(events)
++	}
++	before := len(events)
++	s.RecordEvent(qlog.PacketSent{Header: h, Frames: []qlog.Frame{{Frame: &qlog.StreamFrame{StreamID: 4, Offset: 8192, Length: 100}}}})
++	if len(events) != before {
++		t.Fatal("prefix capture exceeded offset bound")
++	}
++	s.metaEvents.Store(8192)
++	s.RecordEvent(qlog.PacketSent{Header: h, Frames: []qlog.Frame{{Frame: &qlog.StreamFrame{StreamID: 4, Offset: 0, Length: 1}}}})
++	if len(events) != before || s.metaDropped.Load() == 0 {
++		t.Fatal("metadata output not bounded")
++	}
++}
+--- before/fastcatnext/server.go
++++ after/fastcatnext/server.go
+@@ -13,8 +13,9 @@
+ )
+ 
+ type Server struct {
+-	cfg   ServerConfig
+-	slots chan struct{}
++	cfg           ServerConfig
++	traceSessions sync.Map
++	slots         chan struct{}
+ }
+ type connState struct {
+ 	mu   sync.Mutex
+@@ -159,7 +160,7 @@
+ 	tc.MinVersion = qtls.VersionTLS13
+ 	tc.NextProtos = []string{ALPN}
+ 	qc := profileQUICConfig(s.cfg.IdleTimeout, s.cfg.QUICProfile)
+-	attachServerQUICTrace(qc, s.cfg.Trace)
++	attachServerQUICTrace(qc, s.cfg.Trace, &s.traceSessions, s.cfg.PrefixTrace)
+ 	listener, e := quic.Listen(pc, tc, qc)
+ 	if e != nil {
+ 		return e
+@@ -228,6 +229,23 @@
+ 		stream.Write([]byte{1})
+ 		return
+ 	}
++	trace := s.cfg.Trace
++	if trace != nil {
++		tag := diagnosticTag(h.Nonce)
++		var session uint64
++		if t, ok := s.traceSessions.Load(c.Context()); ok {
++			session = t.(*quicTrace).session
++		}
++		base := trace
++		trace = func(e Event) {
++			e.AtUnixUS = time.Now().UnixMicro()
++			e.RequestTag = tag
++			e.Stream = uint64(stream.StreamID())
++			e.Session = session
++			base(e)
++		}
++		trace(Event{Stage: "server_open_received", Carrier: "quic", OK: true})
++	}
+ 	ctx, stop := context.WithTimeout(c.Context(), 10*time.Minute)
+ 	defer stop()
+ 	dialctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+@@ -235,7 +253,11 @@
+ 	if h.Kind == 1 {
+ 		network = "udp"
+ 	}
++	dialStart := time.Now()
+ 	target, e := s.cfg.dial(dialctx, network, h.Target)
++	if trace != nil {
++		trace(Event{Stage: "server_target_dial", Carrier: "quic", DurationUS: time.Since(dialStart).Microseconds(), OK: e == nil})
++	}
+ 	cancel()
+ 	if e != nil {
+ 		stream.Write([]byte{2})
+@@ -257,18 +279,21 @@
+ 	if _, e := stream.Write([]byte{0}); e != nil {
+ 		return
+ 	}
++	if trace != nil {
++		trace(Event{Stage: "server_ack_queued", Carrier: "quic", OK: true})
++	}
+ 	done := context.AfterFunc(ctx, func() { target.Close(); stream.CancelRead(0); stream.CancelWrite(0) })
+ 	defer done()
+ 	up := make(chan struct{})
+ 	go func() {
+-		n, _ := copyTrace(ctx, target, stream, s.cfg.Trace, "quic", "upload")
++		n, _ := copyTrace(ctx, target, stream, trace, "quic", "upload")
+ 		s.cfg.Counters.Upload.Add(uint64(n))
+ 		if cw, ok := target.(interface{ CloseWrite() error }); ok {
+ 			cw.CloseWrite()
+ 		}
+ 		close(up)
+ 	}()
+-	n, _ := copyTrace(ctx, stream, target, s.cfg.Trace, "quic", "download")
++	n, _ := copyTrace(ctx, stream, target, trace, "quic", "download")
+ 	s.cfg.Counters.Download.Add(uint64(n))
+ 	stream.Close()
+ 	stream.CancelRead(0)
+--- before/fastcatnext/trace.go
++++ after/fastcatnext/trace.go
+@@ -2,6 +2,8 @@
+ 
+ import (
+ 	"context"
++	"crypto/sha256"
++	"encoding/hex"
+ 	quic "github.com/metacubex/quic-go"
+ 	"github.com/metacubex/quic-go/qlog"
+ 	"github.com/metacubex/quic-go/qlogwriter"
+@@ -14,6 +16,18 @@
+ // Event contains only timings and counters, never credentials, destinations,
+ // packet bodies, connection IDs or TLS key material. Trace is opt-in.
+ type Event struct {
++	Packet            uint64 `json:"packet,omitempty"`
++	PacketSpace       string `json:"packet_space,omitempty"`
++	FrameOffset       int64  `json:"frame_offset,omitempty"`
++	FrameLength       int64  `json:"frame_length,omitempty"`
++	MetaDropped       int64  `json:"meta_dropped,omitempty"`
++	AtUnixUS          int64  `json:"at_unix_us,omitempty"`
++	RequestTag        string `json:"request_tag,omitempty"`
++	Stream            uint64 `json:"stream,omitempty"`
++	PTOEvents         int64  `json:"pto_events,omitempty"`
++	CurrentPTO        int64  `json:"current_pto,omitempty"`
++	LatestRTTUS       int64  `json:"latest_rtt_us,omitempty"`
++	MinRTTUS          int64  `json:"min_rtt_us,omitempty"`
+ 	WireBytesSent     int64  `json:"wire_bytes_sent,omitempty"`
+ 	WireBytesReceived int64  `json:"wire_bytes_received,omitempty"`
+ 	Session           uint64 `json:"session,omitempty"`
+@@ -47,9 +61,14 @@
+ var traceSession atomic.Uint64
+ 
+ type quicTrace struct {
++	prefix                                                                                    bool
++	metaMu                                                                                    sync.Mutex
++	interest                                                                                  map[tracePacket]bool
++	metaEvents, metaDropped                                                                   atomic.Int64
+ 	wireSent, wireReceived                                                                    atomic.Int64
+ 	sent, received, lost, pto, cwnd, inFlight, rtt, blockedSent, blockedReceived, updatesSent atomic.Int64
+ 	producers                                                                                 atomic.Int64
++	ptoEvents, currentPTO, latestRTT, minRTT                                                  atomic.Int64
+ 	trace                                                                                     Trace
+ 	started                                                                                   time.Time
+ 	side                                                                                      string
+@@ -97,8 +116,22 @@
+ 	}
+ 	switch p := e.(type) {
+ 	case qlog.PTOCountUpdated:
+-		setMax(&t.pto, int64(p.PTOCount))
++		n := int64(p.PTOCount)
++		old := t.currentPTO.Swap(n)
++		if n > old {
++			t.ptoEvents.Add(n - old)
++		}
++		setMax(&t.pto, n)
++		if t.prefix && n > old {
++			t.trace(t.snapshot(t.side+"_pto_raised", t.started, nil))
++		}
+ 	case qlog.MetricsUpdated:
++		if p.LatestRTT > 0 {
++			t.latestRTT.Store(p.LatestRTT.Microseconds())
++		}
++		if p.MinRTT > 0 {
++			t.minRTT.Store(p.MinRTT.Microseconds())
++		}
+ 		if p.CongestionWindow > 0 {
+ 			t.cwnd.Store(int64(p.CongestionWindow))
+ 		}
+@@ -106,32 +139,48 @@
+ 		if p.SmoothedRTT > 0 {
+ 			t.rtt.Store(p.SmoothedRTT.Microseconds())
+ 		}
++	case qlog.PacketLost:
++		if t.prefix {
++			t.recordPrefixLost(p)
++		}
+ 	case qlog.PacketSent:
++		if t.prefix {
++			t.recordPrefixFrames(p.Header, p.Frames, true)
++		}
+ 		t.wireSent.Add(int64(p.Raw.Length))
+ 		b, u := frameCounts(p.Frames)
+ 		t.blockedSent.Add(b)
+ 		t.updatesSent.Add(u)
+ 	case qlog.PacketReceived:
++		if t.prefix {
++			t.recordPrefixFrames(p.Header, p.Frames, false)
++		}
+ 		t.wireReceived.Add(int64(p.Raw.Length))
+ 		b, _ := frameCounts(p.Frames)
+ 		t.blockedReceived.Add(b)
+ 	}
+ }
+ func (t *quicTrace) snapshot(stage string, start time.Time, err error) Event {
+-	return Event{WireBytesSent: t.wireSent.Load(), WireBytesReceived: t.wireReceived.Load(), Session: t.session, CwndBytes: t.cwnd.Load(), BytesInFlight: t.inFlight.Load(), SmoothedRTTUS: t.rtt.Load(), BlockedSent: t.blockedSent.Load(), BlockedReceived: t.blockedReceived.Load(), WindowUpdatesSent: t.updatesSent.Load(), Stage: stage, Carrier: "quic", DurationUS: time.Since(start).Microseconds(), OK: err == nil, PacketsSent: t.sent.Load(), PacketsReceived: t.received.Load(), DeclaredLost: t.lost.Load(), MaxPTO: t.pto.Load()}
++	return Event{MetaDropped: t.metaDropped.Load(), AtUnixUS: time.Now().UnixMicro(), PTOEvents: t.ptoEvents.Load(), CurrentPTO: t.currentPTO.Load(), LatestRTTUS: t.latestRTT.Load(), MinRTTUS: t.minRTT.Load(), WireBytesSent: t.wireSent.Load(), WireBytesReceived: t.wireReceived.Load(), Session: t.session, CwndBytes: t.cwnd.Load(), BytesInFlight: t.inFlight.Load(), SmoothedRTTUS: t.rtt.Load(), BlockedSent: t.blockedSent.Load(), BlockedReceived: t.blockedReceived.Load(), WindowUpdatesSent: t.updatesSent.Load(), Stage: stage, Carrier: "quic", DurationUS: time.Since(start).Microseconds(), OK: err == nil, PacketsSent: t.sent.Load(), PacketsReceived: t.received.Load(), DeclaredLost: t.lost.Load(), MaxPTO: t.pto.Load()}
+ }
+ func attachQUICTrace(cfg *quic.Config, stats *quicTrace) {
+ 	cfg.Tracer = func(context.Context, bool, quic.ConnectionID) qlogwriter.Trace { return stats }
+ }
+ 
+-func attachServerQUICTrace(cfg *quic.Config, trace Trace) {
++func attachServerQUICTrace(cfg *quic.Config, trace Trace, registry *sync.Map, prefix bool) {
+ 	if trace == nil {
+ 		return
+ 	}
+ 	cfg.Tracer = func(ctx context.Context, _ bool, _ quic.ConnectionID) qlogwriter.Trace {
+-		t := &quicTrace{trace: trace, started: time.Now(), side: "server", session: traceSession.Add(1)}
++		t := &quicTrace{prefix: prefix, trace: trace, started: time.Now(), side: "server", session: traceSession.Add(1)}
++		if registry != nil {
++			registry.Store(ctx, t)
++		}
+ 		go func() {
+-			ticker := time.NewTicker(5 * time.Second)
++			if registry != nil {
++				defer registry.Delete(ctx)
++			}
++			ticker := time.NewTicker(250 * time.Millisecond)
+ 			defer ticker.Stop()
+ 			for {
+ 				select {
+@@ -223,7 +272,7 @@
+ }
+ 
+ func (t *quicTrace) progress(ctx context.Context) {
+-	ticker := time.NewTicker(5 * time.Second)
++	ticker := time.NewTicker(250 * time.Millisecond)
+ 	defer ticker.Stop()
+ 	for {
+ 		select {
+@@ -234,3 +283,58 @@
+ 		}
+ 	}
+ }
++
++// A one-way hash of a random per-OPEN nonce joins diagnostics across ends.
++// Neither the nonce itself, credentials, target nor business payload is logged.
++func diagnosticTag(n [16]byte) string { h := sha256.Sum256(n[:]); return hex.EncodeToString(h[:16]) }
++
++type tracePacket struct {
++	space  string
++	number uint64
++}
++
++func (t *quicTrace) emitMeta(e Event) {
++	if t.trace == nil {
++		return
++	}
++	if t.metaEvents.Add(1) > 8192 {
++		t.metaDropped.Add(1)
++		return
++	}
++	t.trace(e)
++}
++func (t *quicTrace) recordPrefixFrames(h qlog.PacketHeader, frames []qlog.Frame, sent bool) {
++	for _, frame := range frames {
++		f, ok := frame.Frame.(*qlog.StreamFrame)
++		if !ok || f.Offset >= 8192 || f.Length <= 0 {
++			continue
++		}
++		key := tracePacket{string(h.PacketType), uint64(h.PacketNumber)}
++		if sent {
++			t.metaMu.Lock()
++			if t.interest == nil {
++				t.interest = make(map[tracePacket]bool)
++			}
++			if len(t.interest) < 4096 {
++				t.interest[key] = true
++			} else {
++				t.metaDropped.Add(1)
++			}
++			t.metaMu.Unlock()
++		}
++		stage := t.side + "_stream_prefix_received"
++		if sent {
++			stage = t.side + "_stream_prefix_sent"
++		}
++		t.emitMeta(Event{AtUnixUS: time.Now().UnixMicro(), Session: t.session, Stage: stage, Carrier: "quic", OK: true, Stream: uint64(f.StreamID), Packet: key.number, PacketSpace: key.space, FrameOffset: f.Offset, FrameLength: f.Length})
++	}
++}
++func (t *quicTrace) recordPrefixLost(p qlog.PacketLost) {
++	key := tracePacket{string(p.Header.PacketType), uint64(p.Header.PacketNumber)}
++	t.metaMu.Lock()
++	interest := t.interest[key]
++	t.metaMu.Unlock()
++	if interest {
++		t.emitMeta(Event{AtUnixUS: time.Now().UnixMicro(), Session: t.session, Stage: t.side + "_stream_prefix_lost", Carrier: "quic", Packet: key.number, PacketSpace: key.space})
++	}
++}
+--- before/fastcatnext/transport_observation.go
++++ after/fastcatnext/transport_observation.go
+@@ -0,0 +1,51 @@
++package fastcatnext
++
++import "time"
++
++type TransportObservation struct {
++	AtUnixUS        int64  `json:"at_unix_us"`
++	Session         uint64 `json:"session"`
++	RequestTag      string `json:"request_tag,omitempty"`
++	Stream          uint64 `json:"stream"`
++	OpenedAtUS      int64  `json:"opened_at_us"`
++	StatusStartUS   int64  `json:"status_start_us"`
++	StatusEndUS     int64  `json:"status_end_us"`
++	FirstDataUS     int64  `json:"first_data_us"`
++	StatusWaitUS    int64  `json:"status_wait_us"`
++	ReadWaitUS      int64  `json:"read_wait_us"`
++	WriteWaitUS     int64  `json:"write_wait_us"`
++	PacketsLost     uint64 `json:"packets_lost"`
++	PacketsSent     uint64 `json:"packets_sent"`
++	PacketsReceived uint64 `json:"packets_received"`
++	RTTUS           int64  `json:"rtt_us"`
++	Counters        *Event `json:"counters,omitempty"`
++}
++
++func (c *quicConn) TransportObservation() TransportObservation {
++	o := TransportObservation{AtUnixUS: time.Now().UnixMicro(), RequestTag: c.tag, Stream: uint64(c.StreamID()), OpenedAtUS: c.openedAt, StatusStartUS: c.statusStart.Load(), StatusEndUS: c.statusEnd.Load(), FirstDataUS: c.firstData.Load(), ReadWaitUS: c.readWait.Load(), WriteWaitUS: c.writeWait.Load()}
++	if o.StatusStartUS > 0 && o.StatusEndUS >= o.StatusStartUS {
++		o.StatusWaitUS = o.StatusEndUS - o.StatusStartUS
++	}
++	if c.physical != nil {
++		p := c.physical
++		if p.q != nil {
++			s := p.q.ConnectionStats()
++			o.PacketsLost = s.PacketsLost
++			o.PacketsSent = s.PacketsSent
++			o.PacketsReceived = s.PacketsReceived
++			o.RTTUS = s.SmoothedRTT.Microseconds()
++		}
++		if p.stats != nil {
++			e := p.stats.snapshot("request_snapshot", p.stats.started, nil)
++			o.Counters = &e
++			o.Session = p.stats.session
++		}
++	}
++	return o
++}
++func (c *laneConn) TransportObservation() TransportObservation {
++	if n, ok := c.Conn.(interface{ TransportObservation() TransportObservation }); ok {
++		return n.TransportObservation()
++	}
++	return TransportObservation{}
++}
+--- before/fastcatnext/transport_observation_test.go
++++ after/fastcatnext/transport_observation_test.go
+@@ -0,0 +1,131 @@
++package fastcatnext
++
++import (
++	"context"
++	"io"
++	"net"
++	"sync"
++	"testing"
++	"time"
++)
++
++func waitObservation(t *testing.T, n *quicConn, predicate func(TransportObservation) bool) TransportObservation {
++	t.Helper()
++	deadline := time.Now().Add(3 * time.Second)
++	for time.Now().Before(deadline) {
++		o := n.TransportObservation()
++		if predicate(o) {
++			return o
++		}
++		time.Sleep(time.Millisecond)
++	}
++	t.Fatal("observation transition missing")
++	return TransportObservation{}
++}
++func TestAsyncOpenStatusIncludesTargetDialWait(t *testing.T) {
++	release := make(chan struct{})
++	var once sync.Once
++	unblock := func() { once.Do(func() { close(release) }) }
++	defer unblock()
++	var mu sync.Mutex
++	var events []Event
++	c, _, stop := fixtureProfileConfig(t, "quic", time.Second, 1, "", func(cfg *ServerConfig) {
++		cfg.Trace = func(e Event) { mu.Lock(); events = append(events, e); mu.Unlock() }
++		cfg.DialContext = func(ctx context.Context, network, target string) (net.Conn, error) {
++			select {
++			case <-release:
++			case <-ctx.Done():
++				return nil, ctx.Err()
++			}
++			return (&net.Dialer{}).DialContext(ctx, network, target)
++		}
++	})
++	defer stop()
++	c.cfg.Trace = func(Event) {}
++	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
++	defer cancel()
++	target, _ := echoTarget(t)
++	n, e := c.Dial(ctx, target)
++	if e != nil {
++		t.Fatal(e)
++	}
++	defer n.Close()
++	q := n.(*quicConn)
++	if _, e = n.Write([]byte("x")); e != nil {
++		t.Fatal(e)
++	}
++	done := make(chan error, 1)
++	go func() { _, e := io.ReadFull(n, make([]byte, 1)); done <- e }()
++	o := waitObservation(t, q, func(o TransportObservation) bool { return o.StatusStartUS > 0 && o.StatusEndUS == 0 })
++	if o.FirstDataUS != 0 {
++		t.Fatal("payload arrived before held target dial")
++	}
++	unblock()
++	if e = <-done; e != nil {
++		t.Fatal(e)
++	}
++	o = q.TransportObservation()
++	if o.StatusWaitUS <= 0 || o.Session == 0 || o.RequestTag == "" || o.FirstDataUS < o.StatusEndUS {
++		t.Fatal("status timing/tag invalid", o)
++	}
++	mu.Lock()
++	defer mu.Unlock()
++	matched := false
++	for _, event := range events {
++		if event.RequestTag == o.RequestTag && event.Stage == "server_target_dial" && event.Session > 0 {
++			matched = true
++		}
++	}
++	if !matched {
++		t.Fatal("no cross-end target dial correlation")
++	}
++}
++func TestPayloadWaitRemainsSeparateFromOpenStatus(t *testing.T) {
++	listener, e := net.Listen("tcp4", "127.0.0.1:0")
++	if e != nil {
++		t.Fatal(e)
++	}
++	defer listener.Close()
++	release := make(chan struct{})
++	var once sync.Once
++	unblock := func() { once.Do(func() { close(release) }) }
++	defer unblock()
++	go func() {
++		n, e := listener.Accept()
++		if e != nil {
++			return
++		}
++		defer n.Close()
++		b := make([]byte, 1)
++		if _, e = io.ReadFull(n, b); e != nil {
++			return
++		}
++		<-release
++		n.Write(b)
++	}()
++	c, _, stop := fixture(t, "quic", time.Second)
++	defer stop()
++	c.cfg.Trace = func(Event) {}
++	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
++	defer cancel()
++	n, e := c.Dial(ctx, listener.Addr().String())
++	if e != nil {
++		t.Fatal(e)
++	}
++	defer n.Close()
++	q := n.(*quicConn)
++	n.Write([]byte("x"))
++	done := make(chan error, 1)
++	go func() { _, e := io.ReadFull(n, make([]byte, 1)); done <- e }()
++	o := waitObservation(t, q, func(o TransportObservation) bool { return o.StatusEndUS > 0 })
++	if o.FirstDataUS != 0 {
++		t.Fatal("held payload already arrived")
++	}
++	unblock()
++	if e = <-done; e != nil {
++		t.Fatal(e)
++	}
++	if q.TransportObservation().FirstDataUS < o.StatusEndUS {
++		t.Fatal("status and payload boundaries reversed")
++	}
++}

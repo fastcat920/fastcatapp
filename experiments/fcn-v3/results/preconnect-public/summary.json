@@ -1,0 +1,254 @@
+[
+  {
+    "pair": 1,
+    "profile": "demand",
+    "exit_code": 0,
+    "before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "preconnect_ms": 0,
+    "first_byte_p50_ms": 739.7818844999999,
+    "first_byte_p95_ms": 810.494796,
+    "elapsed_ms": 2055.212385,
+    "success": 4,
+    "failed": 0
+  },
+  {
+    "pair": 1,
+    "profile": "preconnect",
+    "exit_code": 0,
+    "before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "preconnect_ms": 640.108847,
+    "first_byte_p50_ms": 120.352461,
+    "first_byte_p95_ms": 127.27991134999999,
+    "elapsed_ms": 1123.339077,
+    "success": 4,
+    "failed": 0
+  },
+  {
+    "pair": 2,
+    "profile": "preconnect",
+    "exit_code": 0,
+    "before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "preconnect_ms": 228.910461,
+    "first_byte_p50_ms": 111.440154,
+    "first_byte_p95_ms": 114.9730345,
+    "elapsed_ms": 636.468308,
+    "success": 4,
+    "failed": 0
+  },
+  {
+    "pair": 2,
+    "profile": "demand",
+    "exit_code": 0,
+    "before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "preconnect_ms": 0,
+    "first_byte_p50_ms": 813.3273845,
+    "first_byte_p95_ms": 942.38736895,
+    "elapsed_ms": 2078.807692,
+    "success": 4,
+    "failed": 0
+  },
+  {
+    "pair": 3,
+    "profile": "demand",
+    "exit_code": 0,
+    "before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "preconnect_ms": 0,
+    "first_byte_p50_ms": 358.00626950000003,
+    "first_byte_p95_ms": 359.283969,
+    "elapsed_ms": 763.724,
+    "success": 4,
+    "failed": 0
+  },
+  {
+    "pair": 3,
+    "profile": "preconnect",
+    "exit_code": 1,
+    "before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "preconnect_ms": 8003.103078,
+    "first_byte_p50_ms": null,
+    "first_byte_p95_ms": null,
+    "elapsed_ms": 2.065462,
+    "success": 0,
+    "failed": 4
+  },
+  {
+    "pair": 4,
+    "profile": "preconnect",
+    "exit_code": 0,
+    "before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "preconnect_ms": 123.703,
+    "first_byte_p50_ms": 154.2996925,
+    "first_byte_p95_ms": 301.12417305,
+    "elapsed_ms": 1330.255308,
+    "success": 4,
+    "failed": 0
+  },
+  {
+    "pair": 4,
+    "profile": "demand",
+    "exit_code": 0,
+    "before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "preconnect_ms": 0,
+    "first_byte_p50_ms": 693.6968850000001,
+    "first_byte_p95_ms": 694.61026135,
+    "elapsed_ms": 1573.134385,
+    "success": 4,
+    "failed": 0
+  },
+  {
+    "pair": 5,
+    "profile": "demand",
+    "exit_code": 0,
+    "before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "preconnect_ms": 0,
+    "first_byte_p50_ms": 1439.6016925,
+    "first_byte_p95_ms": 1601.5506500000001,
+    "elapsed_ms": 2388.566231,
+    "success": 4,
+    "failed": 0
+  },
+  {
+    "pair": 5,
+    "profile": "preconnect",
+    "exit_code": 0,
+    "before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "preconnect_ms": 354.383692,
+    "first_byte_p50_ms": 165.9156535,
+    "first_byte_p95_ms": 402.50567699999993,
+    "elapsed_ms": 1304.160923,
+    "success": 4,
+    "failed": 0
+  },
+  {
+    "pair": 6,
+    "profile": "preconnect",
+    "exit_code": 0,
+    "before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "preconnect_ms": 250.572692,
+    "first_byte_p50_ms": 215.5091925,
+    "first_byte_p95_ms": 218.20891155,
+    "elapsed_ms": 970.325231,
+    "success": 4,
+    "failed": 0
+  },
+  {
+    "pair": 6,
+    "profile": "demand",
+    "exit_code": 0,
+    "before": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "after": {
+      "transport": "wifi",
+      "validated": true,
+      "sim": "ABSENT,LOADED"
+    },
+    "preconnect_ms": 0,
+    "first_byte_p50_ms": 378.7867695,
+    "first_byte_p95_ms": 382.66237235,
+    "elapsed_ms": 925.26177,
+    "success": 4,
+    "failed": 0
+  }
+]

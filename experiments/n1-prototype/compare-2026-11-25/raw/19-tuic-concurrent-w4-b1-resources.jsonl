@@ -1,0 +1,4 @@
+{"active_connections":0,"active_jobs":0,"active_sessions":0,"elapsed_ms":1,"fd_count":7,"goroutines":4,"heap_alloc":1364600,"heap_sys":7929856,"num_gc":0,"os_threads":6,"pause_total_ns":0,"pid":6359,"rss_kib":13920,"total_alloc":1364600}
+{"active_connections":0,"active_jobs":0,"active_sessions":0,"elapsed_ms":1002,"fd_count":8,"goroutines":13,"heap_alloc":3834496,"heap_sys":11960320,"num_gc":0,"os_threads":8,"pause_total_ns":0,"pid":6359,"rss_kib":19496,"total_alloc":3834496}
+{"active_connections":0,"active_jobs":0,"active_sessions":0,"elapsed_ms":2001,"fd_count":8,"goroutines":13,"heap_alloc":4515432,"heap_sys":11927552,"num_gc":0,"os_threads":9,"pause_total_ns":0,"pid":6359,"rss_kib":20276,"total_alloc":4515432}
+{"active_connections":0,"active_jobs":0,"active_sessions":0,"elapsed_ms":3001,"fd_count":8,"goroutines":12,"heap_alloc":2584088,"heap_sys":11927552,"num_gc":1,"os_threads":11,"pause_total_ns":423308,"pid":6359,"rss_kib":21824,"total_alloc":4960200}

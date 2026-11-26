@@ -1,0 +1,56 @@
+{
+  "phase": "upload",
+  "arm": "hysteria2",
+  "entry_port": 18535,
+  "round": 4,
+  "rounds": 5,
+  "position": 2,
+  "args": [
+    "./compare",
+    "-config",
+    "bench.json",
+    "-protocol",
+    "hysteria2",
+    "-phase",
+    "upload",
+    "-bytes",
+    "1048576",
+    "-count",
+    "1",
+    "-timeout",
+    "25s",
+    "-diagnostic-id",
+    "fcnfive03-upload-4-hysteria2"
+  ],
+  "planned": 1,
+  "diagnostic_id": "fcnfive03-upload-4-hysteria2",
+  "host_timeout_s": 40,
+  "before": {
+    "default_net_id": 361,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795607248319,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "after": {
+    "default_net_id": 361,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795607249973,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "network_stable": true,
+  "status": "exited",
+  "exit_code": 0,
+  "start_unix_ms": 1795607248319,
+  "end_unix_ms": 1795607249868,
+  "elapsed_ms": 1548.043125
+}

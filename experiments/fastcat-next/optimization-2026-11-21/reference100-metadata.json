@@ -1,0 +1,12 @@
+{
+  "start": 1795273328.924253,
+  "end": 1795273595.6375418,
+  "profiles": [
+    "vless-vision/tcp-tls",
+    "tuic/quic"
+  ],
+  "bytes": 104857600,
+  "deadline_seconds": 240,
+  "attempts_each": 1,
+  "reason": "both Next H2 and v2 BBR had long-transfer timeouts; late-stage TCP and native QUIC references, not merged into earlier samples"
+}

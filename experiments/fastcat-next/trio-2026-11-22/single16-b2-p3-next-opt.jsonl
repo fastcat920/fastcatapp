@@ -1,0 +1,1 @@
+{"body_ms":19208,"checksum_ok":true,"complete":true,"connect_ms":167,"deadline_seconds":90,"download_mbps":6.987331097546492,"end_to_end_mbps":6.624674113668329,"expected_bytes":16777216,"first_byte_ms":964,"phase":"download","protocol":"quic","received_bytes":16777216,"round":1,"target_tls_ms":545,"total_ms":20260,"version":"next-opt"}

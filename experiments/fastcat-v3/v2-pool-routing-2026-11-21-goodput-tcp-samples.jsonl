@@ -1,0 +1,7 @@
+{"at": 1795251345.247649, "port": 19442, "metrics": {"cwnd": 18, "bytes_sent": 371339, "bytes_retrans": 103661, "bytes_acked": 265340, "bytes_received": 289207, "rcv_space": 16656, "rcv_ssthresh": 64741, "snd_wnd": 626176}}
+{"at": 1795251355.47803, "port": 19444, "metrics": {"cwnd": 16, "bytes_sent": 154051, "bytes_retrans": 17647, "bytes_acked": 103440, "bytes_received": 144405, "rcv_space": 18109, "rcv_ssthresh": 89151, "snd_wnd": 334848}}
+{"at": 1795251386.6456451, "port": 19442, "metrics": {"cwnd": 16, "bytes_sent": 4028, "bytes_acked": 3995, "bytes_received": 632, "rcv_space": 14480, "rcv_ssthresh": 64088, "snd_wnd": 96000}}
+{"at": 1795251396.8896031, "port": 19444, "metrics": {"cwnd": 12, "bytes_sent": 5156, "bytes_retrans": 1388, "bytes_received": 272, "rcv_space": 14480, "rcv_ssthresh": 64088, "snd_wnd": 92416}}
+{"at": 1795251407.133638, "port": 19444, "metrics": {"cwnd": 80, "bytes_sent": 2256204, "bytes_retrans": 252077, "bytes_acked": 1811195, "bytes_received": 3887101, "rcv_space": 293078, "rcv_ssthresh": 743155, "notsent": 258168, "snd_wnd": 1018112}}
+{"at": 1795251438.208169, "port": 19442, "metrics": {"cwnd": 51, "bytes_sent": 589822, "bytes_retrans": 66428, "bytes_acked": 498340, "bytes_received": 529651, "rcv_space": 20832, "rcv_ssthresh": 122000, "notsent": 7890, "snd_wnd": 1039872}}
+{"at": 1795251448.4503732, "port": 19444, "metrics": {"cwnd": 5, "bytes_sent": 299328, "bytes_retrans": 47104, "bytes_acked": 242540, "bytes_received": 259609, "rcv_space": 19497, "rcv_ssthresh": 105235, "snd_wnd": 592896}}

@@ -1,0 +1,11 @@
+{
+  "device": {
+    "ro.product.model": "TFY-AN00",
+    "ro.build.version.release": "12",
+    "ro.build.version.sdk": "31",
+    "ro.product.cpu.abilist": "arm64-v8a,armeabi-v7a,armeabi",
+    "ro.soc.model": "MT6833V/PNZA"
+  },
+  "server_snapshot": "Linux 6.12.117+deb13-amd64\n1\n0.26 0.08 0.02 1/201 464331\nbbr\n8fad0a6c5c05d243ad3adbdd3c763c50fcdf07504778944e36287227694d0f37  /etc/letsencrypt/live/zlhk.fastcat.ink/fullchain.pem\n",
+  "purpose": "read-only environment; shared server, no CPU or network isolation"
+}

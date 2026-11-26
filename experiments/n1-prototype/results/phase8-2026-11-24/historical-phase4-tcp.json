@@ -1,0 +1,1215 @@
+{
+  "flows": [
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 0.0,
+      "capture_duration_ms": 4129.422,
+      "server_payload_unique_bytes": 5800,
+      "server_payload_bytes_with_repeats": 9487,
+      "server_repeated_sequence_bytes": 3687,
+      "client_repeated_sequence_bytes": 289,
+      "server_bytes_acked": 5800,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 2,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 1948.059,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 446.319,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 2394.382,
+          "acked_server_bytes": 4860
+        },
+        {
+          "ms": 3519.107,
+          "acked_server_bytes": 5006
+        },
+        {
+          "ms": 4031.972,
+          "acked_server_bytes": 5800
+        },
+        {
+          "ms": 4129.422,
+          "acked_server_bytes": 5801
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 4108.971,
+      "capture_duration_ms": 2261.104,
+      "server_payload_unique_bytes": 71701,
+      "server_payload_bytes_with_repeats": 83831,
+      "server_repeated_sequence_bytes": 12130,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 71701,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 42,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 609.04,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 204.817,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 946.497,
+          "acked_server_bytes": 4861
+        },
+        {
+          "ms": 1569.115,
+          "acked_server_bytes": 17688
+        },
+        {
+          "ms": 2260.79,
+          "acked_server_bytes": 71702
+        },
+        {
+          "ms": 2260.79,
+          "acked_server_bytes": 71702
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 6450.384,
+      "capture_duration_ms": 831.418,
+      "server_payload_unique_bytes": 5596,
+      "server_payload_bytes_with_repeats": 6984,
+      "server_repeated_sequence_bytes": 1388,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 5596,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 2,
+      "rst_packets": 2,
+      "max_advancing_ack_gap_ms": 251.982,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 449.813,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 830.688,
+          "acked_server_bytes": 5597
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 7360.168,
+      "capture_duration_ms": 697.87,
+      "server_payload_unique_bytes": 13375,
+      "server_payload_bytes_with_repeats": 13375,
+      "server_repeated_sequence_bytes": 0,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 13375,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 0,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 248.147,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 206.9,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 697.846,
+          "acked_server_bytes": 13376
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 8129.35,
+      "capture_duration_ms": 2207.136,
+      "server_payload_unique_bytes": 13376,
+      "server_payload_bytes_with_repeats": 14382,
+      "server_repeated_sequence_bytes": 1006,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 13376,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 6,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 299.977,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 1339.234,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 1871.045,
+          "acked_server_bytes": 5007
+        },
+        {
+          "ms": 2207.121,
+          "acked_server_bytes": 13377
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 10404.148,
+      "capture_duration_ms": 739.512,
+      "server_payload_unique_bytes": 5599,
+      "server_payload_bytes_with_repeats": 5599,
+      "server_repeated_sequence_bytes": 0,
+      "client_repeated_sequence_bytes": 296,
+      "server_bytes_acked": 5599,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 0,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 345.964,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 199.361,
+          "acked_server_bytes": 2776
+        },
+        {
+          "ms": 739.477,
+          "acked_server_bytes": 5600
+        },
+        {
+          "ms": 739.477,
+          "acked_server_bytes": 5600
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 11243.596,
+      "capture_duration_ms": 1627.381,
+      "server_payload_unique_bytes": 70998,
+      "server_payload_bytes_with_repeats": 87272,
+      "server_repeated_sequence_bytes": 16274,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 70998,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 45,
+      "rst_packets": 2,
+      "max_advancing_ack_gap_ms": 487.845,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 594.96,
+          "acked_server_bytes": 4862
+        },
+        {
+          "ms": 1209.065,
+          "acked_server_bytes": 13188
+        },
+        {
+          "ms": 1624.527,
+          "acked_server_bytes": 70999
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 12957.344,
+      "capture_duration_ms": 600.812,
+      "server_payload_unique_bytes": 13396,
+      "server_payload_bytes_with_repeats": 13396,
+      "server_repeated_sequence_bytes": 0,
+      "client_repeated_sequence_bytes": 283,
+      "server_bytes_acked": 13396,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 3,
+      "rst_packets": 2,
+      "max_advancing_ack_gap_ms": 385.78,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 210.877,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 599.911,
+          "acked_server_bytes": 13397
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 13629.213,
+      "capture_duration_ms": 729.225,
+      "server_payload_unique_bytes": 13546,
+      "server_payload_bytes_with_repeats": 14927,
+      "server_repeated_sequence_bytes": 1381,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 13546,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 1,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 156.904,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 204.626,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 729.203,
+          "acked_server_bytes": 13547
+        },
+        {
+          "ms": 729.203,
+          "acked_server_bytes": 13547
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 14429.842,
+      "capture_duration_ms": 1449.624,
+      "server_payload_unique_bytes": 71629,
+      "server_payload_bytes_with_repeats": 94820,
+      "server_repeated_sequence_bytes": 23191,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 71629,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 42,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 244.885,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 459.097,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 966.851,
+          "acked_server_bytes": 28719
+        },
+        {
+          "ms": 1449.601,
+          "acked_server_bytes": 71630
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 15946.612,
+      "capture_duration_ms": 3751.373,
+      "server_payload_unique_bytes": 71468,
+      "server_payload_bytes_with_repeats": 94328,
+      "server_repeated_sequence_bytes": 22860,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 71468,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 33,
+      "rst_packets": 2,
+      "max_advancing_ack_gap_ms": 1329.461,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 477.021,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 1806.482,
+          "acked_server_bytes": 4164
+        },
+        {
+          "ms": 2727.075,
+          "acked_server_bytes": 6070
+        },
+        {
+          "ms": 3256.957,
+          "acked_server_bytes": 25821
+        },
+        {
+          "ms": 3749.358,
+          "acked_server_bytes": 71469
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 19772.565,
+      "capture_duration_ms": 1664.178,
+      "server_payload_unique_bytes": 71448,
+      "server_payload_bytes_with_repeats": 81056,
+      "server_repeated_sequence_bytes": 9608,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 71448,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 59,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 493.95,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 206.799,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 769.685,
+          "acked_server_bytes": 24397
+        },
+        {
+          "ms": 1563.767,
+          "acked_server_bytes": 71424
+        },
+        {
+          "ms": 1664.159,
+          "acked_server_bytes": 71449
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 21517.446,
+      "capture_duration_ms": 1506.527,
+      "server_payload_unique_bytes": 13545,
+      "server_payload_bytes_with_repeats": 22497,
+      "server_repeated_sequence_bytes": 8952,
+      "client_repeated_sequence_bytes": 289,
+      "server_bytes_acked": 13545,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 8,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 446.286,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 204.598,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 1046.962,
+          "acked_server_bytes": 6394
+        },
+        {
+          "ms": 1150.2,
+          "acked_server_bytes": 13546
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 22739.831,
+      "capture_duration_ms": 1975.615,
+      "server_payload_unique_bytes": 13395,
+      "server_payload_bytes_with_repeats": 17601,
+      "server_repeated_sequence_bytes": 4206,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 13395,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 5,
+      "rst_packets": 2,
+      "max_advancing_ack_gap_ms": 970.144,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 390.825,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 1360.971,
+          "acked_server_bytes": 4861
+        },
+        {
+          "ms": 1873.183,
+          "acked_server_bytes": 6069
+        },
+        {
+          "ms": 1973.955,
+          "acked_server_bytes": 13396
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 24791.744,
+      "capture_duration_ms": 3501.434,
+      "server_payload_unique_bytes": 13347,
+      "server_payload_bytes_with_repeats": 17875,
+      "server_repeated_sequence_bytes": 4528,
+      "client_repeated_sequence_bytes": 296,
+      "server_bytes_acked": 13347,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 6,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 684.378,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 199.201,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 1048.758,
+          "acked_server_bytes": 5008
+        },
+        {
+          "ms": 1969.957,
+          "acked_server_bytes": 13348
+        },
+        {
+          "ms": 1969.957,
+          "acked_server_bytes": 13348
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 26828.143,
+      "capture_duration_ms": 2523.385,
+      "server_payload_unique_bytes": 5596,
+      "server_payload_bytes_with_repeats": 11175,
+      "server_repeated_sequence_bytes": 5579,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 5596,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 5,
+      "rst_packets": 2,
+      "max_advancing_ack_gap_ms": 511.258,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 1524.425,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 2393.184,
+          "acked_server_bytes": 5545
+        },
+        {
+          "ms": 2521.584,
+          "acked_server_bytes": 5597
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 29439.42,
+      "capture_duration_ms": 2076.991,
+      "server_payload_unique_bytes": 70996,
+      "server_payload_bytes_with_repeats": 84876,
+      "server_repeated_sequence_bytes": 13880,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 70996,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 37,
+      "rst_packets": 2,
+      "max_advancing_ack_gap_ms": 174.248,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 1436.519,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 2053.998,
+          "acked_server_bytes": 52652
+        },
+        {
+          "ms": 2074.192,
+          "acked_server_bytes": 70997
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 31580.085,
+      "capture_duration_ms": 1017.698,
+      "server_payload_unique_bytes": 5599,
+      "server_payload_bytes_with_repeats": 7528,
+      "server_repeated_sequence_bytes": 1929,
+      "client_repeated_sequence_bytes": 296,
+      "server_bytes_acked": 5599,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 2,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 359.364,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 200.664,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 915.075,
+          "acked_server_bytes": 5575
+        },
+        {
+          "ms": 1017.676,
+          "acked_server_bytes": 5600
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 32682.401,
+      "capture_duration_ms": 2381.798,
+      "server_payload_unique_bytes": 5792,
+      "server_payload_bytes_with_repeats": 5816,
+      "server_repeated_sequence_bytes": 24,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 5792,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 1,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 411.222,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 1357.492,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 1865.841,
+          "acked_server_bytes": 5007
+        },
+        {
+          "ms": 2381.728,
+          "acked_server_bytes": 5793
+        },
+        {
+          "ms": 2381.728,
+          "acked_server_bytes": 5793
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 35137.384,
+      "capture_duration_ms": 2383.062,
+      "server_payload_unique_bytes": 13347,
+      "server_payload_bytes_with_repeats": 18565,
+      "server_repeated_sequence_bytes": 5218,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 13347,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 10,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 1087.401,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 563.722,
+          "acked_server_bytes": 4862
+        },
+        {
+          "ms": 1274.1,
+          "acked_server_bytes": 6396
+        },
+        {
+          "ms": 2383.005,
+          "acked_server_bytes": 13348
+        },
+        {
+          "ms": 2383.005,
+          "acked_server_bytes": 13348
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 37593.555,
+      "capture_duration_ms": 2999.363,
+      "server_payload_unique_bytes": 71135,
+      "server_payload_bytes_with_repeats": 75299,
+      "server_repeated_sequence_bytes": 4164,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 71135,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 21,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 511.732,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 1465.033,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 2077.844,
+          "acked_server_bytes": 5007
+        },
+        {
+          "ms": 2895.27,
+          "acked_server_bytes": 71111
+        },
+        {
+          "ms": 2999.343,
+          "acked_server_bytes": 71136
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 40672.115,
+      "capture_duration_ms": 4784.112,
+      "server_payload_unique_bytes": 71448,
+      "server_payload_bytes_with_repeats": 91518,
+      "server_repeated_sequence_bytes": 20070,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 71448,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 47,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 3065.041,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 436.994,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 3502.112,
+          "acked_server_bytes": 4861
+        },
+        {
+          "ms": 4013.072,
+          "acked_server_bytes": 5007
+        },
+        {
+          "ms": 4559.987,
+          "acked_server_bytes": 11953
+        },
+        {
+          "ms": 4784.094,
+          "acked_server_bytes": 71449
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 45529.5,
+      "capture_duration_ms": 1021.612,
+      "server_payload_unique_bytes": 71467,
+      "server_payload_bytes_with_repeats": 72869,
+      "server_repeated_sequence_bytes": 1402,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 71467,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 23,
+      "rst_packets": 2,
+      "max_advancing_ack_gap_ms": 256.135,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 206.208,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 716.854,
+          "acked_server_bytes": 42380
+        },
+        {
+          "ms": 1019.272,
+          "acked_server_bytes": 71468
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 46631.972,
+      "capture_duration_ms": 7888.259,
+      "server_payload_unique_bytes": 5808,
+      "server_payload_bytes_with_repeats": 10669,
+      "server_repeated_sequence_bytes": 4861,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 5808,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 1,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 1022.035,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 5431.276,
+          "acked_server_bytes": 2776
+        },
+        {
+          "ms": 6555.209,
+          "acked_server_bytes": 4861
+        },
+        {
+          "ms": 7888.259,
+          "acked_server_bytes": 5809
+        },
+        {
+          "ms": 7888.259,
+          "acked_server_bytes": 5809
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 53704.751,
+      "capture_duration_ms": 4427.118,
+      "server_payload_unique_bytes": 13550,
+      "server_payload_bytes_with_repeats": 21186,
+      "server_repeated_sequence_bytes": 7636,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 13550,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 9,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 1951.808,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 403.582,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 2355.39,
+          "acked_server_bytes": 2776
+        },
+        {
+          "ms": 3574.313,
+          "acked_server_bytes": 4860
+        },
+        {
+          "ms": 4088.334,
+          "acked_server_bytes": 5006
+        },
+        {
+          "ms": 4427.084,
+          "acked_server_bytes": 13551
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 58208.166,
+      "capture_duration_ms": 1759.162,
+      "server_payload_unique_bytes": 70978,
+      "server_payload_bytes_with_repeats": 113388,
+      "server_repeated_sequence_bytes": 42410,
+      "client_repeated_sequence_bytes": 296,
+      "server_bytes_acked": 70978,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 46,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 707.553,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 209.961,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 918.132,
+          "acked_server_bytes": 5007
+        },
+        {
+          "ms": 1588.724,
+          "acked_server_bytes": 51817
+        },
+        {
+          "ms": 1759.12,
+          "acked_server_bytes": 70979
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 60038.052,
+      "capture_duration_ms": 3693.216,
+      "server_payload_unique_bytes": 13513,
+      "server_payload_bytes_with_repeats": 28090,
+      "server_repeated_sequence_bytes": 14577,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 13513,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 6,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 1021.764,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 624.914,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 1134.037,
+          "acked_server_bytes": 5007
+        },
+        {
+          "ms": 2259.402,
+          "acked_server_bytes": 8789
+        },
+        {
+          "ms": 3589.987,
+          "acked_server_bytes": 13489
+        },
+        {
+          "ms": 3693.199,
+          "acked_server_bytes": 13514
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 63811.197,
+      "capture_duration_ms": 1069.363,
+      "server_payload_unique_bytes": 13365,
+      "server_payload_bytes_with_repeats": 13468,
+      "server_repeated_sequence_bytes": 103,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 13365,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 1,
+      "rst_packets": 2,
+      "max_advancing_ack_gap_ms": 512.262,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 435.885,
+          "acked_server_bytes": 2776
+        },
+        {
+          "ms": 948.232,
+          "acked_server_bytes": 6069
+        },
+        {
+          "ms": 1067.373,
+          "acked_server_bytes": 13366
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 64956.812,
+      "capture_duration_ms": 1649.573,
+      "server_payload_unique_bytes": 71181,
+      "server_payload_bytes_with_repeats": 107269,
+      "server_repeated_sequence_bytes": 36088,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 71181,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 45,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 435.702,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 211.064,
+          "acked_server_bytes": 2776
+        },
+        {
+          "ms": 765.144,
+          "acked_server_bytes": 8790
+        },
+        {
+          "ms": 1649.573,
+          "acked_server_bytes": 71182
+        },
+        {
+          "ms": 1649.573,
+          "acked_server_bytes": 71182
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 66238.06,
+      "capture_duration_ms": 1178.377,
+      "server_payload_unique_bytes": 5599,
+      "server_payload_bytes_with_repeats": 8225,
+      "server_repeated_sequence_bytes": 2626,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 5599,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 3,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 353.089,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 391.312,
+          "acked_server_bytes": 4164
+        },
+        {
+          "ms": 1074.942,
+          "acked_server_bytes": 5575
+        },
+        {
+          "ms": 1178.338,
+          "acked_server_bytes": 5600
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 67493.097,
+      "capture_duration_ms": 953.282,
+      "server_payload_unique_bytes": 13365,
+      "server_payload_bytes_with_repeats": 13365,
+      "server_repeated_sequence_bytes": 0,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 13365,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 2,
+      "rst_packets": 2,
+      "max_advancing_ack_gap_ms": 516.544,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 435.362,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 952.47,
+          "acked_server_bytes": 6069
+        },
+        {
+          "ms": 952.994,
+          "acked_server_bytes": 13366
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 68520.555,
+      "capture_duration_ms": 2791.375,
+      "server_payload_unique_bytes": 70978,
+      "server_payload_bytes_with_repeats": 90434,
+      "server_repeated_sequence_bytes": 19456,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 70978,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 42,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 786.267,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 442.555,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 1357.449,
+          "acked_server_bytes": 5007
+        },
+        {
+          "ms": 1880.572,
+          "acked_server_bytes": 60145
+        },
+        {
+          "ms": 2789.724,
+          "acked_server_bytes": 70979
+        },
+        {
+          "ms": 2789.724,
+          "acked_server_bytes": 70979
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 71382.461,
+      "capture_duration_ms": 1251.061,
+      "server_payload_unique_bytes": 5596,
+      "server_payload_bytes_with_repeats": 5596,
+      "server_repeated_sequence_bytes": 0,
+      "client_repeated_sequence_bytes": 282,
+      "server_bytes_acked": 5596,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 1,
+      "rst_packets": 2,
+      "max_advancing_ack_gap_ms": 810.602,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 439.941,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 1250.814,
+          "acked_server_bytes": 5545
+        },
+        {
+          "ms": 1250.987,
+          "acked_server_bytes": 5597
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 72706.13,
+      "capture_duration_ms": 1983.265,
+      "server_payload_unique_bytes": 5597,
+      "server_payload_bytes_with_repeats": 5597,
+      "server_repeated_sequence_bytes": 0,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 5597,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 0,
+      "rst_packets": 2,
+      "max_advancing_ack_gap_ms": 411.785,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 1466.958,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 1980.322,
+          "acked_server_bytes": 5546
+        },
+        {
+          "ms": 1981.218,
+          "acked_server_bytes": 5598
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 74763.73,
+      "capture_duration_ms": 1376.26,
+      "server_payload_unique_bytes": 5802,
+      "server_payload_bytes_with_repeats": 5948,
+      "server_repeated_sequence_bytes": 146,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 5802,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 2,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 536.65,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 208.872,
+          "acked_server_bytes": 2776
+        },
+        {
+          "ms": 746.451,
+          "acked_server_bytes": 5007
+        },
+        {
+          "ms": 1376.26,
+          "acked_server_bytes": 5803
+        },
+        {
+          "ms": 1376.26,
+          "acked_server_bytes": 5803
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 75812.034,
+      "capture_duration_ms": 1456.853,
+      "server_payload_unique_bytes": 5600,
+      "server_payload_bytes_with_repeats": 6298,
+      "server_repeated_sequence_bytes": 698,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 5600,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 0,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 717.529,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 307.627,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 1025.392,
+          "acked_server_bytes": 4862
+        },
+        {
+          "ms": 1456.834,
+          "acked_server_bytes": 5601
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 77353.494,
+      "capture_duration_ms": 2070.396,
+      "server_payload_unique_bytes": 138041,
+      "server_payload_bytes_with_repeats": 146338,
+      "server_repeated_sequence_bytes": 8297,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 138041,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 48,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 507.616,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 414.34,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 922.193,
+          "acked_server_bytes": 5006
+        },
+        {
+          "ms": 1549.589,
+          "acked_server_bytes": 68758
+        },
+        {
+          "ms": 2070.377,
+          "acked_server_bytes": 138042
+        },
+        {
+          "ms": 2070.377,
+          "acked_server_bytes": 138042
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 79497.721,
+      "capture_duration_ms": 1330.246,
+      "server_payload_unique_bytes": 6112,
+      "server_payload_bytes_with_repeats": 7500,
+      "server_repeated_sequence_bytes": 1388,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 6112,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 1,
+      "rst_packets": 0,
+      "max_advancing_ack_gap_ms": 584.887,
+      "capture_interfaces": 1,
+      "ack_progress": [
+        {
+          "ms": 412.166,
+          "acked_server_bytes": 1388
+        },
+        {
+          "ms": 1127.864,
+          "acked_server_bytes": 5008
+        },
+        {
+          "ms": 1330.225,
+          "acked_server_bytes": 6113
+        }
+      ]
+    },
+    {
+      "port": 18461,
+      "first_packet_offset_ms": 80906.351,
+      "capture_duration_ms": 15694.119,
+      "server_payload_unique_bytes": 2776,
+      "server_payload_bytes_with_repeats": 6940,
+      "server_repeated_sequence_bytes": 4164,
+      "client_repeated_sequence_bytes": 0,
+      "server_bytes_acked": 0,
+      "client_zero_window_packets": 0,
+      "client_sack_packets": 2,
+      "rst_packets": 1,
+      "max_advancing_ack_gap_ms": 0,
+      "capture_interfaces": 1,
+      "ack_progress": []
+    }
+  ],
+  "scope": "Sender-side duplicate sequence/SACK/ACK/window observations; does not by itself locate physical loss or explain a censor action"
+}

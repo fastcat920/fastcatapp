@@ -1,0 +1,57 @@
+[
+  {
+    "bytes": 8192,
+    "chunk": 4096,
+    "first_payload_ms": 8403.816,
+    "first_response_headers_ms": 8403.682,
+    "full_request_ms": 8892.797,
+    "gap_ms": 12,
+    "header_kind": "application-response",
+    "kind": "matched-n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 120,
+        "shape": "http-chunk",
+        "body_bytes": 114
+      },
+      {
+        "bytes": 32,
+        "shape": "http-chunk",
+        "body_bytes": 21
+      }
+    ],
+    "shutdown_eof_observed": true
+  },
+  {
+    "ack_headers_ms": 986.292,
+    "bytes": 8192,
+    "chunk": 4096,
+    "first_payload_ms": 2254.613,
+    "full_request_ms": 2358.501,
+    "gap_ms": 12,
+    "kind": "matched-rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 120,
+        "shape": "http-chunk",
+        "body_bytes": 114
+      },
+      {
+        "bytes": 32,
+        "shape": "http-chunk",
+        "body_bytes": 21
+      }
+    ],
+    "shutdown_eof_observed": true
+  }
+]

@@ -1,0 +1,23 @@
+{
+  "stage12": {
+    "cases": 42,
+    "merged_rows": 1698,
+    "valid_raw_json_lines": 2364,
+    "gate": "failed",
+    "measurement_errors": 0,
+    "binary_hashes": "verified"
+  },
+  "stage34": {
+    "cases": 63,
+    "merged_rows": 2547,
+    "valid_raw_json_lines": 3546,
+    "gate": "failed",
+    "measurement_errors": 0,
+    "binary_hashes": "verified"
+  },
+  "total_cases": 105,
+  "total_merged_rows": 4245,
+  "default": "unchanged; experimental flags off",
+  "cleanup": "verified",
+  "scope": "Android prototype core on one Wi-Fi/VPS; no performance claim beyond this cohort"
+}

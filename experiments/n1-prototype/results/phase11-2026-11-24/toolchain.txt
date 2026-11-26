@@ -1,0 +1,15 @@
+go version go1.26.11 darwin/arm64
+artifacts/n1-phase11-final-linux-amd64: go1.26.11
+	path	fastcat/n1prototype
+	mod	fastcat/n1prototype	(devel)	
+	build	-buildmode=exe
+	build	-compiler=gc
+	build	-trimpath=true
+	build	CGO_ENABLED=0
+	build	GOARCH=amd64
+	build	GOOS=linux
+	build	GOAMD64=v1
+	build	vcs=git
+	build	vcs.revision=230b0b2942eff775428202d685c08c4189ca05b7
+	build	vcs.time=2026-11-24T02:38:42Z
+	build	vcs.modified=true

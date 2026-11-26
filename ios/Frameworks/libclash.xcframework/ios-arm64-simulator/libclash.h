@@ -21,6 +21,12 @@ extern const char *_GoStringPtr(_GoString_ s);
 /* Start of preamble from import "C" comments.  */
 
 
+#line 5 "apple_upstream_ios.go"
+
+#include <stdint.h>
+
+#line 1 "cgo-generated-wrapper"
+
 #line 5 "lib_ios.go"
 
 #include <stdlib.h>
@@ -87,6 +93,8 @@ typedef struct { void *data; GoInt len; GoInt cap; } GoSlice;
 extern "C" {
 #endif
 
+extern void ClashCore_set_upstream_interface(unsigned int index);
+extern int fastCatSupportsV2(void);
 extern int ClashCore_init(char* homeDir, char* configYaml);
 extern int ClashCore_init_probe(char* homeDir, char* configYaml);
 extern int ClashCore_get_mixed_port(void);

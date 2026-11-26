@@ -1,0 +1,1 @@
+Initial artifact upload stopped at the 120 s transfer deadline. No measurement started. Complete files were reused; only the incomplete TUIC fixture and missing comparator and scripts were retransmitted.

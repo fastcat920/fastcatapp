@@ -1,0 +1,1 @@
+Only seven complete supplemental flows used for write-to-record attribution. All eight attempts, including final baseline timeout, remain in parent bulk-samples.json and bulk-wire-summary.json. No success-rate computation is based on this subset.

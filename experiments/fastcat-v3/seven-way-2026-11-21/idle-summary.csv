@@ -1,0 +1,19 @@
+﻿dataset,path,version,carrier,actual_idle_ms,first_success,first_ms,first_error,followup_success,followup_attempts
+idle35,VLESS + TCP + TLS + Vision,vless-vision,tcp-tls,51546.849,False,,entry: 191.223.214.8:19446 connect error: context deadline exceeded,1,2
+idle35,Trojan + TCP + TLS,trojan,tcp-tls,69036.498,True,716.843,,2,2
+idle35,Hysteria 2,hysteria2,quic,79681.007,True,399.887,,2,2
+idle35,TUIC v5,tuic,quic,79641.326,True,1186.82,,2,2
+idle35,AnyTLS,anytls,tcp-tls,78062.824,True,2028.481,,2,2
+idle35,FastCat v2 · H2,v2,h2,48480.947,True,1316.139,,2,2
+idle35,FastCat v2 · H3,v2,h3,50009.438,True,905.718,,2,2
+idle35,最新轻量版 · H2,v3-light-fast,h2,51775.135,True,1021.0,,2,2
+idle35,最新轻量版 · H3,v3-light-fast,h3,52596.721,False,,entry: use of closed network connection,0,2
+idle70,VLESS + TCP + TLS + Vision,vless-vision,tcp-tls,93053.006,True,740.465,,2,2
+idle70,Trojan + TCP + TLS,trojan,tcp-tls,89952.699,True,546.439,,2,2
+idle70,Hysteria 2,hysteria2,quic,92564.042,True,280.577,,2,2
+idle70,TUIC v5,tuic,quic,92935.365,True,270.833,,2,2
+idle70,AnyTLS,anytls,tcp-tls,90943.19,True,2604.131,,2,2
+idle70,FastCat v2 · H2,v2,h2,87684.32,True,4475.11,,2,2
+idle70,FastCat v2 · H3,v2,h3,93919.375,True,1532.412,,2,2
+idle70,最新轻量版 · H2,v3-light-fast,h2,91756.423,True,2022.987,,2,2
+idle70,最新轻量版 · H3,v3-light-fast,h3,94981.79,False,,entry: use of closed network connection,0,2

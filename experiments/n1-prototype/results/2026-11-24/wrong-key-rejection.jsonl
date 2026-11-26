@@ -1,0 +1,3 @@
+{"sample":1,"error":"entry returned HTTP 404"}
+{"sample":2,"error":"entry returned HTTP 404"}
+{"bytes_each":32768,"failed":2,"scope":"fresh TCP + TLS + authenticated tunnel + complete verified HTTP response; speed includes setup and verification","success":0}

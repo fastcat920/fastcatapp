@@ -1,0 +1,239 @@
+{
+  "source": "pcap",
+  "quantile_method": "nearest rank",
+  "measurement": "UDP header lengths at the capture point. Offload can affect record boundaries. Lengths include encrypted content and any padding.",
+  "capture": {
+    "link_type": 276,
+    "records": 2784,
+    "truncated_records": 1112,
+    "truncated_records_with_counted_udp_length": 262,
+    "skipped_records": {
+      "other_udp_endpoint": 2226
+    }
+  },
+  "total": {
+    "datagrams": 558,
+    "udp_payload_bytes": 147415,
+    "udp_datagram_bytes_including_headers": 151879,
+    "p50_udp_payload_bytes": 39,
+    "p95_udp_payload_bytes": 1366,
+    "buckets": {
+      "0-0": {
+        "datagrams": 0,
+        "fraction_datagrams": 0.0,
+        "udp_payload_bytes": 0
+      },
+      "1-300": {
+        "datagrams": 403,
+        "fraction_datagrams": 0.7222222222222222,
+        "udp_payload_bytes": 21087
+      },
+      "301-600": {
+        "datagrams": 88,
+        "fraction_datagrams": 0.15770609318996415,
+        "udp_payload_bytes": 36693
+      },
+      "601-900": {
+        "datagrams": 0,
+        "fraction_datagrams": 0.0,
+        "udp_payload_bytes": 0
+      },
+      "901-1200": {
+        "datagrams": 0,
+        "fraction_datagrams": 0.0,
+        "udp_payload_bytes": 0
+      },
+      "1201-65527": {
+        "datagrams": 67,
+        "fraction_datagrams": 0.12007168458781362,
+        "udp_payload_bytes": 89635
+      }
+    },
+    "histogram": {
+      "24": 54,
+      "25": 3,
+      "26": 11,
+      "27": 4,
+      "28": 1,
+      "29": 56,
+      "30": 36,
+      "31": 23,
+      "32": 51,
+      "33": 6,
+      "34": 4,
+      "35": 1,
+      "36": 1,
+      "37": 4,
+      "39": 35,
+      "40": 6,
+      "68": 2,
+      "75": 1,
+      "77": 1,
+      "93": 2,
+      "97": 6,
+      "111": 85,
+      "131": 3,
+      "152": 1,
+      "159": 1,
+      "160": 1,
+      "165": 1,
+      "171": 1,
+      "198": 2,
+      "413": 32,
+      "419": 46,
+      "420": 9,
+      "423": 1,
+      "1280": 32,
+      "1285": 1,
+      "1290": 1,
+      "1301": 1,
+      "1304": 1,
+      "1323": 2,
+      "1366": 8,
+      "1387": 1,
+      "1409": 6,
+      "1419": 1,
+      "1430": 6,
+      "1435": 1,
+      "1441": 6
+    }
+  },
+  "directions": {
+    "to-server": {
+      "datagrams": 283,
+      "udp_payload_bytes": 61270,
+      "udp_datagram_bytes_including_headers": 63534,
+      "p50_udp_payload_bytes": 39,
+      "p95_udp_payload_bytes": 1366,
+      "buckets": {
+        "0-0": {
+          "datagrams": 0,
+          "fraction_datagrams": 0.0,
+          "udp_payload_bytes": 0
+        },
+        "1-300": {
+          "datagrams": 249,
+          "fraction_datagrams": 0.8798586572438163,
+          "udp_payload_bytes": 15646
+        },
+        "301-600": {
+          "datagrams": 0,
+          "fraction_datagrams": 0.0,
+          "udp_payload_bytes": 0
+        },
+        "601-900": {
+          "datagrams": 0,
+          "fraction_datagrams": 0.0,
+          "udp_payload_bytes": 0
+        },
+        "901-1200": {
+          "datagrams": 0,
+          "fraction_datagrams": 0.0,
+          "udp_payload_bytes": 0
+        },
+        "1201-65527": {
+          "datagrams": 34,
+          "fraction_datagrams": 0.12014134275618374,
+          "udp_payload_bytes": 45624
+        }
+      },
+      "histogram": {
+        "30": 29,
+        "31": 22,
+        "32": 50,
+        "33": 6,
+        "34": 4,
+        "35": 1,
+        "39": 35,
+        "40": 6,
+        "75": 1,
+        "77": 1,
+        "93": 2,
+        "97": 6,
+        "111": 85,
+        "165": 1,
+        "1280": 18,
+        "1366": 4,
+        "1409": 4,
+        "1430": 4,
+        "1441": 4
+      }
+    },
+    "from-server": {
+      "datagrams": 275,
+      "udp_payload_bytes": 86145,
+      "udp_datagram_bytes_including_headers": 88345,
+      "p50_udp_payload_bytes": 32,
+      "p95_udp_payload_bytes": 1323,
+      "buckets": {
+        "0-0": {
+          "datagrams": 0,
+          "fraction_datagrams": 0.0,
+          "udp_payload_bytes": 0
+        },
+        "1-300": {
+          "datagrams": 154,
+          "fraction_datagrams": 0.56,
+          "udp_payload_bytes": 5441
+        },
+        "301-600": {
+          "datagrams": 88,
+          "fraction_datagrams": 0.32,
+          "udp_payload_bytes": 36693
+        },
+        "601-900": {
+          "datagrams": 0,
+          "fraction_datagrams": 0.0,
+          "udp_payload_bytes": 0
+        },
+        "901-1200": {
+          "datagrams": 0,
+          "fraction_datagrams": 0.0,
+          "udp_payload_bytes": 0
+        },
+        "1201-65527": {
+          "datagrams": 33,
+          "fraction_datagrams": 0.12,
+          "udp_payload_bytes": 44011
+        }
+      },
+      "histogram": {
+        "24": 54,
+        "25": 3,
+        "26": 11,
+        "27": 4,
+        "28": 1,
+        "29": 56,
+        "30": 7,
+        "31": 1,
+        "32": 1,
+        "36": 1,
+        "37": 4,
+        "68": 2,
+        "131": 3,
+        "152": 1,
+        "159": 1,
+        "160": 1,
+        "171": 1,
+        "198": 2,
+        "413": 32,
+        "419": 46,
+        "420": 9,
+        "423": 1,
+        "1280": 14,
+        "1285": 1,
+        "1290": 1,
+        "1301": 1,
+        "1304": 1,
+        "1323": 2,
+        "1366": 4,
+        "1387": 1,
+        "1409": 2,
+        "1419": 1,
+        "1430": 2,
+        "1435": 1,
+        "1441": 2
+      }
+    }
+  }
+}

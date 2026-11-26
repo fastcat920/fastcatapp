@@ -25,10 +25,6 @@ struct TVToolsView: View {
   @State private var destinationDraft = ""
   @FocusState private var codeFieldFocused: Bool
   @State private var toolsSelection: String?
-  @AppStorage("fastcat.tv.logs.enabled") private var logsEnabled = false
-  @State private var logs: [String] = []
-  @State private var logTask: Task<Void, Never>?
-  @State private var logGeneration = UUID()
   @State private var update: TVUpdateInfo?
   @State private var busy = false
   @State private var message: String?
@@ -151,12 +147,9 @@ struct TVToolsView: View {
     }
     .onDisappear {
       stopStreaming(showMessage: false)
-      stopLogs()
     }
     .onChange(of: page) { old, _ in
       if old == "streaming" { stopStreaming(showMessage: false) }
-      if old == "logs" { stopLogs() }
-      if page == "logs" { startLogs() }
       message = nil
     }
     .onChange(of: controlRows) { _, _ in
@@ -183,9 +176,6 @@ struct TVToolsView: View {
     .onChange(of: scenePhase) { _, phase in
       if phase != .active {
         stopStreaming(showMessage: true)
-        stopLogs()
-      } else {
-        if page == "logs" { startLogs() }
       }
     }
     .onReceive(NotificationCenter.default.publisher(for: VPNManager.statusDidChangeNotification)) {
@@ -315,9 +305,6 @@ struct TVToolsView: View {
         RoundedRectangle(cornerRadius: tv(20), style: .continuous)
       ).padding(
         .top, tv(12))
-      if logsEnabled {
-        menuGroup { row("日志", "Logs", icon: "doc.text") { page = "logs" } }
-      }
       HStack(spacing: tv(8)) {
         Spacer()
         smallButton(text("隐私政策", "Privacy Policy"), controlID: "about.privacy") {
@@ -339,27 +326,6 @@ struct TVToolsView: View {
         note(text("用手机扫描二维码阅读完整内容", "Scan with your phone to read the full document"))
       } else {
         ProgressView().frame(maxWidth: .infinity)
-      }
-    } else if page == "logs" {
-      HStack {
-        smallButton(
-          logTask == nil ? text("继续记录", "Resume") : text("暂停", "Pause"), controlID: "logs.toggle"
-        ) {
-          if logTask == nil { startLogs() } else { stopLogs() }
-        }
-        smallButton(text("清空日志", "Clear logs"), danger: true, controlID: "logs.clear") { logs = [] }
-      }
-      if logs.isEmpty {
-        note(text("暂无日志，连接 VPN 后可记录核心运行日志", "No logs. Connect VPN to capture core runtime logs."))
-      }
-      ForEach(Array(logs.enumerated()), id: \.offset) { index, line in
-        TVDirectedButton(
-          id: "logs.line.\(index)", requested: $controlFocus, onMove: moveControl, action: {}
-        ) { _ in
-          Text(line).font(TVFont.regular(12)).foregroundStyle(TVTheme.textSecondary).frame(
-            maxWidth: .infinity, alignment: .leading
-          ).padding(tv(10)).background(TVTheme.surface)
-        }
       }
     } else if page == "delete" {
       deletionContent
@@ -668,7 +634,7 @@ struct TVToolsView: View {
     case "startup": return [["startup.auto"]]
     case "about":
       return (checkingUpdate ? [] : [["row:Check for updates"]])
-        + (logsEnabled ? [["row:Logs"]] : []) + [["about.privacy", "about.terms"]]
+        + [["about.privacy", "about.terms"]]
     case "routing":
       var rows = [["routing.input"], ["routing.direct", "routing.proxy"]]
       var actions: [String] = []
@@ -685,7 +651,6 @@ struct TVToolsView: View {
       if codeDeadline <= Date() { rows.append(["delete.send"]) }
       if code.count == 6 { rows.append(["row:Delete account permanently"]) }
       return rows
-    case "logs": return [["logs.toggle", "logs.clear"]] + logs.indices.map { ["logs.line.\($0)"] }
     default: return []
     }
   }
@@ -760,7 +725,6 @@ struct TVToolsView: View {
     case "routing": return text("自定义分流", "Custom routing")
     case "streaming": return text("流媒体检测", "Streaming check")
     case "delete": return text("注销账号", "Delete account")
-    case "logs": return text("日志", "Logs")
     case "account": return text("我的账号", "My Account")
     case "legal":
       return legalTerms ? text("服务条款", "Terms of Service") : text("隐私政策", "Privacy Policy")
@@ -778,7 +742,6 @@ struct TVToolsView: View {
     case "rectangle.portrait.and.arrow.right": return .logout
     case "trash": return .deleteForever
     case "arrow.clockwise": return .systemUpdateOutlined
-    case "doc.text": return .articleOutlined
     case "xmark": return .close
     default: return .emailOutlined
     }
@@ -897,10 +860,7 @@ struct TVToolsView: View {
     ).clipShape(RoundedRectangle(cornerRadius: tv(8)))
   }
   private func back() {
-    if page == "logs" {
-      page = "about"
-
-    } else if page == "legal" {
+    if page == "legal" {
       page = "about"
     } else if page == "delete" {
       page = "account"
@@ -934,41 +894,6 @@ struct TVToolsView: View {
         value.append(rule)
       }
     }
-  }
-  private func startLogs() {
-    guard logTask == nil, VPNManager.shared.isConnected else { return }
-    let id = UUID()
-    logGeneration = id
-    let owner = session.token
-    logTask = Task { @MainActor in
-      defer { if logGeneration == id { logTask = nil } }
-      let ack = await VPNManager.shared.logCommand("startLog")
-      guard !Task.isCancelled, logGeneration == id, owner == session.token,
-        TVCoreProtocol.isAcknowledged(ack)
-      else {
-        if logGeneration == id { logTask = nil }
-        return
-      }
-      while !Task.isCancelled, logGeneration == id, owner == session.token,
-        VPNManager.shared.isConnected, page == "logs",
-        scenePhase == .active
-      {
-        if let raw = await VPNManager.shared.logCommand("drainLogs"), !Task.isCancelled,
-          logGeneration == id
-        {
-          let additions = TVLogSanitizer.lines(raw)
-          logs = Array((logs + additions).suffix(200))
-        }
-        try? await Task.sleep(for: .seconds(1))
-      }
-    }
-  }
-  private func stopLogs() {
-    guard logTask != nil else { return }
-    logTask?.cancel()
-    logTask = nil
-    logGeneration = UUID()
-    Task { _ = await VPNManager.shared.logCommand("stopLog") }
   }
   private func clearStreamResults() {
     streaming = [:]

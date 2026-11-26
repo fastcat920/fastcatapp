@@ -1,0 +1,20 @@
+=== RUN   TestHTTP3ConnectWithDownlinkOptions
+=== RUN   TestHTTP3ConnectWithDownlinkOptions/defaults
+    adaptive_test.go:62: first CONNECT used 0 serialized padding bytes
+    adaptive_test.go:76: pooled connection used 0 serialized padding bytes
+=== RUN   TestHTTP3ConnectWithDownlinkOptions/adaptive_only
+    adaptive_test.go:62: first CONNECT used 0 serialized padding bytes
+    adaptive_test.go:76: pooled connection used 0 serialized padding bytes
+=== RUN   TestHTTP3ConnectWithDownlinkOptions/padding_only
+    adaptive_test.go:62: first CONNECT used 87 serialized padding bytes
+    adaptive_test.go:76: pooled connection used 504 serialized padding bytes
+=== RUN   TestHTTP3ConnectWithDownlinkOptions/adaptive_and_padding
+    adaptive_test.go:62: first CONNECT used 124 serialized padding bytes
+    adaptive_test.go:76: pooled connection used 512 serialized padding bytes
+--- PASS: TestHTTP3ConnectWithDownlinkOptions (0.05s)
+    --- PASS: TestHTTP3ConnectWithDownlinkOptions/defaults (0.02s)
+    --- PASS: TestHTTP3ConnectWithDownlinkOptions/adaptive_only (0.01s)
+    --- PASS: TestHTTP3ConnectWithDownlinkOptions/padding_only (0.01s)
+    --- PASS: TestHTTP3ConnectWithDownlinkOptions/adaptive_and_padding (0.01s)
+PASS
+ok  	core/fcnv3	0.779s

@@ -1,0 +1,7 @@
+=== RUN   TestFailedPayloadDoesNotReportRequestedSizeAsRate
+--- PASS: TestFailedPayloadDoesNotReportRequestedSizeAsRate (0.04s)
+=== RUN   TestWriteCapEveryPaddingLength
+--- PASS: TestWriteCapEveryPaddingLength (0.00s)
+=== RUN   TestWriteCapPreservesStreamAndFIN
+--- PASS: TestWriteCapPreservesStreamAndFIN (0.03s)
+PASS

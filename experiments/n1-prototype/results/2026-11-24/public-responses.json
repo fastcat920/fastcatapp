@@ -1,0 +1,26 @@
+[
+  {
+    "case": "missing",
+    "http_status": "404",
+    "body_sha256": "b16e15764b8bc06c5c3f9f19bc8b99fa48e7894aa5a6ccdad65da49bbf564793",
+    "curl_exit": 0
+  },
+  {
+    "case": "no-auth",
+    "http_status": "404",
+    "body_sha256": "b16e15764b8bc06c5c3f9f19bc8b99fa48e7894aa5a6ccdad65da49bbf564793",
+    "curl_exit": 0
+  },
+  {
+    "case": "bad-auth",
+    "http_status": "404",
+    "body_sha256": "b16e15764b8bc06c5c3f9f19bc8b99fa48e7894aa5a6ccdad65da49bbf564793",
+    "curl_exit": 0
+  },
+  {
+    "case": "public-page",
+    "http_status": "200",
+    "body_sha256": "c57da3edb004dbb50fa57f0e6bc147acd2e1f600a6b4e3e8c1aba2c285b91395",
+    "curl_exit": 0
+  }
+]

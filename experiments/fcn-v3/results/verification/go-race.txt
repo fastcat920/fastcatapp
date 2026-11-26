@@ -1,0 +1,3 @@
+ok  	core/fcnv3	3.025s
+ok  	core/tools/fcn-v3-compare	2.388s
+?   	core/tools/fcn-v3-server	[no test files]

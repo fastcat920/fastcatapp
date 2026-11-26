@@ -1,0 +1,14 @@
+{
+  "ordinary_valid_requests": 29,
+  "ordinary_full_successes": 29,
+  "revoked_or_disabled_expected_rejections": 5,
+  "resumed_tls_revoked_auth_rejected": true,
+  "active_ready_to_close_ms": 411,
+  "fuzz_executions": {
+    "fuzz-credentials": 182282,
+    "fuzz-records": 289465,
+    "fuzz-targets": 444123,
+    "fuzz-capability": 319670
+  },
+  "android_top_level_tests": 50
+}

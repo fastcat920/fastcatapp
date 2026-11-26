@@ -1,0 +1,6 @@
+PASS:90 measured speed cases+2pilots; unique timeline names. Each variant six complete single64 files,24parallel4files,48parallel8files,72rollingfiles; checksum-verified, no official failure. Echo6single+24four-stream workers completed.
+PASS: same frozen3binary SHA256 as latency154; protocol .go source unchanged.
+AUXILIARY FAILURES RETAINED: direct TCP/TLS64MiBx3 all120s timedout, partial bytes/hash not credited as complete. TCP snapshot showsCUBIC/retransmissions/smallcwnd; not a fair congestion-matched baseline or bandwidth-ceiling proof.
+PASS: test listeners/units/files/keys/temporaryhosts gone, original20501 service still listens. PhoneVPN CONNECTED, keepawake0, testdirs gone.
+PASS: internal report links and ZIPCRC verified in final packaging.
+SCOPE: sameAndroid nativeWi-Fi, separate172speed and154latency; no mixed-server score, App/TUN or battery conclusion.

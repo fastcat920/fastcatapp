@@ -1,0 +1,23 @@
+{
+  "phase": "mechanism",
+  "variants": {
+    "baseline": "original",
+    "budget": "shared 16KiB/2ms packetization budget only while fresh and bulk coexist; 500ms fresh lease"
+  },
+  "sha256": {
+    "compare": "a2e52b8b2c9cdb344d11e1d1e8804d97fd098bb27f7773b2a7360daf5cf8154b",
+    "next-diagnostic": "0e7406d5d1f09a05ad7a4c5f0d6d2b54e6952c5848a89a74f763a3941f31add2"
+  },
+  "client_policy": "original next-opt; GSO and PMTU defaults unchanged",
+  "trace": true,
+  "gate": {
+    "loaded_p95_ratio_max": 0.8,
+    "warm_p95_ratio_max": 1.1,
+    "throughput_ratio_min": 0.9,
+    "completion_not_lower": true,
+    "min_loaded_samples": 48
+  },
+  "metrics": [
+    "3 paired serial latency cases per variant"
+  ]
+}

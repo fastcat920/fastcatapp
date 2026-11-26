@@ -1,0 +1,5 @@
+go test -race ./fastcatnext ./tools/fastcat-v3-compare ./tools/fastcat-next: PASS (19.975s,2.226s)
+Additional lane reset/UDP race checks: PASS (2.437s)
+Borrowed parallel downloader ownership/integrity race test: PASS (1.753s)
+go vet same packages: PASS
+Final comparator with tuic-dual: go test -race PASS (2.744s), go vet PASS; Android pilot 12/12 success.

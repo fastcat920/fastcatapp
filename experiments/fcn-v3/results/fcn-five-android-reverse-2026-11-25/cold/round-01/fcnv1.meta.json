@@ -1,0 +1,56 @@
+{
+  "phase": "cold",
+  "arm": "fcnv1",
+  "entry_port": 18530,
+  "round": 1,
+  "rounds": 5,
+  "position": 3,
+  "args": [
+    "./compare",
+    "-config",
+    "bench.json",
+    "-protocol",
+    "fcnv1",
+    "-phase",
+    "cold",
+    "-bytes",
+    "4096",
+    "-count",
+    "4",
+    "-timeout",
+    "12s",
+    "-diagnostic-id",
+    "fcnfive04-cold-1-fcnv1"
+  ],
+  "planned": 4,
+  "diagnostic_id": "fcnfive04-cold-1-fcnv1",
+  "host_timeout_s": 64,
+  "before": {
+    "default_net_id": 361,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795609224011,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "after": {
+    "default_net_id": 361,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795609226899,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "network_stable": true,
+  "status": "exited",
+  "exit_code": 0,
+  "start_unix_ms": 1795609224011,
+  "end_unix_ms": 1795609226790,
+  "elapsed_ms": 2778.784291
+}

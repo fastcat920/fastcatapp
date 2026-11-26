@@ -1,0 +1,12 @@
+goos: darwin
+goarch: arm64
+pkg: core/fastcatv3
+cpu: Apple M2
+BenchmarkCreditPair/separate-8         	 1529412	       789.2 ns/op	     384 B/op	      12 allocs/op
+BenchmarkCreditPair/separate-8         	 1538163	       783.4 ns/op	     384 B/op	      12 allocs/op
+BenchmarkCreditPair/separate-8         	 1524367	       741.6 ns/op	     384 B/op	      12 allocs/op
+BenchmarkCreditPair/combined-8         	 3227392	       373.2 ns/op	     232 B/op	       6 allocs/op
+BenchmarkCreditPair/combined-8         	 3242647	       374.6 ns/op	     232 B/op	       6 allocs/op
+BenchmarkCreditPair/combined-8         	 3018823	       383.8 ns/op	     232 B/op	       6 allocs/op
+PASS
+ok  	core/fastcatv3	11.187s

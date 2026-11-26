@@ -1,0 +1,42 @@
+{
+  "summary": {
+    "baseline": {
+      "cold": {
+        "total": 48,
+        "success": 48,
+        "p50_ms": 469.576,
+        "p95_ms": 529.217,
+        "errors": []
+      },
+      "warm": {
+        "total": 48,
+        "success": 48,
+        "p50_ms": 288.221,
+        "p95_ms": 351.721,
+        "errors": []
+      }
+    },
+    "recovery": {
+      "cold": {
+        "total": 48,
+        "success": 48,
+        "p50_ms": 461.314,
+        "p95_ms": 543.07,
+        "errors": []
+      },
+      "warm": {
+        "total": 48,
+        "success": 48,
+        "p50_ms": 280.407,
+        "p95_ms": 354.68,
+        "errors": []
+      }
+    }
+  },
+  "checks": {
+    "enough": true,
+    "success": true,
+    "p95": true
+  },
+  "passed": true
+}

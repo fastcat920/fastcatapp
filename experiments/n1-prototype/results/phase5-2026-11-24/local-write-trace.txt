@@ -1,0 +1,16 @@
+=== RUN   TestClientEmissionTraceAndCompatibility
+=== RUN   TestClientEmissionTraceAndCompatibility/legacy/legacy
+    client_emission_test.go:54: request plaintext writes: [{"bytes":262,"shape":"request-headers"},{"bytes":28,"shape":"http-chunk"},{"bytes":29,"shape":"http-chunk"},{"bytes":5,"shape":"http-ending-only"}]
+=== RUN   TestClientEmissionTraceAndCompatibility/legacy/coalesced
+    client_emission_test.go:54: request plaintext writes: [{"bytes":262,"shape":"request-headers"},{"bytes":22,"shape":"http-chunk"},{"bytes":21,"shape":"http-chunk"}]
+=== RUN   TestClientEmissionTraceAndCompatibility/coalesced/legacy
+    client_emission_test.go:54: request plaintext writes: [{"bytes":262,"shape":"request-headers"},{"bytes":19,"shape":"http-chunk"},{"bytes":20,"shape":"http-chunk"},{"bytes":5,"shape":"http-ending-only"}]
+=== RUN   TestClientEmissionTraceAndCompatibility/coalesced/coalesced
+    client_emission_test.go:54: request plaintext writes: [{"bytes":262,"shape":"request-headers"},{"bytes":14,"shape":"http-chunk"},{"bytes":44,"shape":"http-chunk"}]
+--- PASS: TestClientEmissionTraceAndCompatibility (0.02s)
+    --- PASS: TestClientEmissionTraceAndCompatibility/legacy/legacy (0.01s)
+    --- PASS: TestClientEmissionTraceAndCompatibility/legacy/coalesced (0.00s)
+    --- PASS: TestClientEmissionTraceAndCompatibility/coalesced/legacy (0.00s)
+    --- PASS: TestClientEmissionTraceAndCompatibility/coalesced/coalesced (0.00s)
+PASS
+ok  	fastcat/n1prototype	0.449s

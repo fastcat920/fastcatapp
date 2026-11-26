@@ -1,0 +1,4 @@
+﻿body_ms,checksum_ok,complete,connect_ms,deadline_seconds,download_mbps,end_to_end_mbps,expected_bytes,first_byte_ms,phase,protocol,received_bytes,round,target_tls_ms,total_ms,version
+85476,True,True,1210,240,9.813911754813766,9.591116850621617,104857600,1701,download,h2,104857600,1,178,87462,next
+23229,True,True,398,240,36.11237245256937,34.704197215312995,104857600,672,download,h3,104857600,1,168,24171,v2-bbr
+22748,True,True,288,240,36.87509587821847,35.26724796643568,104857600,759,download,quic,104857600,1,365,23785,next

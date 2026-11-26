@@ -1,0 +1,1 @@
+No Wi-Fi requests collected. Network-switch guard could not obtain a validated Wi-Fi within35s. Caller shell continued to diagnostic driver, but its first SSH marker timed out before starting any native request. This declaration is not a Wi-Fi dataset. A popup asks user for usable Wi-Fi; all cellular results kept separately.

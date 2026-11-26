@@ -1,0 +1,152 @@
+[
+  {
+    "file": "ablation-download-network-after.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "ablation-download-network-before.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "ablation-network-after.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "ablation-network-before.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "ablation-throughput-network-after.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "ablation-throughput-network-before.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "concurrent8-network-after.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "concurrent8-network-before.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "controlled-network-after.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "controlled-network-before.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "downloads-network-after.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "downloads-network-before.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "idle70-network-after.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "idle70-network-before.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "internet-network-after.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "internet-network-before.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "large-10485760-network-after.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "large-10485760-network-before.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "large-104857600-network-after.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "large-104857600-network-before.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "large-setup-network-after.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "large-setup-network-before.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "pilot-network-after.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "pilot-network-before.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "sameport-network-after.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "sameport-network-before.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "singlepool-network-after.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "singlepool-network-before.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "throughput-network-after.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  },
+  {
+    "file": "throughput-network-before.txt",
+    "default_network": "171",
+    "vpn_connected": false
+  }
+]

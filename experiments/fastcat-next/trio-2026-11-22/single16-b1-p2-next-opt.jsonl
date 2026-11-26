@@ -1,0 +1,1 @@
+{"body_ms":86673,"complete":false,"connect_ms":2284,"deadline_seconds":90,"download_mbps":0.8604653607846997,"end_to_end_mbps":0.8286598177696084,"error":"Application error 0x0 (local)","expected_bytes":16777216,"first_byte_ms":3326,"phase":"download","protocol":"quic","received_bytes":9322496,"round":1,"target_tls_ms":823,"total_ms":90000,"version":"next-opt"}

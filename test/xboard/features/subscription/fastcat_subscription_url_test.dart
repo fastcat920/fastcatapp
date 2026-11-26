@@ -2,6 +2,22 @@ import 'package:fl_clash/xboard/features/subscription/utils/subscription_url_hel
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
+  test('FCN v3 requires an encrypted URL and a capable core', () {
+    for (final path in ['/subscription/encrypt/abc', '/subscribe']) {
+      for (final version in [0, 1, 2, 3, 4]) {
+        final uri = Uri.parse(SubscriptionUrlHelper.ensureFastCatFlag(
+          'https://example.com$path?fc_fcn3=0&fc_fcn3=1&token=secret',
+          supportsFCN: false,
+          fcnVersion: version,
+        ));
+        final expected = version >= 3 && path.contains('encrypt') ? ['1'] : null;
+        expect(uri.queryParametersAll['fc_fcn3'], expected);
+        expect(uri.queryParameters['fc_fcn'], isNull);
+        expect(uri.queryParameters['token'], 'secret');
+      }
+    }
+  });
+
   test('pinned FCN nodes require the new native capability', () {
     for (final enabled in [false, true]) {
       final url = Uri.parse(SubscriptionUrlHelper.ensureFastCatFlag(

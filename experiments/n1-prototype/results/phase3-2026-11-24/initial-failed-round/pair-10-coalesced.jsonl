@@ -1,0 +1,2 @@
+{"sample":1,"error":"read tcp 192.168.31.15:60834->191.223.214.8:18463: read: connection reset by peer"}
+{"bytes_each":32768,"failed":1,"scope":"fresh TCP + TLS + authenticated tunnel + complete verified HTTP response; speed includes setup and verification","success":0}

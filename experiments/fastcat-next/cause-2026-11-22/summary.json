@@ -1,0 +1,42 @@
+{
+  "clock_server_minus_android_us": -194458.068,
+  "clock_uncertainty_us": 252454.0,
+  "conditions": {
+    "loaded-on": {
+      "samples": 72,
+      "success": 72,
+      "p50_ms": 407.376,
+      "p95_ms": 710.21,
+      "max_ms": 816.509,
+      "status_p95_ms": 319.419,
+      "server_dial_max_ms": 2.042
+    },
+    "unloaded-on": {
+      "samples": 72,
+      "success": 72,
+      "p50_ms": 513.99,
+      "p95_ms": 1001.467,
+      "max_ms": 1704.177,
+      "status_p95_ms": 400.525,
+      "server_dial_max_ms": 2.847
+    },
+    "loaded-off": {
+      "samples": 72,
+      "success": 72,
+      "p50_ms": 396.013,
+      "p95_ms": 693.742,
+      "max_ms": 757.784,
+      "status_p95_ms": null,
+      "server_dial_max_ms": null
+    },
+    "unloaded-off": {
+      "samples": 72,
+      "success": 72,
+      "p50_ms": 571.933,
+      "p95_ms": 1172.18,
+      "max_ms": 1333.163,
+      "status_p95_ms": null,
+      "server_dial_max_ms": null
+    }
+  }
+}

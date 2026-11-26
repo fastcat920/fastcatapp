@@ -1,0 +1,2 @@
+{"bytes":8192,"cleanup_ms":0.082,"entry_ms":1126.197,"error_category":"truncated","error_stage":"headers","headers_ms":2353.473,"phase":"cold","protocol":"hysteria2","sample":1,"start_unix_ms":1795538111054,"success":false,"total_ms":2353.484}
+{"count":1,"elapsed_ms":2355.656,"event":"batch-ended","failed":1,"phase":"cold","protocol":"hysteria2","workers":1}

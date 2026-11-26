@@ -1,0 +1,122 @@
+{
+  "stage": "stage34",
+  "versions": [
+    "next-opt",
+    "next-latency",
+    "next-reserve"
+  ],
+  "metrics": [
+    [
+      "mixed",
+      6,
+      [
+        "-mixed-download-bytes",
+        "16777216",
+        "-samples",
+        "12",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "90s"
+      ],
+      true,
+      120
+    ],
+    [
+      "parallel",
+      6,
+      [
+        "-download-bytes",
+        "4194304",
+        "-download-workers",
+        "4",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "90s"
+      ],
+      true,
+      120
+    ],
+    [
+      "rolling",
+      6,
+      [
+        "-download-bytes",
+        "4194304",
+        "-download-workers",
+        "4",
+        "-download-jobs",
+        "12",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "150s"
+      ],
+      true,
+      180
+    ],
+    [
+      "latency",
+      3,
+      [
+        "-samples",
+        "12",
+        "-pools",
+        "1",
+        "-batches",
+        "3",
+        "-workers",
+        "4"
+      ],
+      false,
+      450
+    ]
+  ],
+  "orders": [
+    [
+      "next-opt",
+      "next-latency",
+      "next-reserve"
+    ],
+    [
+      "next-opt",
+      "next-reserve",
+      "next-latency"
+    ],
+    [
+      "next-latency",
+      "next-opt",
+      "next-reserve"
+    ],
+    [
+      "next-latency",
+      "next-reserve",
+      "next-opt"
+    ],
+    [
+      "next-reserve",
+      "next-opt",
+      "next-latency"
+    ],
+    [
+      "next-reserve",
+      "next-latency",
+      "next-opt"
+    ]
+  ],
+  "restart_before_each_case": true,
+  "cooldown": 5,
+  "lane_diagnostics": true,
+  "packet_trace": false,
+  "gate": {
+    "loaded_p95_ratio_max": 0.8,
+    "throughput_ratio_min": 0.9,
+    "completion_not_lower": true,
+    "minimum_loaded_requests": 48
+  },
+  "sha256": {
+    "compare": "42c18ad80dbda5c8be44800d983a5e2d03c5d5119991540358aec1d28d457171",
+    "next-diagnostic": "4cb5f199fe72d60cc4cde2a5f636a145988eafa84aaf613d964adbec8796d245"
+  }
+}

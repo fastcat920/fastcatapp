@@ -1,0 +1,34 @@
+[
+  {
+    "event": "publish",
+    "revision": 2,
+    "disabled": [],
+    "unix": 1795536381.471633
+  },
+  {
+    "event": "active_revocation",
+    "revoke_unix": 1795536380.7772942,
+    "finished_unix": 1795536381.87284,
+    "process_exit": 1
+  },
+  {
+    "event": "publish",
+    "revision": 1,
+    "disabled": [],
+    "unix": 1795536411.2341042
+  },
+  {
+    "event": "publish",
+    "revision": 3,
+    "disabled": [
+      "next"
+    ],
+    "unix": 1795536425.566112
+  },
+  {
+    "event": "publish",
+    "revision": 4,
+    "disabled": [],
+    "unix": 1795536434.3772428
+  }
+]

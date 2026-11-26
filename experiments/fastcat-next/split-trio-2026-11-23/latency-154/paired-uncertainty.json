@@ -1,0 +1,71 @@
+{
+  "method": "matched-block bootstrap, 10000 draws; clusters are whole cases; exploratory only, 6 pairs; not a formal significance claim; no multiplicity correction",
+  "results": [
+    {
+      "metric": "latency/p95",
+      "ratio": "next-opt/next-base",
+      "higher_is_better": false,
+      "estimate": 1.0219397957403407,
+      "exploratory_ci95": [
+        0.6623410800657005,
+        1.2430954378793468
+      ],
+      "blocks": 6
+    },
+    {
+      "metric": "mixed/p95",
+      "ratio": "next-opt/next-base",
+      "higher_is_better": false,
+      "estimate": 1.178217914574238,
+      "exploratory_ci95": [
+        1.025049157486262,
+        1.3603244637298746
+      ],
+      "blocks": 6
+    },
+    {
+      "metric": "latency/p95",
+      "ratio": "next-opt/tuic",
+      "higher_is_better": false,
+      "estimate": 1.4155918516067383,
+      "exploratory_ci95": [
+        0.8017986637862353,
+        1.7510703626732502
+      ],
+      "blocks": 6
+    },
+    {
+      "metric": "mixed/p95",
+      "ratio": "next-opt/tuic",
+      "higher_is_better": false,
+      "estimate": 1.1420946803259577,
+      "exploratory_ci95": [
+        0.8886676497773889,
+        1.580831933679523
+      ],
+      "blocks": 6
+    },
+    {
+      "metric": "latency/p95",
+      "ratio": "next-base/tuic",
+      "higher_is_better": false,
+      "estimate": 1.3852008283728867,
+      "exploratory_ci95": [
+        1.0159448845015855,
+        1.5787136690074999
+      ],
+      "blocks": 6
+    },
+    {
+      "metric": "mixed/p95",
+      "ratio": "next-base/tuic",
+      "higher_is_better": false,
+      "estimate": 0.9693407867921159,
+      "exploratory_ci95": [
+        0.8311881292908198,
+        1.2503686429836742
+      ],
+      "blocks": 6
+    }
+  ]
+}

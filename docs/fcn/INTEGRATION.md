@@ -48,3 +48,28 @@ FCN 接入代码已上传三个仓库，安卓调试包已安装到 Xiaomi 24129
 Android 调试包版本码 16，原生核心仍包含 `cmfa,with_gvisor`；iOS 核心已编译。线上面板未在本轮更新，93/94 的证书身份没有被自动更改；完整 App 公网固定公钥节点及 Laravel 数据库验收尚未进行。新配置需要更新面板后选择“自签证书 + 固定公钥”，旧客户端也会收到节点，连接仍需支持该模式。
 
 版本码 16 安装后已完成完整 App 冷启动回归：现有 CA 模式 FCN v2 建立 TUN 成功，日志 `vpn_lifecycle event=start outcome=ready`，连接后测速 101 ms。固定公钥模式的完整 App 公网验收仍待面板更新并建立对应配置，不能与原生回环测试混为一项。
+
+## macOS 核心接入（2026-11-24）
+
+重新构建 `libclash/macos/{arm64,amd64}/fastcatCore`，合并为 Xcode 实际打包使用的 universal `libclash/macos/fastcatCore`。保持桌面 IPC 入口的 `CGO_ENABLED=0` 和 `with_gvisor`，包含共享 FCN v1/v2 及 CA/SPKI 校验；不使用移动端 c-shared 入口。
+
+验证结果：
+
+- macOS 原生 Mihomo 适配器 FCN v1/v2 × CA/SPKI 的真实 QUIC TCP/UDP 回传通过。
+- universal 核心及 Release App 中的实际核心，都分别以 arm64、x86_64 执行桌面 IPC 配置加载，四种组合通过；无效 pin 拒绝，之前配置保留。测试关闭 TUN、DNS 和监听端口，不更改系统路由。
+- `flutter build macos --release` 完成，33 个 Mach-O 文件均含两种架构，部署版本及整个 App 签名校验通过。
+- 默认空白 HOME 会停在首次隐私说明阶段，现有主应用首帧检测因此超时；用仅写入临时 HOME 的已完成说明测试夹具运行，主应用首帧通过。此项不等同于首次使用引导验收。
+- 本轮未进行完整 Mac App 的公网 FCN 节点连接和套餐扣量验收，也未替换正在运行的旧 Debug 进程。
+
+复验实际二进制：
+
+```sh
+python3 scripts/test_macos_fcn_core.py libclash/macos/fastcatCore --arch arm64
+python3 scripts/test_macos_fcn_core.py libclash/macos/fastcatCore --arch x86_64
+```
+
+完整应用位于 `build/macos/Build/Products/Release/FastCat.app`。退出旧版本后使用新应用并刷新订阅；面板下发仍只按账号权限组，不依赖移动端 FFI 能力标记。
+
+## macOS FCN v3（2026-11-26）
+
+macOS 应用内置的通用内核支持 Catboard 下发的 `type: fcn-v3`，通过 QUIC 上的 HTTP/3 转发 TCP 和 UDP。Apple 芯片和 Intel 两个架构均通过桌面 IPC 配置加载和本地 TCP/UDP 回环验证。上述 IPC 自检也会验证 FCN v3 能力、账户 UUID 校验及保留上一份有效配置。

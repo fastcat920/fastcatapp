@@ -1,0 +1,98 @@
+{
+  "fresh-32k": {
+    "success": 20,
+    "failed": 0,
+    "exit_codes": [
+      0
+    ],
+    "first_response_headers_ms": {
+      "count": 20,
+      "mean": 1239.61655,
+      "p50": 802.651,
+      "p95": 3204.584,
+      "min": 473.957,
+      "max": 4659.081
+    },
+    "full_request_ms": {
+      "count": 20,
+      "mean": 1425.25,
+      "p50": 947.252,
+      "p95": 3405.463,
+      "min": 591.457,
+      "max": 4873.796
+    },
+    "end_to_end_mbps": {
+      "count": 20,
+      "mean": 0.27255,
+      "p50": 0.261,
+      "p95": 0.434,
+      "min": 0.054,
+      "max": 0.443
+    }
+  },
+  "download-8m": {
+    "success": 5,
+    "failed": 0,
+    "exit_codes": [
+      0
+    ],
+    "first_response_headers_ms": {
+      "count": 5,
+      "mean": 2565.1958,
+      "p50": 1205.867,
+      "p95": 5054.705,
+      "min": 693.284,
+      "max": 5054.705
+    },
+    "full_request_ms": {
+      "count": 5,
+      "mean": 24171.723599999998,
+      "p50": 4630.725,
+      "p95": 88703.419,
+      "min": 4001.081,
+      "max": 88703.419
+    },
+    "end_to_end_mbps": {
+      "count": 5,
+      "mean": 10.3542,
+      "p50": 14.492,
+      "p95": 16.773,
+      "min": 0.757,
+      "max": 16.773
+    }
+  },
+  "concurrent-32k": {
+    "success": 20,
+    "failed": 0,
+    "exit_codes": [
+      0,
+      0,
+      0,
+      0
+    ],
+    "first_response_headers_ms": {
+      "count": 20,
+      "mean": 813.95675,
+      "p50": 663.81,
+      "p95": 1632.382,
+      "min": 467.508,
+      "max": 2119.047
+    },
+    "full_request_ms": {
+      "count": 20,
+      "mean": 957.6942000000001,
+      "p50": 751.146,
+      "p95": 2051.11,
+      "min": 596.776,
+      "max": 2223.538
+    },
+    "end_to_end_mbps": {
+      "count": 20,
+      "mean": 0.32475,
+      "p50": 0.334,
+      "p95": 0.438,
+      "min": 0.118,
+      "max": 0.439
+    }
+  }
+}

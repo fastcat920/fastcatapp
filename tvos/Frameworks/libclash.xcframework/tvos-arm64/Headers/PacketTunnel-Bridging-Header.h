@@ -38,4 +38,7 @@ extern int ClashCore_read_packet(unsigned long long generation, uint8_t *data, i
 /// Returns 0 if the core is not yet initialised.
 extern int ClashCore_get_mixed_port(void);
 
+/// Explicit physical-path binding for provider-originated sockets.
+extern void ClashCore_set_upstream_interface(unsigned int index);
+
 #endif /* PacketTunnel_Bridging_Header_h */

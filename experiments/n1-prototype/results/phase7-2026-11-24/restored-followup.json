@@ -1,0 +1,20 @@
+[
+  {
+    "sample": 1,
+    "exit_code": 0,
+    "stdout": "{\"bytes\":32768,\"chunk\":16384,\"first_payload_ms\":4760.03,\"first_response_headers_ms\":4759.953,\"full_request_ms\":5677.696,\"gap_ms\":0,\"header_kind\":\"application-response\",\"kind\":\"matched-n1\",\"payload_read_mbps\":0.3198828553996339,\"payload_read_ms\":819.5,\"payload_verified\":true,\"request_writes\":[{\"bytes\":267,\"shape\":\"request-headers\"},{\"bytes\":112,\"shape\":\"http-chunk\",\"body_bytes\":106},{\"bytes\":40,\"shape\":\"http-chunk\",\"body_bytes\":29}],\"shutdown_eof_observed\":true}\n",
+    "stderr": ""
+  },
+  {
+    "sample": 2,
+    "exit_code": 1,
+    "stdout": "{\"bytes\":32768,\"chunk\":16384,\"error\":\"entry_tls: read tcp 192.168.31.15:54904-\\u003e191.223.214.8:18461: i/o timeout\",\"first_response_headers_ms\":13306.479,\"full_request_ms\":13306.494,\"gap_ms\":0,\"header_kind\":\"application-response\",\"kind\":\"matched-n1\"}\n",
+    "stderr": "2026/11/24 12:57:15 entry_tls: read tcp 192.168.31.15:54904->191.223.214.8:18461: i/o timeout\n"
+  },
+  {
+    "sample": 3,
+    "exit_code": 0,
+    "stdout": "{\"bytes\":32768,\"chunk\":16384,\"first_payload_ms\":1517.025,\"first_response_headers_ms\":1516.966,\"full_request_ms\":1621.008,\"gap_ms\":0,\"header_kind\":\"application-response\",\"kind\":\"matched-n1\",\"payload_read_mbps\":116.76792873051225,\"payload_read_ms\":2.245,\"payload_verified\":true,\"request_writes\":[{\"bytes\":267,\"shape\":\"request-headers\"},{\"bytes\":116,\"shape\":\"http-chunk\",\"body_bytes\":110},{\"bytes\":18,\"shape\":\"http-chunk\",\"body_bytes\":8}],\"shutdown_eof_observed\":true}\n",
+    "stderr": ""
+  }
+]

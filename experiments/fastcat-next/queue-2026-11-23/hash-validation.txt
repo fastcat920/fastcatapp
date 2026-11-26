@@ -1,0 +1,8 @@
+stage12/mechanism: SHA256 matches frozen binaries
+stage12/performance: SHA256 matches frozen binaries
+stage3/mechanism: SHA256 matches frozen binaries
+stage3/performance: SHA256 matches frozen binaries
+stage4/mechanism: SHA256 matches frozen binaries
+stage4/performance: SHA256 matches frozen binaries
+web server binary identical to stage4 frozen server
+current core source matches stage4 frozen source, including tests

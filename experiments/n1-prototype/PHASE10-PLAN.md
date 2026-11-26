@@ -1,0 +1,11 @@
+# Real browser / mixed workload observations
+
+After Phase9 performance gates, use actual installed Honor browser (no APK install). Independent N1 lab18466 capped+header15, explicit public destination allowlist only zlhk.fastcat.ink:18472/example.com:443/www.example.com:443 plus existing loopback synthetic target. Validate resolved public IP at actual Dialer.ControlContext; no arbitrary forwarding/private DNS rebinding. Web baseline18472 TLS1.3, normal HTTP/2 support, finite16MiB data quota,128authorized requests, separate ephemeral measurement token (never proxy key).
+
+Four cases Wi-Fi/cellular x browser direct/proxied. Fresh browser process between cases; each controlled page sequential7001/33331/131101 B,4concurrent65536 B,one1MiB streaming fetch; validates every byte, reports firstbyte/total and browser nextHopProtocol. Do not equate one page/case with statistically sufficient speed comparison. Record actual default network before/after and reject mixed-network labeling.
+
+Selected-host PAC on loopback proxy is preferred: only test hosts proxied, all others DIRECT; snapshot and restore all original global proxy settings. If OS PAC unsupported, retain failed preflight evidence and use short manual proxy with restoration; never silently count a direct page as proxied. Site reports via_node from actual socket peer, not forwarded headers. Confirm N1 auth/target connection. Actual external example.com page is compatibility check, not a detection score.
+
+Capture only lab18466/18472, no production443. Browser inner TLS on node loopback is not an observer-visible SNI leak; compare it separately from external N1 handshake. Real browser vs Go ClientHello/ALPN differences are descriptive; no censorship-probability estimates or browser-impersonation claims. Native ordinary HTTPS and matched streaming data from previous phases remain separately labeled synthetic controls, not real-site prevalence.
+
+Browser terms/permission decisions requiring user choice go to popup; continue independent security implementation while waiting. All test proxies and global settings restored afterward. Preserve failures, do not retry away bad pages. Controls/tokens temporary, no App/panel/production deployment.

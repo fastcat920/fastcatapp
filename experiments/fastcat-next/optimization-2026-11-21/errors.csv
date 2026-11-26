@@ -1,0 +1,28 @@
+﻿workload,version,protocol,phase,error,count
+concurrent8,anytls,tcp-tls,batch,entry: failed to create session: EOF,2
+concurrent8,anytls,tcp-tls,batch,target TLS: use of closed network connection,1
+concurrent8,v3-light-fast,h3,batch,entry: use of closed network connection,8
+concurrent8,vless-vision,tcp-tls,batch,entry: 191.223.214.8:19446 connect error: context deadline exceeded,1
+concurrent8,vless-vision,tcp-tls,batch,target TLS: EOF,1
+controlled,anytls,tcp-tls,batch,entry: failed to create session: EOF,1
+controlled,anytls,tcp-tls,warm,target TLS: use of closed network connection,1
+controlled,next,h2,warm,response: http2: response body closed,1
+controlled,trojan,tcp-tls,cold,entry: 191.223.214.8:19448 connect error: EOF,1
+controlled,v2,h2,cold,entry: context deadline exceeded,1
+controlled,v3-light-fast,h3,batch,entry: use of closed network connection,20
+controlled,v3-light-fast,h3,warm,entry: use of closed network connection,20
+controlled,vless-vision,tcp-tls,warm,entry: 191.223.214.8:19446 connect error: EOF,1
+idle70,v2-bbr,h3,idle-resume,entry: established HTTP/3 gateway did not answer a liveness check,1
+idle70,v3-light-fast,h3,idle-resume,entry: use of closed network connection,3
+internet,anytls,tcp-tls,cold,entry: failed to create session: EOF,1
+internet,next,h2,warm,entry: context deadline exceeded,1
+internet,trojan,tcp-tls,batch,entry: 191.223.214.8:19448 connect error: EOF,1
+internet,trojan,tcp-tls,batch,target TLS: EOF,1
+internet,trojan,tcp-tls,cold,entry: 191.223.214.8:19448 connect error: context deadline exceeded,1
+internet,trojan,tcp-tls,cold,target TLS: EOF,1
+internet,v3-light-fast,h2,cold,context canceled,1
+internet,v3-light-fast,h3,batch,entry: use of closed network connection,20
+internet,v3-light-fast,h3,warm,entry: use of closed network connection,20
+internet,vless-vision,tcp-tls,warm,response: read tcp 192.168.31.15:53308->191.223.214.8:19446: i/o timeout,1
+singlepool,trojan,tcp-tls,batch,target TLS: EOF,1
+singlepool,v3-light-fast,h2,batch,entry: stream error: stream ID 43; INTERNAL_ERROR; received from peer,1

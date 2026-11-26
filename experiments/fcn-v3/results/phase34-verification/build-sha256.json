@@ -1,0 +1,8 @@
+{
+  "fcn-v3-phase34-compare-android-arm64": "772127c7cd02f6193325f89e99dd28ac87407d8e5dc8a7481e62fa7ecd882ad0",
+  "fcn-v3-phase34-network-android-arm64": "2a64c50fca6ae59490bc77916ba27ef2827906da6ab7c1a14cbab4dd6b892cff",
+  "fcn-v3-phase34-network-sizes-android-arm64": "fee7cf6b6e1e4e3fd563bdec6e2b4cdc12a3c26a120e8e1eaf7f3529fd883be3",
+  "fcn-v3-phase34-server-linux-amd64": "6d5196c329346f2e7086230d76296244c3155a0998a63c74e2d27211e9718829",
+  "tuic-fixture-linux-amd64": "7c852da903c0a1c41917f8eba281065a515ec0e88b03fe12f6326fde78d9debc",
+  "origin-linux-amd64": "223c45da405fecfe53d53f2523a5a89752b3fd8477211d760b05d46aade9d115"
+}

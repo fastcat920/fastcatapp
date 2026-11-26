@@ -1,0 +1,13 @@
+Running as unit: fc-opt-backend-1795411768.service
+/tmp/fc-new-trio/compare: 1 file pushed, 0 skipped. 28.7 MB/s (38898266 bytes in 1.294s)
+/tmp/fc-new-trio/client-1795411768.json: 1 file pushed, 0 skipped. 3.4 MB/s (425 bytes in 0.000s)
+/tmp/fc-new-trio/ca.pem: 1 file pushed, 0 skipped. 1.1 MB/s (1151 bytes in 0.001s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+/tmp/fc-new-trio/pilot-ports1-1795411768.json: 1 file pushed, 0 skipped. 6.3 MB/s (752 bytes in 0.000s)
+COMPLETE pilot-ports1
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+VPN restored: True
+Traceback (most recent call last):
+  File "/tmp/fc-new-trio/run.py", line 31, in <module>
+    if not rr or any(r.get('error') for r in rr):raise RuntimeError('pilot transport failed: '+v)
+RuntimeError: pilot transport failed: tuic

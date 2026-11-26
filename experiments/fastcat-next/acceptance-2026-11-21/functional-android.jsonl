@@ -1,0 +1,27 @@
+{"carrier":"quic","check":"half-close-256KiB","elapsed_ms":1550,"ok":true}
+{"carrier":"quic","check":"fresh-after-network-reset","elapsed_ms":1226,"ok":true}
+{"carrier":"quic","check":"wrong-key-rejected","elapsed_ms":323,"ok":true}
+{"carrier":"h2","check":"half-close-256KiB","elapsed_ms":2255,"ok":true}
+{"carrier":"h2","check":"fresh-after-network-reset","elapsed_ms":4657,"ok":true}
+{"carrier":"h2","check":"wrong-key-rejected","elapsed_ms":499,"ok":true}
+{"carrier":"quic","check":"udp1100-01","elapsed_ms":105,"ok":true}
+{"carrier":"quic","check":"udp1100-02","elapsed_ms":102,"ok":true}
+{"carrier":"quic","check":"udp1100-03","elapsed_ms":131,"ok":true}
+{"carrier":"quic","check":"udp1100-04","elapsed_ms":2000,"error":"read fcn-datagram: deadline exceeded","ok":false}
+{"carrier":"quic","check":"udp1100-05","elapsed_ms":122,"ok":true}
+{"carrier":"quic","check":"udp1100-06","elapsed_ms":101,"ok":true}
+{"carrier":"quic","check":"udp1100-07","elapsed_ms":101,"ok":true}
+{"carrier":"quic","check":"udp1100-08","elapsed_ms":101,"ok":true}
+{"carrier":"quic","check":"udp1100-09","elapsed_ms":2000,"error":"read fcn-datagram: deadline exceeded","ok":false}
+{"carrier":"quic","check":"udp1100-10","elapsed_ms":2000,"error":"read fcn-datagram: deadline exceeded","ok":false}
+{"carrier":"quic","check":"udp1100-11","elapsed_ms":127,"ok":true}
+{"carrier":"quic","check":"udp1100-12","elapsed_ms":101,"ok":true}
+{"carrier":"quic","check":"udp1100-13","elapsed_ms":102,"ok":true}
+{"carrier":"quic","check":"udp1100-14","elapsed_ms":101,"ok":true}
+{"carrier":"quic","check":"udp1100-15","elapsed_ms":101,"ok":true}
+{"carrier":"quic","check":"udp1100-16","elapsed_ms":101,"ok":true}
+{"carrier":"quic","check":"udp1100-17","elapsed_ms":2001,"error":"read fcn-datagram: deadline exceeded","ok":false}
+{"carrier":"quic","check":"udp1100-18","elapsed_ms":2001,"error":"read fcn-datagram: deadline exceeded","ok":false}
+{"carrier":"quic","check":"udp1100-19","elapsed_ms":2000,"error":"read fcn-datagram: deadline exceeded","ok":false}
+{"carrier":"quic","check":"udp1100-20","elapsed_ms":129,"ok":true}
+{"carrier":"quic","check":"udp-oversize-rejected","elapsed_ms":0,"ok":true}

@@ -1,0 +1,8 @@
+Running as unit: fc-opt-backend-1795415849.service
+/tmp/fc-new-trio/compare: 1 file pushed, 0 skipped. 36.8 MB/s (38898266 bytes in 1.007s)
+/tmp/fc-new-trio/client-1795415849.json: 1 file pushed, 0 skipped. 3.7 MB/s (425 bytes in 0.000s)
+/tmp/fc-new-trio/ca.pem: 1 file pushed, 0 skipped. 133.8 MB/s (334634 bytes in 0.002s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+/tmp/fc-new-trio/direct: 1 file pushed, 0 skipped. 39.4 MB/s (8662146 bytes in 0.210s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+VPN restored: True

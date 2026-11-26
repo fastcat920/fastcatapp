@@ -1,0 +1,25 @@
+{
+  "conditions": [
+    "loaded-on",
+    "unloaded-on"
+  ],
+  "orders": [
+    [
+      0,
+      1
+    ]
+  ],
+  "blocks": 1,
+  "foreground_samples": 12,
+  "background_each_bytes": 16777216,
+  "policy": "next-opt unchanged; both new policy flags off",
+  "trace_progress_ms": 250,
+  "trace_packet_payloads": false,
+  "server_go": "1.27.3",
+  "client_go": "1.26.2",
+  "sha256": {
+    "compare": "79975cff6e7470f6d3e5a74630b77ed60d3d4eb9b310e4840a501c8f39c161c5",
+    "next-diagnostic": "6ba10338cec5628d5e382bd0c81b754a8be06ef3a65c60fdbce83c1613c40904"
+  },
+  "purpose": "bounded prefix packet/range correlation; metadata only; not a performance acceptance run"
+}

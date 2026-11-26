@@ -1,0 +1,122 @@
+{
+  "bad-base64": {
+    "samples": 10,
+    "errors": 0,
+    "statuses": [
+      404
+    ],
+    "body_hashes": [
+      "b16e15764b8bc06c5c3f9f19bc8b99fa48e7894aa5a6ccdad65da49bbf564793"
+    ],
+    "connection_close": [
+      true
+    ],
+    "headers_p50_ms": 103.951,
+    "headers_p95_ms": 349.001
+  },
+  "missing-auth": {
+    "samples": 10,
+    "errors": 0,
+    "statuses": [
+      404
+    ],
+    "body_hashes": [
+      "b16e15764b8bc06c5c3f9f19bc8b99fa48e7894aa5a6ccdad65da49bbf564793"
+    ],
+    "connection_close": [
+      true
+    ],
+    "headers_p50_ms": 105.399,
+    "headers_p95_ms": 280.571
+  },
+  "ordinary-missing": {
+    "samples": 10,
+    "errors": 0,
+    "statuses": [
+      404
+    ],
+    "body_hashes": [
+      "b16e15764b8bc06c5c3f9f19bc8b99fa48e7894aa5a6ccdad65da49bbf564793"
+    ],
+    "connection_close": [
+      true
+    ],
+    "headers_p50_ms": 115.321,
+    "headers_p95_ms": 266.074
+  },
+  "oversized-token": {
+    "samples": 10,
+    "errors": 0,
+    "statuses": [
+      404
+    ],
+    "body_hashes": [
+      "b16e15764b8bc06c5c3f9f19bc8b99fa48e7894aa5a6ccdad65da49bbf564793"
+    ],
+    "connection_close": [
+      true
+    ],
+    "headers_p50_ms": 100.8305,
+    "headers_p95_ms": 172.651
+  },
+  "public-root": {
+    "samples": 10,
+    "errors": 0,
+    "statuses": [
+      200
+    ],
+    "body_hashes": [
+      "c57da3edb004dbb50fa57f0e6bc147acd2e1f600a6b4e3e8c1aba2c285b91395"
+    ],
+    "connection_close": [
+      false
+    ],
+    "headers_p50_ms": 106.101,
+    "headers_p95_ms": 862.073
+  },
+  "short-token": {
+    "samples": 10,
+    "errors": 0,
+    "statuses": [
+      404
+    ],
+    "body_hashes": [
+      "b16e15764b8bc06c5c3f9f19bc8b99fa48e7894aa5a6ccdad65da49bbf564793"
+    ],
+    "connection_close": [
+      true
+    ],
+    "headers_p50_ms": 113.826,
+    "headers_p95_ms": 563.129
+  },
+  "stream-without-body": {
+    "samples": 10,
+    "errors": 0,
+    "statuses": [
+      404
+    ],
+    "body_hashes": [
+      "b16e15764b8bc06c5c3f9f19bc8b99fa48e7894aa5a6ccdad65da49bbf564793"
+    ],
+    "connection_close": [
+      true
+    ],
+    "headers_p50_ms": 99.6715,
+    "headers_p95_ms": 438.529
+  },
+  "wrong-key": {
+    "samples": 10,
+    "errors": 0,
+    "statuses": [
+      404
+    ],
+    "body_hashes": [
+      "b16e15764b8bc06c5c3f9f19bc8b99fa48e7894aa5a6ccdad65da49bbf564793"
+    ],
+    "connection_close": [
+      true
+    ],
+    "headers_p50_ms": 122.46099999999998,
+    "headers_p95_ms": 723.15
+  }
+}

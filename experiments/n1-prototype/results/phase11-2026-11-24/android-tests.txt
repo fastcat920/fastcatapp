@@ -1,0 +1,183 @@
+=== RUN   TestClientEmissionTraceAndCompatibility
+=== RUN   TestClientEmissionTraceAndCompatibility/legacy/legacy
+    client_emission_test.go:54: request plaintext writes: [{"bytes":262,"shape":"request-headers"},{"bytes":39,"shape":"http-chunk","body_bytes":33},{"bytes":17,"shape":"http-chunk","body_bytes":12},{"bytes":5,"shape":"http-ending-only"}]
+=== RUN   TestClientEmissionTraceAndCompatibility/legacy/coalesced
+    client_emission_test.go:54: request plaintext writes: [{"bytes":262,"shape":"request-headers"},{"bytes":43,"shape":"http-chunk","body_bytes":37},{"bytes":44,"shape":"http-chunk","body_bytes":33}]
+=== RUN   TestClientEmissionTraceAndCompatibility/coalesced/legacy
+    client_emission_test.go:54: request plaintext writes: [{"bytes":262,"shape":"request-headers"},{"bytes":16,"shape":"http-chunk","body_bytes":11},{"bytes":24,"shape":"http-chunk","body_bytes":18},{"bytes":5,"shape":"http-ending-only"}]
+=== RUN   TestClientEmissionTraceAndCompatibility/coalesced/coalesced
+    client_emission_test.go:54: request plaintext writes: [{"bytes":262,"shape":"request-headers"},{"bytes":46,"shape":"http-chunk","body_bytes":40},{"bytes":50,"shape":"http-chunk","body_bytes":39}]
+--- PASS: TestClientEmissionTraceAndCompatibility (0.22s)
+    --- PASS: TestClientEmissionTraceAndCompatibility/legacy/legacy (0.04s)
+    --- PASS: TestClientEmissionTraceAndCompatibility/legacy/coalesced (0.04s)
+    --- PASS: TestClientEmissionTraceAndCompatibility/coalesced/legacy (0.06s)
+    --- PASS: TestClientEmissionTraceAndCompatibility/coalesced/coalesced (0.07s)
+=== RUN   TestCoalescedClientBulkAndAuthFailure
+--- PASS: TestCoalescedClientBulkAndAuthFailure (0.64s)
+=== RUN   TestCoalescedChunkFramingAndStableFIN
+--- PASS: TestCoalescedChunkFramingAndStableFIN (0.00s)
+=== RUN   TestCoalescedInteractiveAndBulk
+=== RUN   TestCoalescedInteractiveAndBulk/legacy
+=== RUN   TestCoalescedInteractiveAndBulk/coalesced
+=== RUN   TestCoalescedInteractiveAndBulk/capped
+--- PASS: TestCoalescedInteractiveAndBulk (0.36s)
+    --- PASS: TestCoalescedInteractiveAndBulk/legacy (0.13s)
+    --- PASS: TestCoalescedInteractiveAndBulk/coalesced (0.13s)
+    --- PASS: TestCoalescedInteractiveAndBulk/capped (0.10s)
+=== RUN   TestCoalescedServerFirstAndEmptyFIN
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/legacy
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/legacy/greeting-ready
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/legacy/greeting-
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/coalesced
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/coalesced/greeting-ready
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/coalesced/greeting-
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/capped
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/capped/greeting-ready
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/capped/greeting-
+--- PASS: TestCoalescedServerFirstAndEmptyFIN (0.27s)
+    --- PASS: TestCoalescedServerFirstAndEmptyFIN/legacy (0.07s)
+        --- PASS: TestCoalescedServerFirstAndEmptyFIN/legacy/greeting-ready (0.03s)
+        --- PASS: TestCoalescedServerFirstAndEmptyFIN/legacy/greeting- (0.03s)
+    --- PASS: TestCoalescedServerFirstAndEmptyFIN/coalesced (0.09s)
+        --- PASS: TestCoalescedServerFirstAndEmptyFIN/coalesced/greeting-ready (0.04s)
+        --- PASS: TestCoalescedServerFirstAndEmptyFIN/coalesced/greeting- (0.05s)
+    --- PASS: TestCoalescedServerFirstAndEmptyFIN/capped (0.12s)
+        --- PASS: TestCoalescedServerFirstAndEmptyFIN/capped/greeting-ready (0.05s)
+        --- PASS: TestCoalescedServerFirstAndEmptyFIN/capped/greeting- (0.07s)
+=== RUN   TestCoalescedAuthorizationFailure
+=== RUN   TestCoalescedAuthorizationFailure/legacy
+=== RUN   TestCoalescedAuthorizationFailure/coalesced
+=== RUN   TestCoalescedAuthorizationFailure/capped
+--- PASS: TestCoalescedAuthorizationFailure (1.72s)
+    --- PASS: TestCoalescedAuthorizationFailure/legacy (0.56s)
+    --- PASS: TestCoalescedAuthorizationFailure/coalesced (0.58s)
+    --- PASS: TestCoalescedAuthorizationFailure/capped (0.58s)
+=== RUN   TestCoalescedCancelReleasesSession
+=== RUN   TestCoalescedCancelReleasesSession/legacy
+2026/11/24 16:04:29 coalesced session ended with transport error
+=== RUN   TestCoalescedCancelReleasesSession/coalesced
+2026/11/24 16:04:29 coalesced session ended with transport error
+=== RUN   TestCoalescedCancelReleasesSession/capped
+2026/11/24 16:04:29 coalesced session ended with transport error
+--- PASS: TestCoalescedCancelReleasesSession (0.24s)
+    --- PASS: TestCoalescedCancelReleasesSession/legacy (0.08s)
+    --- PASS: TestCoalescedCancelReleasesSession/coalesced (0.07s)
+    --- PASS: TestCoalescedCancelReleasesSession/capped (0.08s)
+=== RUN   TestCoalescedWaitsForOuterRequestEOF
+--- PASS: TestCoalescedWaitsForOuterRequestEOF (0.18s)
+=== RUN   TestCredentialRotationRevokesLiveAndResumed
+2026/11/24 16:04:30 coalesced session ended with transport error
+2026/11/24 16:04:30 coalesced session ended with transport error
+--- PASS: TestCredentialRotationRevokesLiveAndResumed (0.76s)
+=== RUN   TestCredentialReloadSafetyAndExpiry
+--- PASS: TestCredentialReloadSafetyAndExpiry (0.01s)
+=== RUN   TestCredentialCacheIdentityIsolation
+--- PASS: TestCredentialCacheIdentityIsolation (0.00s)
+=== RUN   TestCredentialRegistrationCannotRaceRevocation
+--- PASS: TestCredentialRegistrationCannotRaceRevocation (0.00s)
+=== RUN   TestSetupCancellationDuringTLS
+--- PASS: TestSetupCancellationDuringTLS (0.07s)
+=== RUN   TestBodyFailurePhaseAndPartialByteCount
+2026/11/24 16:04:31 coalesced session ended with transport error
+--- PASS: TestBodyFailurePhaseAndPartialByteCount (0.08s)
+=== RUN   TestTraceSeparatesDNSAndTCP
+2026/11/24 16:04:31 session ended with transport error
+--- PASS: TestTraceSeparatesDNSAndTCP (0.55s)
+=== RUN   TestSyntheticDNSFailureStage
+--- PASS: TestSyntheticDNSFailureStage (0.00s)
+=== RUN   TestSyntheticTCPFailureStage
+--- PASS: TestSyntheticTCPFailureStage (0.00s)
+=== RUN   TestRetryOnlyBeforeAuthentication
+--- PASS: TestRetryOnlyBeforeAuthentication (0.56s)
+=== RUN   TestTransientTLSRetryIsBoundedAndRecorded
+--- PASS: TestTransientTLSRetryIsBoundedAndRecorded (0.23s)
+=== RUN   TestSetupCancellationDoesNotKillEstablishedStream
+--- PASS: TestSetupCancellationDoesNotKillEstablishedStream (0.08s)
+=== RUN   TestRecords
+--- PASS: TestRecords (0.00s)
+=== RUN   TestRealTunnel
+--- PASS: TestRealTunnel (0.11s)
+=== RUN   TestConcurrentTunnels
+--- PASS: TestConcurrentTunnels (0.09s)
+=== RUN   TestTargetHalfClosePreservesUpload
+--- PASS: TestTargetHalfClosePreservesUpload (0.04s)
+=== RUN   TestWrongKeyAndDestination
+--- PASS: TestWrongKeyAndDestination (0.55s)
+=== RUN   TestNormalAndInvalidRequests
+--- PASS: TestNormalAndInvalidRequests (0.01s)
+=== RUN   TestExporterBinding
+--- PASS: TestExporterBinding (0.13s)
+=== RUN   TestMatchedStreamingStagesAndSizes
+{"ack_headers_ms":64.966,"bytes":4096,"chunk":512,"first_payload_ms":67.968,"full_request_ms":70.958,"gap_ms":0,"kind":"matched-rpc","payload_verified":true,"request_writes":[{"bytes":262,"shape":"request-headers"},{"bytes":99,"shape":"http-chunk","body_bytes":93},{"bytes":42,"shape":"http-chunk","body_bytes":31}],"shutdown_eof_observed":true}
+{"ack_headers_ms":64.167,"bytes":4096,"chunk":512,"first_payload_ms":64.857,"full_request_ms":79.136,"gap_ms":1,"kind":"matched-rpc","payload_verified":true,"request_writes":[{"bytes":262,"shape":"request-headers"},{"bytes":99,"shape":"http-chunk","body_bytes":93},{"bytes":42,"shape":"http-chunk","body_bytes":31}],"shutdown_eof_observed":true}
+--- PASS: TestMatchedStreamingStagesAndSizes (0.23s)
+=== RUN   TestMatchedControlDisabled
+--- PASS: TestMatchedControlDisabled (0.01s)
+=== RUN   TestLocalProxyPreservesReverseUploadAfterTargetFIN
+--- PASS: TestLocalProxyPreservesReverseUploadAfterTargetFIN (0.07s)
+=== RUN   TestPublicTargetsCannotNamePrivateOrMalformedDestinations
+--- PASS: TestPublicTargetsCannotNamePrivateOrMalformedDestinations (0.00s)
+=== RUN   TestPublicDNSRebindingIsRejectedBeforeConnect
+--- PASS: TestPublicDNSRebindingIsRejectedBeforeConnect (0.00s)
+=== RUN   TestPerPeerAdmissionAndRelease
+--- PASS: TestPerPeerAdmissionAndRelease (0.00s)
+=== RUN   TestGlobalAdmissionLimit
+--- PASS: TestGlobalAdmissionLimit (0.00s)
+=== RUN   TestRuntimeMetricsPrivateBoundedAndReleased
+--- PASS: TestRuntimeMetricsPrivateBoundedAndReleased (0.01s)
+=== RUN   TestClientRuntimeMetricsWithoutServerState
+--- PASS: TestClientRuntimeMetricsWithoutServerState (0.00s)
+=== RUN   TestSessionCacheResumesAndSeparatesNetworkEpoch
+--- PASS: TestSessionCacheResumesAndSeparatesNetworkEpoch (0.21s)
+=== RUN   TestCacheBoundsAndDefaultOff
+--- PASS: TestCacheBoundsAndDefaultOff (0.00s)
+=== RUN   TestCacheForcesFullValidationAfterProfileLifetime
+--- PASS: TestCacheForcesFullValidationAfterProfileLifetime (0.15s)
+=== RUN   TestBrowserLabBoundsAndUnauthorizedQuota
+--- PASS: TestBrowserLabBoundsAndUnauthorizedQuota (0.01s)
+=== RUN   TestPACIncludesOnlySelectedHosts
+--- PASS: TestPACIncludesOnlySelectedHosts (0.00s)
+=== RUN   TestWorkloadBoundsAndPattern
+--- PASS: TestWorkloadBoundsAndPattern (0.00s)
+=== RUN   TestMatchedWorkloadModes
+{"bytes":4096,"chunk":512,"first_payload_ms":63.446,"first_response_headers_ms":63.409,"full_lifecycle_verified":true,"full_request_ms":66.307,"gap_ms":0,"header_kind":"application-response","kind":"n1","outer_http_eof_verified":true,"payload_read_mbps":115.78798586572438,"payload_read_ms":0.283,"payload_verified":true,"shutdown_eof_observed":true,"stream_fin_verified":true,"trace":{"body_received_bytes":4096,"durations_ms":{"entry_auth_headers":3.128,"outer_http_eof":0.004,"tcp_attempts":1.352,"tls":55.312,"tls_close_receive":0.82,"tls_close_send":0.248},"events":[{"phase":"dns_tcp","offset_ms":0.471},{"phase":"tcp","offset_ms":0.645},{"phase":"tls","offset_ms":2.061},{"phase":"entry_auth_headers","offset_ms":57.499},{"phase":"target_request","offset_ms":60.552},{"phase":"target_headers","offset_ms":60.896},{"phase":"body","offset_ms":63.358},{"phase":"upload_fin","offset_ms":63.684},{"phase":"download_fin","offset_ms":64.462},{"phase":"outer_http_tls_close","offset_ms":64.541},{"phase":"outer_http_eof","offset_ms":64.554},{"phase":"tls_close_send","offset_ms":64.564},{"phase":"tls_close_receive","offset_ms":64.817}],"failure_phase":"","progress":[{"offset_ms":63.385,"received_bytes":3959},{"offset_ms":63.636,"received_bytes":4096}],"setup_attempts":1,"setup_failures":null,"tls_resumed":false},"upload_fin_written":true}
+{"bytes":4096,"chunk":512,"first_payload_ms":59.367,"first_response_headers_ms":59.333,"full_lifecycle_verified":true,"full_request_ms":75.262,"gap_ms":1,"header_kind":"application-response","kind":"n1","outer_http_eof_verified":true,"payload_read_mbps":2.544296917462536,"payload_read_ms":12.879,"payload_verified":true,"shutdown_eof_observed":true,"stream_fin_verified":true,"trace":{"body_received_bytes":4096,"durations_ms":{"entry_auth_headers":3.855,"outer_http_eof":0.004,"tcp_attempts":1.002,"tls":50.462,"tls_close_receive":0.903,"tls_close_send":0.214},"events":[{"phase":"dns_tcp","offset_ms":1.085},{"phase":"tcp","offset_ms":1.268},{"phase":"tls","offset_ms":2.31},{"phase":"entry_auth_headers","offset_ms":52.89},{"phase":"target_request","offset_ms":56.69},{"phase":"target_headers","offset_ms":57.097},{"phase":"body","offset_ms":59.312},{"phase":"upload_fin","offset_ms":72.231},{"phase":"download_fin","offset_ms":72.811},{"phase":"outer_http_tls_close","offset_ms":72.893},{"phase":"outer_http_eof","offset_ms":72.904},{"phase":"tls_close_send","offset_ms":72.913},{"phase":"tls_close_receive","offset_ms":73.131}],"failure_phase":"","progress":[{"offset_ms":59.336,"received_bytes":512},{"offset_ms":72.173,"received_bytes":4096}],"setup_attempts":1,"setup_failures":null,"tls_resumed":false},"upload_fin_written":true}
+{"bytes":4096,"chunk":512,"first_payload_ms":64.859,"first_response_headers_ms":64.808,"full_lifecycle_verified":true,"full_request_ms":66.935,"gap_ms":0,"header_kind":"application-response","kind":"get","payload_read_mbps":19.354991139988186,"payload_read_ms":1.693,"payload_verified":true,"shutdown_eof_observed":true,"trace":{"body_received_bytes":4096,"durations_ms":{"tcp_attempts":1.037,"tls":60.542},"events":[{"phase":"dns_tcp","offset_ms":1.136},{"phase":"tcp","offset_ms":1.255},{"phase":"tls","offset_ms":2.331},{"phase":"body","offset_ms":64.794},{"phase":"tls_close","offset_ms":66.52}],"failure_phase":"","progress":[{"offset_ms":64.833,"received_bytes":512},{"offset_ms":66.417,"received_bytes":4096}],"setup_attempts":1,"setup_failures":null,"tls_resumed":false}}
+{"bytes":4096,"chunk":512,"first_payload_ms":65.297,"first_response_headers_ms":65.244,"full_lifecycle_verified":true,"full_request_ms":78.183,"gap_ms":1,"header_kind":"application-response","kind":"get","payload_read_mbps":2.6241691359013375,"payload_read_ms":12.487,"payload_verified":true,"shutdown_eof_observed":true,"trace":{"body_received_bytes":4096,"durations_ms":{"tcp_attempts":1.143,"tls":61.34},"events":[{"phase":"dns_tcp","offset_ms":0.965},{"phase":"tcp","offset_ms":1.22},{"phase":"tls","offset_ms":2.399},{"phase":"body","offset_ms":65.225},{"phase":"tls_close","offset_ms":77.75}],"failure_phase":"","progress":[{"offset_ms":65.267,"received_bytes":512},{"offset_ms":77.605,"received_bytes":4096}],"setup_attempts":1,"setup_failures":null,"tls_resumed":false}}
+{"bytes":4096,"chunk":512,"first_payload_ms":60.601,"first_response_headers_ms":59.45,"full_lifecycle_verified":true,"full_request_ms":62.958,"gap_ms":0,"header_kind":"early-rpc-ack","kind":"rpc","payload_read_mbps":14.576512455516013,"payload_read_ms":2.248,"payload_verified":true,"shutdown_eof_observed":true,"trace":{"body_received_bytes":4096,"durations_ms":{"tcp_attempts":1.588,"tls":55.41},"events":[{"phase":"dns_tcp","offset_ms":0.692},{"phase":"tcp","offset_ms":0.886},{"phase":"tls","offset_ms":2.515},{"phase":"body","offset_ms":59.949},{"phase":"tls_close","offset_ms":62.244}],"failure_phase":"","progress":[{"offset_ms":60.574,"received_bytes":512},{"offset_ms":61.976,"received_bytes":4096}],"setup_attempts":1,"setup_failures":null,"tls_resumed":false}}
+{"bytes":4096,"chunk":512,"first_payload_ms":65.053,"first_response_headers_ms":63.713,"full_lifecycle_verified":true,"full_request_ms":78.346,"gap_ms":1,"header_kind":"early-rpc-ack","kind":"rpc","payload_read_mbps":2.4967997561718986,"payload_read_ms":13.124,"payload_verified":true,"shutdown_eof_observed":true,"trace":{"body_received_bytes":4096,"durations_ms":{"tcp_attempts":1.139,"tls":59.43},"events":[{"phase":"dns_tcp","offset_ms":1.05},{"phase":"tcp","offset_ms":1.273},{"phase":"tls","offset_ms":2.46},{"phase":"body","offset_ms":64.303},{"phase":"tls_close","offset_ms":77.47}],"failure_phase":"","progress":[{"offset_ms":65.027,"received_bytes":512},{"offset_ms":77.118,"received_bytes":4096}],"setup_attempts":1,"setup_failures":null,"tls_resumed":false}}
+--- PASS: TestMatchedWorkloadModes (0.45s)
+=== RUN   TestPublicWorkloadRejectsUnboundedRequest
+--- PASS: TestPublicWorkloadRejectsUnboundedRequest (0.01s)
+=== RUN   TestWorkloadControlsDisabledByDefault
+--- PASS: TestWorkloadControlsDisabledByDefault (0.01s)
+=== RUN   TestFailedPayloadDoesNotReportRequestedSizeAsRate
+2026/11/24 16:04:34 coalesced session ended with transport error
+--- PASS: TestFailedPayloadDoesNotReportRequestedSizeAsRate (0.08s)
+=== RUN   TestWriteCapEveryPaddingLength
+--- PASS: TestWriteCapEveryPaddingLength (0.01s)
+=== RUN   TestWriteCapPreservesStreamAndFIN
+--- PASS: TestWriteCapPreservesStreamAndFIN (0.06s)
+=== RUN   FuzzRecordDecode
+=== RUN   FuzzRecordDecode/seed#0
+=== RUN   FuzzRecordDecode/seed#1
+=== RUN   FuzzRecordDecode/seed#2
+=== RUN   FuzzRecordDecode/seed#3
+--- PASS: FuzzRecordDecode (0.00s)
+    --- PASS: FuzzRecordDecode/seed#0 (0.00s)
+    --- PASS: FuzzRecordDecode/seed#1 (0.00s)
+    --- PASS: FuzzRecordDecode/seed#2 (0.00s)
+    --- PASS: FuzzRecordDecode/seed#3 (0.00s)
+=== RUN   FuzzCredentialDocument
+=== RUN   FuzzCredentialDocument/seed#0
+=== RUN   FuzzCredentialDocument/seed#1
+--- PASS: FuzzCredentialDocument (0.00s)
+    --- PASS: FuzzCredentialDocument/seed#0 (0.00s)
+    --- PASS: FuzzCredentialDocument/seed#1 (0.00s)
+=== RUN   FuzzPublicTarget
+=== RUN   FuzzPublicTarget/seed#0
+=== RUN   FuzzPublicTarget/seed#1
+--- PASS: FuzzPublicTarget (0.00s)
+    --- PASS: FuzzPublicTarget/seed#0 (0.00s)
+    --- PASS: FuzzPublicTarget/seed#1 (0.00s)
+PASS

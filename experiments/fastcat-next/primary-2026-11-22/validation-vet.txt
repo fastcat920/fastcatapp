@@ -1,0 +1,2 @@
+go vet ./fastcatnext ./tools/fastcat-v3-compare ./tools/fastcat-next: PASS
+Additional slow-load evidence race test: PASS (2.398s)

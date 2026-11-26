@@ -1,0 +1,5 @@
+{
+  "latency": "a4752641b1eb3b4c86f0ec60024bef9805eb4afa2e4fa170966f137349bfae3e",
+  "bulk": "d7e643b3d9c7a066f500a0a709ff81bb9f896c7497c14e649b1c3af040d78146",
+  "reason": "Same request/transport logic; bulk phase adds optional verified inner TLS for controlled echo target."
+}

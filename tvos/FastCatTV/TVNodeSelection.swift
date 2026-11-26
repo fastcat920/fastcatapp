@@ -41,7 +41,7 @@ struct TVNodeSelectorView: View {
           nodeToolbarButton(
             title: tvText("测试延迟", "Test latency", language: language),
             icon: .networkCheck,
-            loading: isTesting,
+            loading: !testingNodeNames.isEmpty,
             disabled: isRefreshing || isTesting,
             action: onTest
           )
@@ -167,7 +167,7 @@ struct TVNodeSelectorView: View {
     TVFocusButton(cornerRadius: tv(10), action: action) { _ in
       HStack(spacing: tv(8)) {
         if loading {
-          ProgressView().scaleEffect(0.8).tint(TVTheme.primary).frame(width: tv(18), height: tv(18))
+          TVLatencySpinner().frame(width: tv(18), height: tv(18))
         } else {
           MaterialIcon(glyph: icon, size: 18, color: TVTheme.primary)
         }

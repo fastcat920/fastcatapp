@@ -22,6 +22,7 @@ import 'package:go_router/go_router.dart';
 import 'package:fl_clash/l10n/l10n.dart';
 
 import 'package:fl_clash/xboard/features/shared/shared.dart';
+import 'package:fl_clash/xboard/features/shared/utils/notice_content.dart';
 import 'package:fl_clash/xboard/features/notice/notice.dart';
 import 'package:fl_clash/xboard/features/latency/services/auto_latency_service.dart';
 import 'package:fl_clash/xboard/features/subscription/services/subscription_status_checker.dart';

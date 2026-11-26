@@ -1,0 +1,21 @@
+{"sample":1,"tcp_ms":3702.405,"tls_ms":753.441,"open_ms":98.519,"first_response_headers_ms":4659.081,"full_request_ms":4873.796,"bytes":32768,"end_to_end_mbps":0.054}
+{"sample":2,"tcp_ms":98.765,"tls_ms":161.801,"open_ms":96.902,"first_response_headers_ms":478.744,"full_request_ms":704.383,"bytes":32768,"end_to_end_mbps":0.372}
+{"sample":3,"tcp_ms":103.228,"tls_ms":950.201,"open_ms":99.177,"first_response_headers_ms":1387.163,"full_request_ms":1557.515,"bytes":32768,"end_to_end_mbps":0.168}
+{"sample":4,"tcp_ms":105.130,"tls_ms":166.058,"open_ms":100.419,"first_response_headers_ms":612.644,"full_request_ms":615.587,"bytes":32768,"end_to_end_mbps":0.426}
+{"sample":5,"tcp_ms":108.457,"tls_ms":172.060,"open_ms":104.492,"first_response_headers_ms":802.651,"full_request_ms":1389.728,"bytes":32768,"end_to_end_mbps":0.189}
+{"sample":6,"tcp_ms":106.319,"tls_ms":168.209,"open_ms":102.473,"first_response_headers_ms":480.480,"full_request_ms":751.441,"bytes":32768,"end_to_end_mbps":0.349}
+{"sample":7,"tcp_ms":104.283,"tls_ms":161.327,"open_ms":304.823,"first_response_headers_ms":874.192,"full_request_ms":1002.708,"bytes":32768,"end_to_end_mbps":0.261}
+{"sample":8,"tcp_ms":107.199,"tls_ms":167.141,"open_ms":344.383,"first_response_headers_ms":1207.589,"full_request_ms":1210.489,"bytes":32768,"end_to_end_mbps":0.217}
+{"sample":9,"tcp_ms":106.436,"tls_ms":668.312,"open_ms":100.171,"first_response_headers_ms":1303.172,"full_request_ms":1306.382,"bytes":32768,"end_to_end_mbps":0.201}
+{"sample":10,"tcp_ms":117.468,"tls_ms":320.960,"open_ms":267.902,"first_response_headers_ms":842.235,"full_request_ms":947.252,"bytes":32768,"end_to_end_mbps":0.277}
+{"sample":11,"tcp_ms":106.451,"tls_ms":1990.867,"open_ms":861.795,"first_response_headers_ms":3204.584,"full_request_ms":3405.463,"bytes":32768,"end_to_end_mbps":0.077}
+{"sample":12,"tcp_ms":102.344,"tls_ms":166.070,"open_ms":105.931,"first_response_headers_ms":473.957,"full_request_ms":603.928,"bytes":32768,"end_to_end_mbps":0.434}
+{"sample":13,"tcp_ms":101.930,"tls_ms":162.774,"open_ms":96.596,"first_response_headers_ms":588.807,"full_request_ms":591.457,"bytes":32768,"end_to_end_mbps":0.443}
+{"sample":14,"tcp_ms":103.911,"tls_ms":175.846,"open_ms":100.443,"first_response_headers_ms":505.595,"full_request_ms":679.218,"bytes":32768,"end_to_end_mbps":0.386}
+{"sample":15,"tcp_ms":104.641,"tls_ms":164.912,"open_ms":99.597,"first_response_headers_ms":493.503,"full_request_ms":663.670,"bytes":32768,"end_to_end_mbps":0.395}
+{"sample":16,"tcp_ms":104.430,"tls_ms":168.343,"open_ms":103.364,"first_response_headers_ms":482.146,"full_request_ms":606.324,"bytes":32768,"end_to_end_mbps":0.432}
+{"sample":17,"tcp_ms":1426.970,"tls_ms":401.916,"open_ms":104.692,"first_response_headers_ms":2038.349,"full_request_ms":2270.424,"bytes":32768,"end_to_end_mbps":0.115}
+{"sample":18,"tcp_ms":105.638,"tls_ms":166.895,"open_ms":108.620,"first_response_headers_ms":482.614,"full_request_ms":634.720,"bytes":32768,"end_to_end_mbps":0.413}
+{"sample":19,"tcp_ms":101.525,"tls_ms":829.393,"open_ms":98.459,"first_response_headers_ms":1131.538,"full_request_ms":1696.926,"bytes":32768,"end_to_end_mbps":0.154}
+{"sample":20,"tcp_ms":99.385,"tls_ms":2311.143,"open_ms":99.462,"first_response_headers_ms":2743.287,"full_request_ms":2993.589,"bytes":32768,"end_to_end_mbps":0.088}
+{"bytes_each":32768,"failed":0,"p50_ms":947.252,"p95_ms":3405.463,"scope":"fresh TCP + TLS + authenticated tunnel + complete verified HTTP response; speed includes setup and verification","success":20}

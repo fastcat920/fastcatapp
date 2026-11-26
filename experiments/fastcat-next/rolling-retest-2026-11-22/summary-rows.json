@@ -1,0 +1,682 @@
+[
+  {
+    "elapsed_ms": 12730,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 31.628654273806372,
+    "version": "next-base",
+    "workers": 4,
+    "source": "rolling-c1-b1-p1-next-base.jsonl"
+  },
+  {
+    "elapsed_ms": 48881,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        6,
+        6
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 8.237372014357504,
+    "version": "next-opt",
+    "workers": 4,
+    "source": "rolling-c1-b1-p2-next-opt.jsonl"
+  },
+  {
+    "elapsed_ms": 13966,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": null,
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 28.829643704552645,
+    "version": "tuic",
+    "workers": 4,
+    "source": "rolling-c1-b1-p3-tuic.jsonl"
+  },
+  {
+    "elapsed_ms": 14967,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        10,
+        2
+      ],
+      "trial_assignments": 2,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 26.902404335600036,
+    "version": "next-primary",
+    "workers": 4,
+    "source": "rolling-c1-b1-p4-next-primary.jsonl"
+  },
+  {
+    "elapsed_ms": 15701,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        9,
+        3
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 25.643849014910575,
+    "version": "next-opt",
+    "workers": 4,
+    "source": "rolling-c1-b2-p1-next-opt.jsonl"
+  },
+  {
+    "elapsed_ms": 17409,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        11,
+        1
+      ],
+      "trial_assignments": 1,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 23.1285195542729,
+    "version": "next-primary",
+    "workers": 4,
+    "source": "rolling-c1-b2-p2-next-primary.jsonl"
+  },
+  {
+    "elapsed_ms": 150003,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 11730944,
+    "round": 1,
+    "success": 0,
+    "verified_bytes": 0,
+    "verified_mbps": 0,
+    "version": "next-base",
+    "workers": 4,
+    "source": "rolling-c1-b2-p3-next-base.jsonl"
+  },
+  {
+    "elapsed_ms": 12620,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": null,
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 31.90452332081489,
+    "version": "tuic",
+    "workers": 4,
+    "source": "rolling-c1-b2-p4-tuic.jsonl"
+  },
+  {
+    "elapsed_ms": 53408,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        7,
+        5
+      ],
+      "trial_assignments": 1,
+      "proven_spill_assignments": 4
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 7.539076242401273,
+    "version": "next-primary",
+    "workers": 4,
+    "source": "rolling-c1-b3-p1-next-primary.jsonl"
+  },
+  {
+    "elapsed_ms": 49904,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": null,
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 8.06842889762213,
+    "version": "tuic",
+    "workers": 4,
+    "source": "rolling-c1-b3-p2-tuic.jsonl"
+  },
+  {
+    "elapsed_ms": 17617,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        10,
+        2
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 22.855506047544196,
+    "version": "next-opt",
+    "workers": 4,
+    "source": "rolling-c1-b3-p3-next-opt.jsonl"
+  },
+  {
+    "elapsed_ms": 13649,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 29.500402862418987,
+    "version": "next-base",
+    "workers": 4,
+    "source": "rolling-c1-b3-p4-next-base.jsonl"
+  },
+  {
+    "elapsed_ms": 23509,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": null,
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 17.127272807178617,
+    "version": "tuic",
+    "workers": 4,
+    "source": "rolling-c1-b4-p1-tuic.jsonl"
+  },
+  {
+    "elapsed_ms": 14281,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 28.193412653318518,
+    "version": "next-base",
+    "workers": 4,
+    "source": "rolling-c1-b4-p2-next-base.jsonl"
+  },
+  {
+    "elapsed_ms": 21554,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        11,
+        1
+      ],
+      "trial_assignments": 1,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 18.680299067659707,
+    "version": "next-primary",
+    "workers": 4,
+    "source": "rolling-c1-b4-p3-next-primary.jsonl"
+  },
+  {
+    "elapsed_ms": 13634,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        4,
+        8
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 29.532359893841406,
+    "version": "next-opt",
+    "workers": 4,
+    "source": "rolling-c1-b4-p4-next-opt.jsonl"
+  },
+  {
+    "elapsed_ms": 12420,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 32.418106503763774,
+    "version": "next-base",
+    "workers": 4,
+    "source": "rolling-c2-b1-p1-next-base.jsonl"
+  },
+  {
+    "elapsed_ms": 46471,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        7,
+        5
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 8.664440504620691,
+    "version": "next-opt",
+    "workers": 4,
+    "source": "rolling-c2-b1-p2-next-opt.jsonl"
+  },
+  {
+    "elapsed_ms": 80388,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": null,
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 5.008815056926629,
+    "version": "tuic",
+    "workers": 4,
+    "source": "rolling-c2-b1-p3-tuic.jsonl"
+  },
+  {
+    "elapsed_ms": 27382,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        11,
+        1
+      ],
+      "trial_assignments": 1,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 14.70456500346207,
+    "version": "next-primary",
+    "workers": 4,
+    "source": "rolling-c2-b1-p4-next-primary.jsonl"
+  },
+  {
+    "elapsed_ms": 13989,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        6,
+        6
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 28.783162313535826,
+    "version": "next-opt",
+    "workers": 4,
+    "source": "rolling-c2-b2-p1-next-opt.jsonl"
+  },
+  {
+    "elapsed_ms": 16629,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        11,
+        1
+      ],
+      "trial_assignments": 1,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 24.21282266301953,
+    "version": "next-primary",
+    "workers": 4,
+    "source": "rolling-c2-b2-p2-next-primary.jsonl"
+  },
+  {
+    "elapsed_ms": 74132,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 5.431518463871348,
+    "version": "next-base",
+    "workers": 4,
+    "source": "rolling-c2-b2-p3-next-base.jsonl"
+  },
+  {
+    "elapsed_ms": 150010,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": null,
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 14319616,
+    "round": 1,
+    "success": 0,
+    "verified_bytes": 0,
+    "verified_mbps": 0,
+    "version": "tuic",
+    "workers": 4,
+    "source": "rolling-c2-b2-p4-tuic.jsonl"
+  },
+  {
+    "elapsed_ms": 150003,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        8,
+        4
+      ],
+      "trial_assignments": 3,
+      "proven_spill_assignments": 1
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 46071808,
+    "round": 1,
+    "success": 10,
+    "verified_bytes": 41943040,
+    "verified_mbps": 2.236915605354527,
+    "version": "next-primary",
+    "workers": 4,
+    "source": "rolling-c2-b3-p1-next-primary.jsonl"
+  },
+  {
+    "elapsed_ms": 73375,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": null,
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 5.487591399229913,
+    "version": "tuic",
+    "workers": 4,
+    "source": "rolling-c2-b3-p2-tuic.jsonl"
+  },
+  {
+    "elapsed_ms": 55663,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        7,
+        5
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 7.233679046385194,
+    "version": "next-opt",
+    "workers": 4,
+    "source": "rolling-c2-b3-p3-next-opt.jsonl"
+  },
+  {
+    "elapsed_ms": 150003,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 15712256,
+    "round": 1,
+    "success": 0,
+    "verified_bytes": 0,
+    "verified_mbps": 0,
+    "version": "next-base",
+    "workers": 4,
+    "source": "rolling-c2-b3-p4-next-base.jsonl"
+  },
+  {
+    "elapsed_ms": 64209,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": null,
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 6.2709382057635805,
+    "version": "tuic",
+    "workers": 4,
+    "source": "rolling-c2-b4-p1-tuic.jsonl"
+  },
+  {
+    "elapsed_ms": 16445,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 24.483850244613645,
+    "version": "next-base",
+    "workers": 4,
+    "source": "rolling-c2-b4-p2-next-base.jsonl"
+  },
+  {
+    "elapsed_ms": 57079,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 7.054249573812455,
+    "version": "next-primary",
+    "workers": 4,
+    "source": "rolling-c2-b4-p3-next-primary.jsonl"
+  },
+  {
+    "elapsed_ms": 45903,
+    "expected_bytes_each": 4194304,
+    "jobs": 12,
+    "lane_usage": {
+      "tcp_assignments": [
+        2,
+        10
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    },
+    "phase": "rolling_download",
+    "protocol": "quic",
+    "received_bytes": 50331648,
+    "round": 1,
+    "success": 12,
+    "verified_bytes": 50331648,
+    "verified_mbps": 8.7718253776009,
+    "version": "next-opt",
+    "workers": 4,
+    "source": "rolling-c2-b4-p4-next-opt.jsonl"
+  }
+]

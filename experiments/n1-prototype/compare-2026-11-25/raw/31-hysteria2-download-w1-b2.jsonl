@@ -1,0 +1,2 @@
+{"body_mbps":4.308292258026328,"body_ms":7788.337,"bytes":4194304,"cleanup_ms":0.123,"e2e_mbps":4.0906770798543235,"entry_ms":312.187,"first_byte_ms":414.463,"headers_ms":414.297,"phase":"download","protocol":"hysteria2","sample":1,"start_unix_ms":1795539031250,"success":true,"total_ms":8202.656}
+{"count":1,"elapsed_ms":8203.785,"event":"batch-ended","failed":0,"phase":"download","protocol":"hysteria2","workers":1}

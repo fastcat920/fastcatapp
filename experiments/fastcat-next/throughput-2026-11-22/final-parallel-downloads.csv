@@ -1,0 +1,10 @@
+elapsed_ms,expected_bytes_each,phase,protocol,received_bytes,round,success,test,verified_bytes,verified_mbps,version,workers
+24046,8388608,parallel_download,quic,33554432,1,4,final-parallel-download,33554432,11.16313372103757,next-base,4
+29648,8388608,parallel_download,quic,33554432,1,4,final-parallel-download,33554432,9.053967532659392,next-opt,4
+22802,8388608,parallel_download,quic,33554432,1,4,final-parallel-download,33554432,11.77244282803361,tuic,4
+7707,8388608,parallel_download,quic,33554432,2,4,final-parallel-download,33554432,34.829540470938056,next-opt,4
+7921,8388608,parallel_download,quic,33554432,2,4,final-parallel-download,33554432,33.887539669669835,tuic,4
+25996,8388608,parallel_download,quic,33554432,2,4,final-parallel-download,33554432,10.325866103583106,next-base,4
+8163,8388608,parallel_download,quic,33554432,3,4,final-parallel-download,33554432,32.88247606956773,tuic,4
+8078,8388608,parallel_download,quic,33554432,3,4,final-parallel-download,33554432,33.22901007807753,next-base,4
+10331,8388608,parallel_download,quic,33554432,3,4,final-parallel-download,33554432,25.981621687137995,next-opt,4

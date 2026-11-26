@@ -1,0 +1,691 @@
+[
+  {
+    "phase": "batch",
+    "protocol": "h2",
+    "version": "v2",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 998.4,
+      "p95_ms": 2566.4,
+      "max_ms": 2566.7
+    },
+    "entry": {
+      "p50_ms": 420.5,
+      "p95_ms": 1882.0,
+      "max_ms": 1882.7
+    },
+    "target_tls": {
+      "p50_ms": 341.5,
+      "p95_ms": 768.9,
+      "max_ms": 1012.5
+    },
+    "response": {
+      "p50_ms": 150.8,
+      "p95_ms": 411.4,
+      "max_ms": 421.0
+    },
+    "errors": []
+  },
+  {
+    "phase": "batch",
+    "protocol": "h2",
+    "version": "v3-light-fast",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 1264.0,
+      "p95_ms": 1961.5,
+      "max_ms": 2757.9
+    },
+    "entry": {
+      "p50_ms": 264.9,
+      "p95_ms": 856.3,
+      "max_ms": 929.0
+    },
+    "target_tls": {
+      "p50_ms": 619.4,
+      "p95_ms": 1068.7,
+      "max_ms": 1342.3
+    },
+    "response": {
+      "p50_ms": 212.0,
+      "p95_ms": 739.6,
+      "max_ms": 754.8
+    },
+    "errors": []
+  },
+  {
+    "phase": "batch",
+    "protocol": "h3",
+    "version": "v2",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 1094.6,
+      "p95_ms": 2092.7,
+      "max_ms": 2246.0
+    },
+    "entry": {
+      "p50_ms": 115.0,
+      "p95_ms": 555.8,
+      "max_ms": 556.0
+    },
+    "target_tls": {
+      "p50_ms": 771.4,
+      "p95_ms": 1247.8,
+      "max_ms": 1507.7
+    },
+    "response": {
+      "p50_ms": 148.0,
+      "p95_ms": 476.7,
+      "max_ms": 633.4
+    },
+    "errors": []
+  },
+  {
+    "phase": "batch",
+    "protocol": "h3",
+    "version": "v3-light-fast",
+    "success": 8,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 1559.2,
+      "p95_ms": 1632.6,
+      "max_ms": 1632.6
+    },
+    "entry": {
+      "p50_ms": 106.9,
+      "p95_ms": 630.0,
+      "max_ms": 630.0
+    },
+    "target_tls": {
+      "p50_ms": 1253.9,
+      "p95_ms": 1419.6,
+      "max_ms": 1419.6
+    },
+    "response": {
+      "p50_ms": 133.1,
+      "p95_ms": 367.7,
+      "max_ms": 367.7
+    },
+    "errors": [
+      "entry: use of closed network connection",
+      "entry: use of closed network connection",
+      "entry: use of closed network connection",
+      "entry: use of closed network connection",
+      "entry: use of closed network connection",
+      "entry: use of closed network connection",
+      "entry: use of closed network connection",
+      "entry: use of closed network connection",
+      "entry: use of closed network connection",
+      "entry: use of closed network connection",
+      "entry: use of closed network connection",
+      "entry: use of closed network connection"
+    ]
+  },
+  {
+    "phase": "batch",
+    "protocol": "tcp-tls",
+    "version": "trojan",
+    "success": 19,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 1098.2,
+      "p95_ms": 5275.1,
+      "max_ms": 5275.1
+    },
+    "entry": {
+      "p50_ms": 680.4,
+      "p95_ms": 2992.0,
+      "max_ms": 2992.0
+    },
+    "target_tls": {
+      "p50_ms": 292.8,
+      "p95_ms": 1387.5,
+      "max_ms": 1387.5
+    },
+    "response": {
+      "p50_ms": 112.8,
+      "p95_ms": 3552.3,
+      "max_ms": 3552.3
+    },
+    "errors": [
+      "target TLS: context deadline exceeded"
+    ]
+  },
+  {
+    "phase": "batch",
+    "protocol": "tcp-tls",
+    "version": "vless-vision",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 1381.1,
+      "p95_ms": 3188.6,
+      "max_ms": 3276.4
+    },
+    "entry": {
+      "p50_ms": 688.9,
+      "p95_ms": 2266.5,
+      "max_ms": 2394.4
+    },
+    "target_tls": {
+      "p50_ms": 256.6,
+      "p95_ms": 1207.0,
+      "max_ms": 1358.5
+    },
+    "response": {
+      "p50_ms": 112.2,
+      "p95_ms": 473.6,
+      "max_ms": 751.2
+    },
+    "errors": []
+  },
+  {
+    "phase": "cold",
+    "protocol": "h2",
+    "version": "v2",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 1385.1,
+      "p95_ms": 3187.4,
+      "max_ms": 4064.9
+    },
+    "entry": {
+      "p50_ms": 827.4,
+      "p95_ms": 2110.3,
+      "max_ms": 2337.7
+    },
+    "target_tls": {
+      "p50_ms": 314.2,
+      "p95_ms": 847.7,
+      "max_ms": 1734.1
+    },
+    "response": {
+      "p50_ms": 112.1,
+      "p95_ms": 674.5,
+      "max_ms": 1315.2
+    },
+    "errors": []
+  },
+  {
+    "phase": "cold",
+    "protocol": "h2",
+    "version": "v3-light-fast",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 1323.2,
+      "p95_ms": 3201.6,
+      "max_ms": 4971.8
+    },
+    "entry": {
+      "p50_ms": 939.6,
+      "p95_ms": 2673.3,
+      "max_ms": 2714.8
+    },
+    "target_tls": {
+      "p50_ms": 282.8,
+      "p95_ms": 1427.5,
+      "max_ms": 3484.8
+    },
+    "response": {
+      "p50_ms": 116.0,
+      "p95_ms": 248.8,
+      "max_ms": 293.8
+    },
+    "errors": []
+  },
+  {
+    "phase": "cold",
+    "protocol": "h3",
+    "version": "v2",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 930.6,
+      "p95_ms": 2562.6,
+      "max_ms": 7515.6
+    },
+    "entry": {
+      "p50_ms": 543.0,
+      "p95_ms": 1513.2,
+      "max_ms": 3830.3
+    },
+    "target_tls": {
+      "p50_ms": 244.2,
+      "p95_ms": 653.0,
+      "max_ms": 3573.4
+    },
+    "response": {
+      "p50_ms": 119.3,
+      "p95_ms": 524.4,
+      "max_ms": 714.8
+    },
+    "errors": []
+  },
+  {
+    "phase": "cold",
+    "protocol": "h3",
+    "version": "v3-light-fast",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 1377.5,
+      "p95_ms": 2265.3,
+      "max_ms": 2922.9
+    },
+    "entry": {
+      "p50_ms": 699.4,
+      "p95_ms": 1239.9,
+      "max_ms": 1683.2
+    },
+    "target_tls": {
+      "p50_ms": 301.0,
+      "p95_ms": 1229.3,
+      "max_ms": 1296.0
+    },
+    "response": {
+      "p50_ms": 115.2,
+      "p95_ms": 807.7,
+      "max_ms": 1092.2
+    },
+    "errors": []
+  },
+  {
+    "phase": "cold",
+    "protocol": "tcp-tls",
+    "version": "trojan",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 1563.4,
+      "p95_ms": 2960.2,
+      "max_ms": 3004.1
+    },
+    "entry": {
+      "p50_ms": 694.6,
+      "p95_ms": 2002.4,
+      "max_ms": 2560.6
+    },
+    "target_tls": {
+      "p50_ms": 248.1,
+      "p95_ms": 1109.7,
+      "max_ms": 1159.8
+    },
+    "response": {
+      "p50_ms": 114.9,
+      "p95_ms": 668.9,
+      "max_ms": 1407.3
+    },
+    "errors": []
+  },
+  {
+    "phase": "cold",
+    "protocol": "tcp-tls",
+    "version": "vless-vision",
+    "success": 19,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 1468.4,
+      "p95_ms": 3421.0,
+      "max_ms": 3421.0
+    },
+    "entry": {
+      "p50_ms": 342.5,
+      "p95_ms": 2003.0,
+      "max_ms": 2003.0
+    },
+    "target_tls": {
+      "p50_ms": 319.7,
+      "p95_ms": 1509.3,
+      "max_ms": 1509.3
+    },
+    "response": {
+      "p50_ms": 112.9,
+      "p95_ms": 1499.2,
+      "max_ms": 1499.2
+    },
+    "errors": [
+      "target TLS: EOF"
+    ]
+  },
+  {
+    "phase": "prime",
+    "protocol": "h2",
+    "version": "v2",
+    "success": 3,
+    "attempts": 3,
+    "first_byte": {
+      "p50_ms": 3117.8,
+      "p95_ms": 3707.9,
+      "max_ms": 3707.9
+    },
+    "entry": {
+      "p50_ms": 983.7,
+      "p95_ms": 2628.3,
+      "max_ms": 2628.3
+    },
+    "target_tls": {
+      "p50_ms": 964.6,
+      "p95_ms": 1461.3,
+      "max_ms": 1461.3
+    },
+    "response": {
+      "p50_ms": 138.8,
+      "p95_ms": 672.7,
+      "max_ms": 672.7
+    },
+    "errors": []
+  },
+  {
+    "phase": "prime",
+    "protocol": "h2",
+    "version": "v3-light-fast",
+    "success": 3,
+    "attempts": 3,
+    "first_byte": {
+      "p50_ms": 496.5,
+      "p95_ms": 1421.4,
+      "max_ms": 1421.4
+    },
+    "entry": {
+      "p50_ms": 107.7,
+      "p95_ms": 1014.5,
+      "max_ms": 1014.5
+    },
+    "target_tls": {
+      "p50_ms": 275.1,
+      "p95_ms": 288.6,
+      "max_ms": 288.6
+    },
+    "response": {
+      "p50_ms": 118.2,
+      "p95_ms": 127.8,
+      "max_ms": 127.8
+    },
+    "errors": []
+  },
+  {
+    "phase": "prime",
+    "protocol": "h3",
+    "version": "v2",
+    "success": 3,
+    "attempts": 3,
+    "first_byte": {
+      "p50_ms": 1081.5,
+      "p95_ms": 1378.5,
+      "max_ms": 1378.5
+    },
+    "entry": {
+      "p50_ms": 280.7,
+      "p95_ms": 726.1,
+      "max_ms": 726.1
+    },
+    "target_tls": {
+      "p50_ms": 544.6,
+      "p95_ms": 677.5,
+      "max_ms": 677.5
+    },
+    "response": {
+      "p50_ms": 111.9,
+      "p95_ms": 123.2,
+      "max_ms": 123.2
+    },
+    "errors": []
+  },
+  {
+    "phase": "prime",
+    "protocol": "h3",
+    "version": "v3-light-fast",
+    "success": 3,
+    "attempts": 3,
+    "first_byte": {
+      "p50_ms": 1303.5,
+      "p95_ms": 2368.9,
+      "max_ms": 2368.9
+    },
+    "entry": {
+      "p50_ms": 127.7,
+      "p95_ms": 281.9,
+      "max_ms": 281.9
+    },
+    "target_tls": {
+      "p50_ms": 872.0,
+      "p95_ms": 1665.5,
+      "max_ms": 1665.5
+    },
+    "response": {
+      "p50_ms": 149.6,
+      "p95_ms": 575.6,
+      "max_ms": 575.6
+    },
+    "errors": []
+  },
+  {
+    "phase": "prime",
+    "protocol": "tcp-tls",
+    "version": "trojan",
+    "success": 3,
+    "attempts": 3,
+    "first_byte": {
+      "p50_ms": 862.3,
+      "p95_ms": 2051.6,
+      "max_ms": 2051.6
+    },
+    "entry": {
+      "p50_ms": 452.8,
+      "p95_ms": 1030.3,
+      "max_ms": 1030.3
+    },
+    "target_tls": {
+      "p50_ms": 291.7,
+      "p95_ms": 907.0,
+      "max_ms": 907.0
+    },
+    "response": {
+      "p50_ms": 117.6,
+      "p95_ms": 132.2,
+      "max_ms": 132.2
+    },
+    "errors": []
+  },
+  {
+    "phase": "prime",
+    "protocol": "tcp-tls",
+    "version": "vless-vision",
+    "success": 3,
+    "attempts": 3,
+    "first_byte": {
+      "p50_ms": 1550.8,
+      "p95_ms": 2518.6,
+      "max_ms": 2518.6
+    },
+    "entry": {
+      "p50_ms": 727.5,
+      "p95_ms": 1264.0,
+      "max_ms": 1264.0
+    },
+    "target_tls": {
+      "p50_ms": 803.5,
+      "p95_ms": 953.2,
+      "max_ms": 953.2
+    },
+    "response": {
+      "p50_ms": 125.6,
+      "p95_ms": 987.6,
+      "max_ms": 987.6
+    },
+    "errors": []
+  },
+  {
+    "phase": "warm",
+    "protocol": "h2",
+    "version": "v2",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 490.4,
+      "p95_ms": 887.9,
+      "max_ms": 990.2
+    },
+    "entry": {
+      "p50_ms": 119.6,
+      "p95_ms": 492.4,
+      "max_ms": 517.5
+    },
+    "target_tls": {
+      "p50_ms": 155.4,
+      "p95_ms": 639.8,
+      "max_ms": 702.9
+    },
+    "response": {
+      "p50_ms": 113.3,
+      "p95_ms": 181.5,
+      "max_ms": 508.6
+    },
+    "errors": []
+  },
+  {
+    "phase": "warm",
+    "protocol": "h2",
+    "version": "v3-light-fast",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 1020.1,
+      "p95_ms": 3789.2,
+      "max_ms": 5269.8
+    },
+    "entry": {
+      "p50_ms": 365.1,
+      "p95_ms": 994.2,
+      "max_ms": 2515.2
+    },
+    "target_tls": {
+      "p50_ms": 349.5,
+      "p95_ms": 3114.2,
+      "max_ms": 3831.4
+    },
+    "response": {
+      "p50_ms": 114.3,
+      "p95_ms": 241.2,
+      "max_ms": 548.7
+    },
+    "errors": []
+  },
+  {
+    "phase": "warm",
+    "protocol": "h3",
+    "version": "v2",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 655.4,
+      "p95_ms": 1189.3,
+      "max_ms": 1204.6
+    },
+    "entry": {
+      "p50_ms": 109.4,
+      "p95_ms": 368.6,
+      "max_ms": 446.2
+    },
+    "target_tls": {
+      "p50_ms": 325.6,
+      "p95_ms": 702.4,
+      "max_ms": 969.5
+    },
+    "response": {
+      "p50_ms": 110.7,
+      "p95_ms": 380.6,
+      "max_ms": 524.3
+    },
+    "errors": []
+  },
+  {
+    "phase": "warm",
+    "protocol": "h3",
+    "version": "v3-light-fast",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 759.1,
+      "p95_ms": 1384.6,
+      "max_ms": 1487.2
+    },
+    "entry": {
+      "p50_ms": 234.4,
+      "p95_ms": 414.4,
+      "max_ms": 775.9
+    },
+    "target_tls": {
+      "p50_ms": 334.7,
+      "p95_ms": 879.1,
+      "max_ms": 908.7
+    },
+    "response": {
+      "p50_ms": 139.4,
+      "p95_ms": 398.7,
+      "max_ms": 764.7
+    },
+    "errors": []
+  },
+  {
+    "phase": "warm",
+    "protocol": "tcp-tls",
+    "version": "trojan",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 1318.6,
+      "p95_ms": 3209.4,
+      "max_ms": 3404.4
+    },
+    "entry": {
+      "p50_ms": 845.8,
+      "p95_ms": 1995.7,
+      "max_ms": 2236.0
+    },
+    "target_tls": {
+      "p50_ms": 333.0,
+      "p95_ms": 1232.5,
+      "max_ms": 1668.6
+    },
+    "response": {
+      "p50_ms": 112.8,
+      "p95_ms": 788.5,
+      "max_ms": 891.8
+    },
+    "errors": []
+  },
+  {
+    "phase": "warm",
+    "protocol": "tcp-tls",
+    "version": "vless-vision",
+    "success": 20,
+    "attempts": 20,
+    "first_byte": {
+      "p50_ms": 1503.1,
+      "p95_ms": 5460.3,
+      "max_ms": 5508.2
+    },
+    "entry": {
+      "p50_ms": 405.8,
+      "p95_ms": 2402.4,
+      "max_ms": 3313.6
+    },
+    "target_tls": {
+      "p50_ms": 342.4,
+      "p95_ms": 2034.5,
+      "max_ms": 5000.9
+    },
+    "response": {
+      "p50_ms": 112.0,
+      "p95_ms": 181.6,
+      "max_ms": 471.6
+    },
+    "errors": []
+  }
+]

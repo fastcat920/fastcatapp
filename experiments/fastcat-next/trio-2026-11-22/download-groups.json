@@ -1,0 +1,974 @@
+[
+  {
+    "metric": "single16",
+    "version": "next-base",
+    "source": "single16-b1-p1-next-base.jsonl",
+    "success": 1,
+    "jobs": 1,
+    "elapsed_ms": 21628,
+    "verified_mbps": 6.205739226928056,
+    "lane_usage": null
+  },
+  {
+    "metric": "single16",
+    "version": "next-base",
+    "source": "single16-b2-p1-next-base.jsonl",
+    "success": 1,
+    "jobs": 1,
+    "elapsed_ms": 50985,
+    "verified_mbps": 2.6324944199274296,
+    "lane_usage": null
+  },
+  {
+    "metric": "single16",
+    "version": "next-base",
+    "source": "single16-b3-p2-next-base.jsonl",
+    "success": 1,
+    "jobs": 1,
+    "elapsed_ms": 6206,
+    "verified_mbps": 21.627091202062523,
+    "lane_usage": null
+  },
+  {
+    "metric": "single16",
+    "version": "next-base",
+    "source": "single16-b4-p3-next-base.jsonl",
+    "success": 0,
+    "jobs": 1,
+    "elapsed_ms": 90000,
+    "verified_mbps": 0.0,
+    "lane_usage": null
+  },
+  {
+    "metric": "single16",
+    "version": "next-base",
+    "source": "single16-b5-p2-next-base.jsonl",
+    "success": 1,
+    "jobs": 1,
+    "elapsed_ms": 7641,
+    "verified_mbps": 17.565466300222486,
+    "lane_usage": null
+  },
+  {
+    "metric": "single16",
+    "version": "next-base",
+    "source": "single16-b6-p3-next-base.jsonl",
+    "success": 1,
+    "jobs": 1,
+    "elapsed_ms": 28720,
+    "verified_mbps": 4.673319220055711,
+    "lane_usage": null
+  },
+  {
+    "metric": "single16",
+    "version": "next-opt",
+    "source": "single16-b1-p2-next-opt.jsonl",
+    "success": 0,
+    "jobs": 1,
+    "elapsed_ms": 90000,
+    "verified_mbps": 0.0,
+    "lane_usage": null
+  },
+  {
+    "metric": "single16",
+    "version": "next-opt",
+    "source": "single16-b2-p3-next-opt.jsonl",
+    "success": 1,
+    "jobs": 1,
+    "elapsed_ms": 20260,
+    "verified_mbps": 6.624764461994077,
+    "lane_usage": null
+  },
+  {
+    "metric": "single16",
+    "version": "next-opt",
+    "source": "single16-b3-p1-next-opt.jsonl",
+    "success": 1,
+    "jobs": 1,
+    "elapsed_ms": 29633,
+    "verified_mbps": 4.529333108358925,
+    "lane_usage": null
+  },
+  {
+    "metric": "single16",
+    "version": "next-opt",
+    "source": "single16-b4-p1-next-opt.jsonl",
+    "success": 1,
+    "jobs": 1,
+    "elapsed_ms": 6295,
+    "verified_mbps": 21.32132295472597,
+    "lane_usage": null
+  },
+  {
+    "metric": "single16",
+    "version": "next-opt",
+    "source": "single16-b5-p3-next-opt.jsonl",
+    "success": 1,
+    "jobs": 1,
+    "elapsed_ms": 6536,
+    "verified_mbps": 20.535148102815175,
+    "lane_usage": null
+  },
+  {
+    "metric": "single16",
+    "version": "next-opt",
+    "source": "single16-b6-p2-next-opt.jsonl",
+    "success": 1,
+    "jobs": 1,
+    "elapsed_ms": 6759,
+    "verified_mbps": 19.857631010504512,
+    "lane_usage": null
+  },
+  {
+    "metric": "single16",
+    "version": "tuic",
+    "source": "single16-b1-p3-tuic.jsonl",
+    "success": 1,
+    "jobs": 1,
+    "elapsed_ms": 22966,
+    "verified_mbps": 5.844192632587303,
+    "lane_usage": null
+  },
+  {
+    "metric": "single16",
+    "version": "tuic",
+    "source": "single16-b2-p2-tuic.jsonl",
+    "success": 1,
+    "jobs": 1,
+    "elapsed_ms": 6267,
+    "verified_mbps": 21.416583373224828,
+    "lane_usage": null
+  },
+  {
+    "metric": "single16",
+    "version": "tuic",
+    "source": "single16-b3-p3-tuic.jsonl",
+    "success": 1,
+    "jobs": 1,
+    "elapsed_ms": 8467,
+    "verified_mbps": 15.85186346994213,
+    "lane_usage": null
+  },
+  {
+    "metric": "single16",
+    "version": "tuic",
+    "source": "single16-b4-p2-tuic.jsonl",
+    "success": 1,
+    "jobs": 1,
+    "elapsed_ms": 19355,
+    "verified_mbps": 6.934524825626453,
+    "lane_usage": null
+  },
+  {
+    "metric": "single16",
+    "version": "tuic",
+    "source": "single16-b5-p1-tuic.jsonl",
+    "success": 1,
+    "jobs": 1,
+    "elapsed_ms": 74821,
+    "verified_mbps": 1.7938510311276246,
+    "lane_usage": null
+  },
+  {
+    "metric": "single16",
+    "version": "tuic",
+    "source": "single16-b6-p1-tuic.jsonl",
+    "success": 1,
+    "jobs": 1,
+    "elapsed_ms": 6807,
+    "verified_mbps": 19.717603643308358,
+    "lane_usage": null
+  },
+  {
+    "metric": "parallel4",
+    "version": "next-base",
+    "source": "parallel4-b1-p1-next-base.jsonl",
+    "success": 4,
+    "jobs": 4,
+    "elapsed_ms": 18826,
+    "verified_mbps": 7.1293810687347285,
+    "lane_usage": {
+      "tcp_assignments": [
+        4,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel4",
+    "version": "next-base",
+    "source": "parallel4-b2-p1-next-base.jsonl",
+    "success": 4,
+    "jobs": 4,
+    "elapsed_ms": 30696,
+    "verified_mbps": 4.372482668751629,
+    "lane_usage": {
+      "tcp_assignments": [
+        4,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel4",
+    "version": "next-base",
+    "source": "parallel4-b3-p2-next-base.jsonl",
+    "success": 4,
+    "jobs": 4,
+    "elapsed_ms": 5452,
+    "verified_mbps": 24.618071900220105,
+    "lane_usage": {
+      "tcp_assignments": [
+        4,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel4",
+    "version": "next-base",
+    "source": "parallel4-b4-p3-next-base.jsonl",
+    "success": 4,
+    "jobs": 4,
+    "elapsed_ms": 12394,
+    "verified_mbps": 10.829250282394707,
+    "lane_usage": {
+      "tcp_assignments": [
+        4,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel4",
+    "version": "next-base",
+    "source": "parallel4-b5-p2-next-base.jsonl",
+    "success": 4,
+    "jobs": 4,
+    "elapsed_ms": 7883,
+    "verified_mbps": 17.026224533806925,
+    "lane_usage": {
+      "tcp_assignments": [
+        4,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel4",
+    "version": "next-base",
+    "source": "parallel4-b6-p3-next-base.jsonl",
+    "success": 0,
+    "jobs": 4,
+    "elapsed_ms": 90001,
+    "verified_mbps": 0.0,
+    "lane_usage": {
+      "tcp_assignments": [
+        4,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel4",
+    "version": "next-opt",
+    "source": "parallel4-b1-p2-next-opt.jsonl",
+    "success": 4,
+    "jobs": 4,
+    "elapsed_ms": 20724,
+    "verified_mbps": 6.476439297432927,
+    "lane_usage": {
+      "tcp_assignments": [
+        2,
+        2
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel4",
+    "version": "next-opt",
+    "source": "parallel4-b2-p3-next-opt.jsonl",
+    "success": 4,
+    "jobs": 4,
+    "elapsed_ms": 15987,
+    "verified_mbps": 8.395429286295116,
+    "lane_usage": {
+      "tcp_assignments": [
+        2,
+        2
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel4",
+    "version": "next-opt",
+    "source": "parallel4-b3-p1-next-opt.jsonl",
+    "success": 4,
+    "jobs": 4,
+    "elapsed_ms": 29671,
+    "verified_mbps": 4.523532337973105,
+    "lane_usage": {
+      "tcp_assignments": [
+        2,
+        2
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel4",
+    "version": "next-opt",
+    "source": "parallel4-b4-p1-next-opt.jsonl",
+    "success": 4,
+    "jobs": 4,
+    "elapsed_ms": 30109,
+    "verified_mbps": 4.457727855458501,
+    "lane_usage": {
+      "tcp_assignments": [
+        2,
+        2
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel4",
+    "version": "next-opt",
+    "source": "parallel4-b5-p3-next-opt.jsonl",
+    "success": 4,
+    "jobs": 4,
+    "elapsed_ms": 7645,
+    "verified_mbps": 17.556275735775017,
+    "lane_usage": {
+      "tcp_assignments": [
+        4,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel4",
+    "version": "next-opt",
+    "source": "parallel4-b6-p2-next-opt.jsonl",
+    "success": 4,
+    "jobs": 4,
+    "elapsed_ms": 8170,
+    "verified_mbps": 16.42811848225214,
+    "lane_usage": {
+      "tcp_assignments": [
+        2,
+        2
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel4",
+    "version": "tuic",
+    "source": "parallel4-b1-p3-tuic.jsonl",
+    "success": 4,
+    "jobs": 4,
+    "elapsed_ms": 6070,
+    "verified_mbps": 22.11165205930807,
+    "lane_usage": null
+  },
+  {
+    "metric": "parallel4",
+    "version": "tuic",
+    "source": "parallel4-b2-p2-tuic.jsonl",
+    "success": 4,
+    "jobs": 4,
+    "elapsed_ms": 80729,
+    "verified_mbps": 1.6625714179538953,
+    "lane_usage": null
+  },
+  {
+    "metric": "parallel4",
+    "version": "tuic",
+    "source": "parallel4-b3-p3-tuic.jsonl",
+    "success": 4,
+    "jobs": 4,
+    "elapsed_ms": 24606,
+    "verified_mbps": 5.454674794765504,
+    "lane_usage": null
+  },
+  {
+    "metric": "parallel4",
+    "version": "tuic",
+    "source": "parallel4-b4-p2-tuic.jsonl",
+    "success": 4,
+    "jobs": 4,
+    "elapsed_ms": 5530,
+    "verified_mbps": 24.270836889692585,
+    "lane_usage": null
+  },
+  {
+    "metric": "parallel4",
+    "version": "tuic",
+    "source": "parallel4-b5-p1-tuic.jsonl",
+    "success": 4,
+    "jobs": 4,
+    "elapsed_ms": 20432,
+    "verified_mbps": 6.568996084573218,
+    "lane_usage": null
+  },
+  {
+    "metric": "parallel4",
+    "version": "tuic",
+    "source": "parallel4-b6-p1-tuic.jsonl",
+    "success": 4,
+    "jobs": 4,
+    "elapsed_ms": 31355,
+    "verified_mbps": 4.280584531972572,
+    "lane_usage": null
+  },
+  {
+    "metric": "parallel8",
+    "version": "next-base",
+    "source": "parallel8-b1-p1-next-base.jsonl",
+    "success": 8,
+    "jobs": 8,
+    "elapsed_ms": 17200,
+    "verified_mbps": 7.803356279069768,
+    "lane_usage": {
+      "tcp_assignments": [
+        8,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel8",
+    "version": "next-base",
+    "source": "parallel8-b2-p1-next-base.jsonl",
+    "success": 8,
+    "jobs": 8,
+    "elapsed_ms": 18697,
+    "verified_mbps": 7.178570251912071,
+    "lane_usage": {
+      "tcp_assignments": [
+        8,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel8",
+    "version": "next-base",
+    "source": "parallel8-b3-p2-next-base.jsonl",
+    "success": 8,
+    "jobs": 8,
+    "elapsed_ms": 5607,
+    "verified_mbps": 23.937529516675585,
+    "lane_usage": {
+      "tcp_assignments": [
+        8,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel8",
+    "version": "next-base",
+    "source": "parallel8-b4-p3-next-base.jsonl",
+    "success": 8,
+    "jobs": 8,
+    "elapsed_ms": 6868,
+    "verified_mbps": 19.542476412347117,
+    "lane_usage": {
+      "tcp_assignments": [
+        8,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel8",
+    "version": "next-base",
+    "source": "parallel8-b5-p2-next-base.jsonl",
+    "success": 8,
+    "jobs": 8,
+    "elapsed_ms": 19246,
+    "verified_mbps": 6.973798607502857,
+    "lane_usage": {
+      "tcp_assignments": [
+        8,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel8",
+    "version": "next-base",
+    "source": "parallel8-b6-p3-next-base.jsonl",
+    "success": 8,
+    "jobs": 8,
+    "elapsed_ms": 5935,
+    "verified_mbps": 22.61461297388374,
+    "lane_usage": {
+      "tcp_assignments": [
+        8,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel8",
+    "version": "next-opt",
+    "source": "parallel8-b1-p2-next-opt.jsonl",
+    "success": 8,
+    "jobs": 8,
+    "elapsed_ms": 26740,
+    "verified_mbps": 5.0193615557217655,
+    "lane_usage": {
+      "tcp_assignments": [
+        4,
+        4
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel8",
+    "version": "next-opt",
+    "source": "parallel8-b2-p3-next-opt.jsonl",
+    "success": 8,
+    "jobs": 8,
+    "elapsed_ms": 17783,
+    "verified_mbps": 7.547530113029297,
+    "lane_usage": {
+      "tcp_assignments": [
+        4,
+        4
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel8",
+    "version": "next-opt",
+    "source": "parallel8-b3-p1-next-opt.jsonl",
+    "success": 8,
+    "jobs": 8,
+    "elapsed_ms": 6937,
+    "verified_mbps": 19.34809398875595,
+    "lane_usage": {
+      "tcp_assignments": [
+        8,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel8",
+    "version": "next-opt",
+    "source": "parallel8-b4-p1-next-opt.jsonl",
+    "success": 8,
+    "jobs": 8,
+    "elapsed_ms": 16857,
+    "verified_mbps": 7.962136085899033,
+    "lane_usage": {
+      "tcp_assignments": [
+        8,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel8",
+    "version": "next-opt",
+    "source": "parallel8-b5-p3-next-opt.jsonl",
+    "success": 8,
+    "jobs": 8,
+    "elapsed_ms": 12673,
+    "verified_mbps": 10.590841000552354,
+    "lane_usage": {
+      "tcp_assignments": [
+        4,
+        4
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel8",
+    "version": "next-opt",
+    "source": "parallel8-b6-p2-next-opt.jsonl",
+    "success": 8,
+    "jobs": 8,
+    "elapsed_ms": 13028,
+    "verified_mbps": 10.302251151366288,
+    "lane_usage": {
+      "tcp_assignments": [
+        4,
+        4
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "parallel8",
+    "version": "tuic",
+    "source": "parallel8-b1-p3-tuic.jsonl",
+    "success": 8,
+    "jobs": 8,
+    "elapsed_ms": 23111,
+    "verified_mbps": 5.8075257669508025,
+    "lane_usage": null
+  },
+  {
+    "metric": "parallel8",
+    "version": "tuic",
+    "source": "parallel8-b2-p2-tuic.jsonl",
+    "success": 8,
+    "jobs": 8,
+    "elapsed_ms": 45334,
+    "verified_mbps": 2.9606416376229765,
+    "lane_usage": null
+  },
+  {
+    "metric": "parallel8",
+    "version": "tuic",
+    "source": "parallel8-b3-p3-tuic.jsonl",
+    "success": 8,
+    "jobs": 8,
+    "elapsed_ms": 10599,
+    "verified_mbps": 12.663244457024248,
+    "lane_usage": null
+  },
+  {
+    "metric": "parallel8",
+    "version": "tuic",
+    "source": "parallel8-b4-p2-tuic.jsonl",
+    "success": 8,
+    "jobs": 8,
+    "elapsed_ms": 29011,
+    "verified_mbps": 4.62644265968081,
+    "lane_usage": null
+  },
+  {
+    "metric": "parallel8",
+    "version": "tuic",
+    "source": "parallel8-b5-p1-tuic.jsonl",
+    "success": 8,
+    "jobs": 8,
+    "elapsed_ms": 7061,
+    "verified_mbps": 19.008317235519048,
+    "lane_usage": null
+  },
+  {
+    "metric": "parallel8",
+    "version": "tuic",
+    "source": "parallel8-b6-p1-tuic.jsonl",
+    "success": 8,
+    "jobs": 8,
+    "elapsed_ms": 13869,
+    "verified_mbps": 9.677534645612518,
+    "lane_usage": null
+  },
+  {
+    "metric": "rolling",
+    "version": "next-base",
+    "source": "rolling-b1-p1-next-base.jsonl",
+    "success": 12,
+    "jobs": 12,
+    "elapsed_ms": 74114,
+    "verified_mbps": 5.432889656475161,
+    "lane_usage": {
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "rolling",
+    "version": "next-base",
+    "source": "rolling-b2-p1-next-base.jsonl",
+    "success": 12,
+    "jobs": 12,
+    "elapsed_ms": 34063,
+    "verified_mbps": 11.820837389542906,
+    "lane_usage": {
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "rolling",
+    "version": "next-base",
+    "source": "rolling-b3-p2-next-base.jsonl",
+    "success": 12,
+    "jobs": 12,
+    "elapsed_ms": 15465,
+    "verified_mbps": 26.0364166828322,
+    "lane_usage": {
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "rolling",
+    "version": "next-base",
+    "source": "rolling-b4-p3-next-base.jsonl",
+    "success": 12,
+    "jobs": 12,
+    "elapsed_ms": 64315,
+    "verified_mbps": 6.260641903133017,
+    "lane_usage": {
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "rolling",
+    "version": "next-base",
+    "source": "rolling-b5-p2-next-base.jsonl",
+    "success": 12,
+    "jobs": 12,
+    "elapsed_ms": 68024,
+    "verified_mbps": 5.919281194872398,
+    "lane_usage": {
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "rolling",
+    "version": "next-base",
+    "source": "rolling-b6-p3-next-base.jsonl",
+    "success": 12,
+    "jobs": 12,
+    "elapsed_ms": 15245,
+    "verified_mbps": 26.412147195801904,
+    "lane_usage": {
+      "tcp_assignments": [
+        12,
+        0
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "rolling",
+    "version": "next-opt",
+    "source": "rolling-b1-p2-next-opt.jsonl",
+    "success": 12,
+    "jobs": 12,
+    "elapsed_ms": 16444,
+    "verified_mbps": 24.48632838725371,
+    "lane_usage": {
+      "tcp_assignments": [
+        6,
+        6
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "rolling",
+    "version": "next-opt",
+    "source": "rolling-b2-p3-next-opt.jsonl",
+    "success": 12,
+    "jobs": 12,
+    "elapsed_ms": 20259,
+    "verified_mbps": 19.875274396564492,
+    "lane_usage": {
+      "tcp_assignments": [
+        10,
+        2
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "rolling",
+    "version": "next-opt",
+    "source": "rolling-b3-p1-next-opt.jsonl",
+    "success": 12,
+    "jobs": 12,
+    "elapsed_ms": 20884,
+    "verified_mbps": 19.280462746600268,
+    "lane_usage": {
+      "tcp_assignments": [
+        10,
+        2
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "rolling",
+    "version": "next-opt",
+    "source": "rolling-b4-p1-next-opt.jsonl",
+    "success": 12,
+    "jobs": 12,
+    "elapsed_ms": 22910,
+    "verified_mbps": 17.575433609777388,
+    "lane_usage": {
+      "tcp_assignments": [
+        9,
+        3
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "rolling",
+    "version": "next-opt",
+    "source": "rolling-b5-p3-next-opt.jsonl",
+    "success": 12,
+    "jobs": 12,
+    "elapsed_ms": 18708,
+    "verified_mbps": 21.523048107761383,
+    "lane_usage": {
+      "tcp_assignments": [
+        10,
+        2
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "rolling",
+    "version": "next-opt",
+    "source": "rolling-b6-p2-next-opt.jsonl",
+    "success": 12,
+    "jobs": 12,
+    "elapsed_ms": 14871,
+    "verified_mbps": 27.07640266290095,
+    "lane_usage": {
+      "tcp_assignments": [
+        6,
+        6
+      ],
+      "trial_assignments": 0,
+      "proven_spill_assignments": 0
+    }
+  },
+  {
+    "metric": "rolling",
+    "version": "tuic",
+    "source": "rolling-b1-p3-tuic.jsonl",
+    "success": 12,
+    "jobs": 12,
+    "elapsed_ms": 14025,
+    "verified_mbps": 28.709674438502674,
+    "lane_usage": null
+  },
+  {
+    "metric": "rolling",
+    "version": "tuic",
+    "source": "rolling-b2-p2-tuic.jsonl",
+    "success": 12,
+    "jobs": 12,
+    "elapsed_ms": 38682,
+    "verified_mbps": 10.40931658135567,
+    "lane_usage": null
+  },
+  {
+    "metric": "rolling",
+    "version": "tuic",
+    "source": "rolling-b3-p3-tuic.jsonl",
+    "success": 12,
+    "jobs": 12,
+    "elapsed_ms": 15209,
+    "verified_mbps": 26.474665263988427,
+    "lane_usage": null
+  },
+  {
+    "metric": "rolling",
+    "version": "tuic",
+    "source": "rolling-b4-p2-tuic.jsonl",
+    "success": 12,
+    "jobs": 12,
+    "elapsed_ms": 43015,
+    "verified_mbps": 9.360762152737419,
+    "lane_usage": null
+  },
+  {
+    "metric": "rolling",
+    "version": "tuic",
+    "source": "rolling-b5-p1-tuic.jsonl",
+    "success": 12,
+    "jobs": 12,
+    "elapsed_ms": 82786,
+    "verified_mbps": 4.863783538279419,
+    "lane_usage": null
+  },
+  {
+    "metric": "rolling",
+    "version": "tuic",
+    "source": "rolling-b6-p1-tuic.jsonl",
+    "success": 12,
+    "jobs": 12,
+    "elapsed_ms": 45023,
+    "verified_mbps": 8.943277524820648,
+    "lane_usage": null
+  }
+]

@@ -1,0 +1,3 @@
+  fastcat-n1-experiment.service loaded active running [systemd-run] /opt/fastcat-n1-lab/n1 -mode server -listen 0.0.0.0:18461 -config /opt/fastcat-n1-lab/config.json -cert /etc/letsencrypt/live/zlhk.fastcat.ink/fullchain.pem -cert-key /etc/letsencrypt/live/zlhk.fastcat.ink/privkey.pem -target 127.0.0.1:18462
+  fastcat-n1-origin.service     loaded active running [systemd-run] /opt/fastcat-n1-lab/n1 -mode origin -listen 127.0.0.1:18462
+0e5ed17e6e94ac775d8d52b0a65f26e5db57fd2c1efd57ab0144d7b8707c2d8e  /opt/fastcat-n1-lab/n1

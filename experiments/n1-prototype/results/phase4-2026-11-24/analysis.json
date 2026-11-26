@@ -1,0 +1,142 @@
+{
+  "samples": 72,
+  "scope": "Synthetic implementations, one network/device; not a GFW detection probability estimate",
+  "models": {
+    "get_only": {
+      "rule": {
+        "feature": "client_records",
+        "threshold": 4.5,
+        "sign": 1
+      },
+      "train": {
+        "tp": 12,
+        "tn": 12,
+        "fp": 0,
+        "fn": 0,
+        "tpr": 1.0,
+        "fpr": 0.0,
+        "balanced_accuracy": 1.0
+      },
+      "holdout_all": {
+        "tp": 12,
+        "tn": 12,
+        "fp": 12,
+        "fn": 0,
+        "tpr": 1.0,
+        "fpr": 0.5,
+        "balanced_accuracy": 0.75
+      },
+      "holdout_get": {
+        "tp": 12,
+        "tn": 12,
+        "fp": 0,
+        "fn": 0,
+        "tpr": 1.0,
+        "fpr": 0.0,
+        "balanced_accuracy": 1.0
+      },
+      "holdout_rpc": {
+        "tp": 12,
+        "tn": 0,
+        "fp": 12,
+        "fn": 0,
+        "tpr": 1.0,
+        "fpr": 1.0,
+        "balanced_accuracy": 0.5
+      }
+    },
+    "get_and_rpc": {
+      "rule": {
+        "feature": "client_records",
+        "threshold": 5.5,
+        "sign": 1
+      },
+      "train": {
+        "tp": 12,
+        "tn": 24,
+        "fp": 0,
+        "fn": 0,
+        "tpr": 1.0,
+        "fpr": 0.0,
+        "balanced_accuracy": 1.0
+      },
+      "holdout_all": {
+        "tp": 12,
+        "tn": 24,
+        "fp": 0,
+        "fn": 0,
+        "tpr": 1.0,
+        "fpr": 0.0,
+        "balanced_accuracy": 1.0
+      },
+      "holdout_get": {
+        "tp": 12,
+        "tn": 12,
+        "fp": 0,
+        "fn": 0,
+        "tpr": 1.0,
+        "fpr": 0.0,
+        "balanced_accuracy": 1.0
+      },
+      "holdout_rpc": {
+        "tp": 12,
+        "tn": 12,
+        "fp": 0,
+        "fn": 0,
+        "tpr": 1.0,
+        "fpr": 0.0,
+        "balanced_accuracy": 1.0
+      }
+    }
+  },
+  "workloads": {
+    "train-n1": {
+      "samples": 12,
+      "server_records_p50": 10.0,
+      "client_records": [
+        6
+      ],
+      "rst_packets": 0
+    },
+    "train-get": {
+      "samples": 12,
+      "server_records_p50": 11.5,
+      "client_records": [
+        3
+      ],
+      "rst_packets": 24
+    },
+    "train-rpc": {
+      "samples": 12,
+      "server_records_p50": 11.5,
+      "client_records": [
+        5
+      ],
+      "rst_packets": 0
+    },
+    "holdout-n1": {
+      "samples": 12,
+      "server_records_p50": 12.0,
+      "client_records": [
+        6
+      ],
+      "rst_packets": 0
+    },
+    "holdout-get": {
+      "samples": 12,
+      "server_records_p50": 14.5,
+      "client_records": [
+        3
+      ],
+      "rst_packets": 27
+    },
+    "holdout-rpc": {
+      "samples": 12,
+      "server_records_p50": 14.5,
+      "client_records": [
+        5
+      ],
+      "rst_packets": 0
+    }
+  }
+}

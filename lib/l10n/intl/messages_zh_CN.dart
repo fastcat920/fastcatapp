@@ -1558,6 +1558,7 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardKeepSubscriptionLinkSafe": MessageLookupByLibrary.simpleMessage(
       "请妥善保管您的订阅链接，不要分享给他人",
     ),
+    "xboardLatencyTestFailed": MessageLookupByLibrary.simpleMessage("测速失败"),
     "xboardLater": MessageLookupByLibrary.simpleMessage("稍后处理"),
     "xboardLoadFailedCheckNetwork": MessageLookupByLibrary.simpleMessage(
       "加载失败，请检查网络",
@@ -1723,6 +1724,32 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNetworkDiagnosticsDomain": MessageLookupByLibrary.simpleMessage(
       "域名",
     ),
+    "xboardNetworkDiagnosticsDownloadAverageSpeed":
+        MessageLookupByLibrary.simpleMessage("平均下载速度"),
+    "xboardNetworkDiagnosticsDownloadCancel":
+        MessageLookupByLibrary.simpleMessage("停止测速"),
+    "xboardNetworkDiagnosticsDownloadCancelled":
+        MessageLookupByLibrary.simpleMessage("测速已停止"),
+    "xboardNetworkDiagnosticsDownloadFailed":
+        MessageLookupByLibrary.simpleMessage("未能测得下载速度"),
+    "xboardNetworkDiagnosticsDownloadNoNode":
+        MessageLookupByLibrary.simpleMessage("已跳过 · 当前没有可测速的代理节点"),
+    "xboardNetworkDiagnosticsDownloadRunning":
+        MessageLookupByLibrary.simpleMessage("正在测量下载速度…"),
+    "xboardNetworkDiagnosticsDownloadSampleTime":
+        MessageLookupByLibrary.simpleMessage("采样用时"),
+    "xboardNetworkDiagnosticsDownloadSecondsUnit":
+        MessageLookupByLibrary.simpleMessage("秒"),
+    "xboardNetworkDiagnosticsDownloadShort":
+        MessageLookupByLibrary.simpleMessage("采样时间较短"),
+    "xboardNetworkDiagnosticsDownloadSpeed":
+        MessageLookupByLibrary.simpleMessage("下载测速"),
+    "xboardNetworkDiagnosticsDownloadTotalBytes":
+        MessageLookupByLibrary.simpleMessage("总下载量"),
+    "xboardNetworkDiagnosticsDownloadTrafficNote":
+        MessageLookupByLibrary.simpleMessage(
+          "诊断会通过当前节点进行下载测速，最多持续 10 秒，可能消耗最多 100 MB 流量。",
+        ),
     "xboardNetworkDiagnosticsEmptyResult": MessageLookupByLibrary.simpleMessage(
       "返回结果为空",
     ),
@@ -1745,12 +1772,8 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage(
           "所选节点测试通过，但实际代理链路失败，请检查代理组实际选择后重试。",
         ),
-    "xboardNetworkDiagnosticsNativeDirectDetail":
-        MessageLookupByLibrary.simpleMessage("本机请求，不使用内核测试接口；仍使用系统 DNS 和路由"),
-    "xboardNetworkDiagnosticsNativeTunDetail":
-        MessageLookupByLibrary.simpleMessage(
-          "本机请求，不使用内核测试接口；VPN/TUN 可能影响系统 DNS 和路由，不能单独代表物理网络",
-        ),
+    "xboardNetworkDiagnosticsNativeRouteNote":
+        MessageLookupByLibrary.simpleMessage("经系统路由测试，可能受 VPN 影响。"),
     "xboardNetworkDiagnosticsNetworkEthernet":
         MessageLookupByLibrary.simpleMessage("有线网络"),
     "xboardNetworkDiagnosticsNetworkMobile":

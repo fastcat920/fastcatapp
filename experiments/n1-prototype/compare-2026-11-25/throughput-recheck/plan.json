@@ -1,0 +1,44 @@
+{
+  "protocols": [
+    "n1",
+    "hysteria2",
+    "tuic"
+  ],
+  "device": "A3GMVB2110006859",
+  "server": "zlhk.fastcat.ink",
+  "endpoint_resolution": "literal IP with certificate hostname verification",
+  "network": "validated Wi-Fi; guard before/after every block",
+  "blocks": 3,
+  "seed": 20261126,
+  "per_block": [
+    {
+      "phase": "download",
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "phase": "download",
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4
+    },
+    {
+      "phase": "upload",
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1
+    }
+  ],
+  "per_request_budget_seconds": 45,
+  "keep_failures": true,
+  "primary_metrics": "verified body/target ACK; N1 outer lifecycle cleanup measured separately",
+  "quic_warmup": "none hidden; first sample in reused-client block reported separately",
+  "n1": "coalesced + 16384 cap, setup_attempts2, TLS cache off",
+  "tuic": "v5 BBR, 0-RTT off, FastOpen off",
+  "hysteria2": "BBR auto bandwidth on both ends (source confirmed), no fixed Brutal bandwidth, no obfuscation",
+  "scope": "same physical phone/server/target; protocol implementation comparison, not pure algorithm comparison",
+  "estimated_verified_payload_mib": 81.0,
+  "target_acl": "All three explicitly permit only the shared loopback target; native wrapper overrides default private-target block for this one address/port only",
+  "reason": "First two main single-download rounds varied >2x within each implementation. Add exactly 3 balanced blocks of download single/download4/upload, preserve and report main plus supplemental, no further best-of retries."
+}

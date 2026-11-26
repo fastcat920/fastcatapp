@@ -1,0 +1,42 @@
+[
+  {
+    "profile": "reno",
+    "unix": 1795264114.630093,
+    "properties": {
+      "NRestarts": "0",
+      "MemoryCurrent": "8859648",
+      "CPUUsageNSec": "3448504000",
+      "ActiveState": "active"
+    }
+  },
+  {
+    "profile": "bbr",
+    "unix": 1795264115.3111382,
+    "properties": {
+      "NRestarts": "0",
+      "MemoryCurrent": "21635072",
+      "CPUUsageNSec": "11623569000",
+      "ActiveState": "active"
+    }
+  },
+  {
+    "profile": "next",
+    "unix": 1795264115.698682,
+    "properties": {
+      "NRestarts": "0",
+      "MemoryCurrent": "13230080",
+      "CPUUsageNSec": "1006391000",
+      "ActiveState": "active"
+    }
+  },
+  {
+    "profile": "light",
+    "unix": 1795264115.951467,
+    "properties": {
+      "NRestarts": "0",
+      "MemoryCurrent": "12181504",
+      "CPUUsageNSec": "963017000",
+      "ActiveState": "active"
+    }
+  }
+]

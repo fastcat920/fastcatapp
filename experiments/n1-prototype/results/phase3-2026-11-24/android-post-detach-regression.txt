@@ -1,0 +1,18 @@
+=== RUN   TestCoalescedChunkFramingAndStableFIN
+--- PASS: TestCoalescedChunkFramingAndStableFIN (0.00s)
+=== RUN   TestCoalescedInteractiveAndBulk
+--- PASS: TestCoalescedInteractiveAndBulk (0.08s)
+=== RUN   TestCoalescedServerFirstAndEmptyFIN
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/greeting-ready
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/greeting-
+--- PASS: TestCoalescedServerFirstAndEmptyFIN (0.07s)
+    --- PASS: TestCoalescedServerFirstAndEmptyFIN/greeting-ready (0.03s)
+    --- PASS: TestCoalescedServerFirstAndEmptyFIN/greeting- (0.04s)
+=== RUN   TestCoalescedAuthorizationFailure
+--- PASS: TestCoalescedAuthorizationFailure (0.06s)
+=== RUN   TestCoalescedCancelReleasesSession
+--- PASS: TestCoalescedCancelReleasesSession (0.04s)
+=== RUN   TestCoalescedWaitsForOuterRequestEOF
+--- PASS: TestCoalescedWaitsForOuterRequestEOF (0.15s)
+PASS
+2026/11/24 09:07:32 coalesced session ended with transport error

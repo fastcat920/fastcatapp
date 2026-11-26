@@ -1,0 +1,9 @@
+=== RUN   TestLocalPrimarySamplerCost
+    profile_test.go:57: round=1 primary=false elapsed_ms=1177.963 echo_mbps=227.881 usage={Assigned:[4 0] Trials:0 Spills:0}
+    profile_test.go:57: round=1 primary=true elapsed_ms=1149.525 echo_mbps=233.518 usage={Assigned:[4 0] Trials:0 Spills:0}
+    profile_test.go:57: round=2 primary=true elapsed_ms=1143.403 echo_mbps=234.769 usage={Assigned:[4 0] Trials:0 Spills:0}
+    profile_test.go:57: round=2 primary=false elapsed_ms=1148.588 echo_mbps=233.709 usage={Assigned:[4 0] Trials:0 Spills:0}
+    profile_test.go:57: round=3 primary=false elapsed_ms=1130.359 echo_mbps=237.478 usage={Assigned:[4 0] Trials:0 Spills:0}
+    profile_test.go:57: round=3 primary=true elapsed_ms=1142.903 echo_mbps=234.871 usage={Assigned:[4 0] Trials:0 Spills:0}
+--- PASS: TestLocalPrimarySamplerCost (6.99s)
+PASS

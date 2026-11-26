@@ -1,0 +1,14 @@
+14982369
+10298124
+Nov 24 20:36:45 DMIT-QOrEYD7FvT systemd[1]: Stopping fastcat-n1-phase7-capture.service - [systemd-run] /usr/bin/tcpdump -U -B 4096 -i any -nn -s 0 -c 100000 -w /opt/fastcat-n1-lab/phase7.pcap tcp port 18461 or tcp port 18463...
+Nov 24 20:36:45 DMIT-QOrEYD7FvT tcpdump[698965]: 14248 packets captured
+Nov 24 20:36:45 DMIT-QOrEYD7FvT tcpdump[698965]: 14248 packets received by filter
+Nov 24 20:36:45 DMIT-QOrEYD7FvT tcpdump[698965]: 0 packets dropped by kernel
+Nov 24 20:36:45 DMIT-QOrEYD7FvT systemd[1]: fastcat-n1-phase7-capture.service: Deactivated successfully.
+Nov 24 20:36:45 DMIT-QOrEYD7FvT systemd[1]: Stopped fastcat-n1-phase7-capture.service - [systemd-run] /usr/bin/tcpdump -U -B 4096 -i any -nn -s 0 -c 100000 -w /opt/fastcat-n1-lab/phase7.pcap tcp port 18461 or tcp port 18463.
+Nov 24 20:42:03 DMIT-QOrEYD7FvT systemd[1]: Stopping fastcat-n1-phase7bulk-capture.service - [systemd-run] /usr/bin/tcpdump -U -B 4096 -i any -nn -s 0 -c 100000 -w /opt/fastcat-n1-lab/phase7bulk.pcap tcp port 18463 or tcp port 18465...
+Nov 24 20:42:03 DMIT-QOrEYD7FvT tcpdump[699805]: 9578 packets captured
+Nov 24 20:42:03 DMIT-QOrEYD7FvT tcpdump[699805]: 9578 packets received by filter
+Nov 24 20:42:03 DMIT-QOrEYD7FvT tcpdump[699805]: 0 packets dropped by kernel
+Nov 24 20:42:03 DMIT-QOrEYD7FvT systemd[1]: fastcat-n1-phase7bulk-capture.service: Deactivated successfully.
+Nov 24 20:42:03 DMIT-QOrEYD7FvT systemd[1]: Stopped fastcat-n1-phase7bulk-capture.service - [systemd-run] /usr/bin/tcpdump -U -B 4096 -i any -nn -s 0 -c 100000 -w /opt/fastcat-n1-lab/phase7bulk.pcap tcp port 18463 or tcp port 18465.

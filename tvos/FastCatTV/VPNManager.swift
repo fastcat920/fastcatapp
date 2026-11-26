@@ -411,12 +411,12 @@ class VPNManager: NSObject {
   }
 
   /// Return Mihomo's live proxy/group graph as JSON.
-  func getProxies(completion: @escaping (String?) -> Void) {
+  func getProxies(timeout: TimeInterval? = nil, completion: @escaping (String?) -> Void) {
     guard isTunnelRunning else {
       completion(nil)
       return
     }
-    sendClashMessage(method: "getProxies", data: nil, completion: completion)
+    sendClashMessage(method: "getProxies", data: nil, timeout: timeout, completion: completion)
   }
 
   func logCommand(_ method:String) async -> String? {
@@ -507,7 +507,7 @@ class VPNManager: NSObject {
 
   /// Forward a Clash operation to the running PacketTunnel extension.
   /// Missing/late responses stay nil; only explicit extension ACKs confirm writes.
-  func sendClashMessage(method: String, data: String?, completion: @escaping (String?) -> Void) {
+  func sendClashMessage(method: String, data: String?, timeout: TimeInterval? = nil, completion: @escaping (String?) -> Void) {
     guard let session = manager?.connection as? NETunnelProviderSession else {
       NSLog("[VPNManager] sendClashMessage(%@): no session available", method)
       completion(nil)
@@ -527,7 +527,7 @@ class VPNManager: NSObject {
       return
     }
     let reply = TVOnceReply(completion)
-    let timeout: Double = method == "_updateConfig" ? 30 : (method == "streamingProbe" ? 20 : 10)
+    let timeout = timeout ?? (method == "_updateConfig" ? 30 : (method == "streamingProbe" ? 20 : 10))
     DispatchQueue.global().asyncAfter(deadline: .now() + timeout) { reply.finish(nil) }
     do {
       try session.sendProviderMessage(encoded) { responseData in

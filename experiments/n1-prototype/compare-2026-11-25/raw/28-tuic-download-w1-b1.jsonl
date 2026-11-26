@@ -1,0 +1,2 @@
+{"body_mbps":18.1941490356748,"body_ms":1844.243,"bytes":4194304,"cleanup_ms":0.142,"e2e_mbps":14.246983978880893,"entry_ms":411.462,"first_byte_ms":510.983,"headers_ms":510.926,"phase":"download","protocol":"tuic","sample":1,"start_unix_ms":1795539016300,"success":true,"total_ms":2355.19}
+{"count":1,"elapsed_ms":2356.209,"event":"batch-ended","failed":0,"phase":"download","protocol":"tuic","workers":1}

@@ -1,0 +1,88 @@
+{
+  "phase": "performance",
+  "variants": {
+    "baseline": "default ECN",
+    "noecn": "server ECN disabled only; reply coalesce=0"
+  },
+  "sha256": {
+    "compare": "93ee454db395fedf24b808499ec24ccd9d6c5f3f35f94ba8085435def3ee2e64",
+    "next-diagnostic": "697bbdf66e25c0e92fd15171d59c82b220d54328fd515eff1f4ba811951acfaf"
+  },
+  "client_policy": "original next-opt; GSO and PMTU defaults unchanged",
+  "trace": false,
+  "gate": {
+    "loaded_p95_ratio_max": 0.8,
+    "warm_p95_ratio_max": 1.1,
+    "throughput_ratio_min": 0.9,
+    "completion_not_lower": true,
+    "min_loaded_samples": 48
+  },
+  "metrics": [
+    [
+      "mixed",
+      6,
+      [
+        "-mixed-download-bytes",
+        "16777216",
+        "-samples",
+        "12",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "90s"
+      ],
+      true,
+      120
+    ],
+    [
+      "parallel",
+      6,
+      [
+        "-download-bytes",
+        "4194304",
+        "-download-workers",
+        "4",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "90s"
+      ],
+      true,
+      120
+    ],
+    [
+      "rolling",
+      6,
+      [
+        "-download-bytes",
+        "4194304",
+        "-download-workers",
+        "4",
+        "-download-jobs",
+        "12",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "150s"
+      ],
+      true,
+      180
+    ],
+    [
+      "latency",
+      3,
+      [
+        "-samples",
+        "12",
+        "-pools",
+        "1",
+        "-batches",
+        "3",
+        "-workers",
+        "4"
+      ],
+      false,
+      450
+    ]
+  ]
+}

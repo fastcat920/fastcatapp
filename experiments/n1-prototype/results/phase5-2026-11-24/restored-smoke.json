@@ -1,0 +1,14 @@
+[
+  {
+    "config_profile": "domain.json",
+    "exit_code": 0,
+    "stdout": "{\"bytes\":32768,\"chunk\":16384,\"first_payload_ms\":5953.367,\"first_response_headers_ms\":5953.321,\"full_request_ms\":10122.926,\"gap_ms\":0,\"header_kind\":\"application-response\",\"kind\":\"n1\",\"payload_verified\":true,\"shutdown_eof_observed\":true}\n",
+    "stderr": ""
+  },
+  {
+    "config_profile": "phase5-coalesced.json",
+    "exit_code": 0,
+    "stdout": "{\"bytes\":32768,\"chunk\":16384,\"first_payload_ms\":4484.276,\"first_response_headers_ms\":4484.218,\"full_request_ms\":4587.693,\"gap_ms\":0,\"header_kind\":\"application-response\",\"kind\":\"n1\",\"payload_verified\":true,\"shutdown_eof_observed\":true}\n",
+    "stderr": ""
+  }
+]

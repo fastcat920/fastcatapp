@@ -1,0 +1,15 @@
+{
+  "main.go": "455ff57235f61991bb7d6a69250a8d679507e8de914086a0d102c8e70f4b3b87",
+  "coalesced.go": "367a36f1e19bc5eb5ae1a1881359e15ece659afff4f2aab74836ea740de1e12d",
+  "inspect.go": "0e8dbadf5b49cdd62bd7682dedac40befbdf5ee9bacf29c39ad8ef79cfbef794",
+  "coalesced_test.go": "464cc1df2010dda45269a47bf526fc8e0725ed23171d3c1fcb23353aaf1023b5",
+  "main_test.go": "4b94d5efb8c8a764aff83aee8a5f0d75c4d583e9aa4d4bb2b68f79e94b324919",
+  "resource_test.go": "7aab418f78703146d62a03a151b470df59a520f2438a77e1820679395219cbc0",
+  "SPEC-0.1.md": "ddcf8083b6837569d3590c707c31a56cb3d9af0885f14e96ed0eb22ea3817fc9",
+  "README.md": "0074ab24f5fac60d341699852efb04c82dfc92ff1e335c181161f6fc237d9a02",
+  "run_phase3_ab.py": "278b91b35005d4c9db2d3fd1ad10a4a41244b942f4a40843f68167736db088f2",
+  "deploy/phase3-emission.conf": "fc69bd82bcf1d62ff0fa4ea8deba8468420478199029467133d48ae8802cbcec",
+  "artifacts/n1-linux-amd64": "84ac17285d591af0245757bab9f618aeef066344619607257e80416ee176dec9",
+  "artifacts/n1-android-systemdns-arm64": "00263a17750cef051f288c6a1d7b6b7a2b6e0acf61ae7ae7889e384aad8f77d0",
+  "artifacts/n1-macos-arm64": "5d4a6c8f7b4ee42fd064f51b96cb28e7192cd37622744b64f6264fb7f4a0d66f"
+}

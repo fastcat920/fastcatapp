@@ -1,0 +1,84 @@
+{
+  "http_requests": 120,
+  "expected_rejections": 105,
+  "public_200": 15,
+  "all_rejection_bodies_match": true,
+  "captures": {
+    "final": {
+      "samples": 5,
+      "hello_bytes": [
+        1490
+      ],
+      "feature_hashes": [
+        "c94627acebf3a22b24b9ff9db6b8b33a1dc3cdca547bb09094bc8f283b51f360"
+      ],
+      "server_encrypted_records_median": 19,
+      "server_unique_tcp_payload_bytes_median": 38329
+    },
+    "baseline": {
+      "samples": 10,
+      "hello_bytes": [
+        1490
+      ],
+      "feature_hashes": [
+        "c94627acebf3a22b24b9ff9db6b8b33a1dc3cdca547bb09094bc8f283b51f360"
+      ],
+      "server_encrypted_records_median": 13.0,
+      "server_unique_tcp_payload_bytes_median": 37967.0
+    },
+    "stream": {
+      "samples": 10,
+      "hello_bytes": [
+        1490
+      ],
+      "feature_hashes": [
+        "c94627acebf3a22b24b9ff9db6b8b33a1dc3cdca547bb09094bc8f283b51f360"
+      ],
+      "server_encrypted_records_median": 17.0,
+      "server_unique_tcp_payload_bytes_median": 38081.0
+    }
+  },
+  "functional": [
+    {
+      "worker": 0,
+      "exit_code": 0,
+      "success": 5,
+      "failed": 0
+    },
+    {
+      "worker": 1,
+      "exit_code": 0,
+      "success": 5,
+      "failed": 0
+    },
+    {
+      "worker": 2,
+      "exit_code": 0,
+      "success": 5,
+      "failed": 0
+    },
+    {
+      "worker": 3,
+      "exit_code": 0,
+      "success": 5,
+      "failed": 0
+    }
+  ],
+  "admission": {
+    "events": [
+      {
+        "count": 12,
+        "event": "sockets-opened"
+      },
+      {
+        "closed": 4,
+        "pending": 8,
+        "requested": 12,
+        "scope": "partial TLS headers; single source; sockets released on exit"
+      }
+    ],
+    "server_established_during_hold": 8,
+    "exit_code": 0,
+    "observation": "concurrent reads, common 2s deadline; old short-window result retained"
+  }
+}

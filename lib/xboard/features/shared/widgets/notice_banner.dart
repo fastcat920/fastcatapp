@@ -13,6 +13,7 @@ import 'package:fl_clash/xboard/features/notice/notice.dart';
 import '../styles/markdown_styles.dart';
 import '../styles/ui_tokens.dart';
 import '../styles/html_styles.dart';
+import '../utils/notice_content.dart';
 import '../utils/tv_focus_restoration.dart';
 
 /// 通知内容渲染类型
@@ -526,7 +527,10 @@ class _NoticeDetailDialogState extends State<NoticeDetailDialog>
     final content = notice.content ?? '暂无内容';
 
     // 如果配置为 null，自动检测内容格式
-    final renderType = kNoticeRenderType ?? _detectContentType(content);
+    final renderType = kNoticeRenderType ??
+        (isNoticeHtml(content)
+            ? NoticeRenderType.html
+            : NoticeRenderType.markdown);
 
     switch (renderType) {
       case NoticeRenderType.markdown:
@@ -534,35 +538,6 @@ class _NoticeDetailDialogState extends State<NoticeDetailDialog>
       case NoticeRenderType.html:
         return _buildHtmlContent(content);
     }
-  }
-
-  /// 自动检测内容类型
-  ///
-  /// 通过检查内容中是否包含 HTML 标签来判断：
-  /// - 如果包含常见的 HTML 标签，认为是 HTML
-  /// - 否则认为是 Markdown
-  NoticeRenderType _detectContentType(String content) {
-    // 去除首尾空白
-    final trimmedContent = content.trim();
-
-    // 如果内容为空，默认使用 Markdown
-    if (trimmedContent.isEmpty) {
-      return NoticeRenderType.markdown;
-    }
-
-    // 常见的 HTML 标签模式
-    final htmlTagPattern = RegExp(
-      r'<(p|div|span|h[1-6]|ul|ol|li|br|hr|strong|em|a|img|table|tr|td|th|blockquote|pre|code)[>\s]',
-      caseSensitive: false,
-    );
-
-    // 如果匹配到 HTML 标签，使用 HTML 渲染
-    if (htmlTagPattern.hasMatch(trimmedContent)) {
-      return NoticeRenderType.html;
-    }
-
-    // 默认使用 Markdown 渲染
-    return NoticeRenderType.markdown;
   }
 
   /// 构建Markdown内容
@@ -579,17 +554,13 @@ class _NoticeDetailDialogState extends State<NoticeDetailDialog>
   Widget _buildHtmlContent(String content) {
     return NoticeHtmlStyles.buildNoticeHtml(
       context: context,
-      htmlContent: _processHtmlForDialog(content),
+      htmlContent: formatNoticeHtml(content),
       onTapUrl: (url) => _handleLinkTap(url),
     );
   }
 
   String _processMarkdownForDialog(String markdownText) {
     return markdownText.replaceAll(RegExp(r'\r\n?'), '\n').trim();
-  }
-
-  String _processHtmlForDialog(String htmlText) {
-    return htmlText.trim();
   }
 
   /// 处理Markdown/HTML中的链接点击

@@ -1,0 +1,116 @@
+{
+  "next-opt": {
+    "single16": {
+      "total": 6,
+      "success": 6,
+      "first_p50_ms": 491,
+      "first_p95_ms": 1244,
+      "completion_p50_ms": 5506,
+      "completion_p95_ms": 11457,
+      "note": "per-file service time; rolling excludes time waiting for a free worker slot"
+    },
+    "parallel4": {
+      "total": 24,
+      "success": 24,
+      "first_p50_ms": 308,
+      "first_p95_ms": 539,
+      "completion_p50_ms": 7016,
+      "completion_p95_ms": 12150,
+      "note": "per-file service time; rolling excludes time waiting for a free worker slot"
+    },
+    "parallel8": {
+      "total": 48,
+      "success": 48,
+      "first_p50_ms": 325,
+      "first_p95_ms": 753,
+      "completion_p50_ms": 7120,
+      "completion_p95_ms": 14048,
+      "note": "per-file service time; rolling excludes time waiting for a free worker slot"
+    },
+    "rolling": {
+      "total": 72,
+      "success": 72,
+      "first_p50_ms": 306,
+      "first_p95_ms": 635,
+      "completion_p50_ms": 3084,
+      "completion_p95_ms": 14209,
+      "note": "per-file service time; rolling excludes time waiting for a free worker slot"
+    }
+  },
+  "next-base": {
+    "single16": {
+      "total": 6,
+      "success": 6,
+      "first_p50_ms": 686,
+      "first_p95_ms": 990,
+      "completion_p50_ms": 8820,
+      "completion_p95_ms": 18667,
+      "note": "per-file service time; rolling excludes time waiting for a free worker slot"
+    },
+    "parallel4": {
+      "total": 24,
+      "success": 24,
+      "first_p50_ms": 340,
+      "first_p95_ms": 537,
+      "completion_p50_ms": 5092,
+      "completion_p95_ms": 10787,
+      "note": "per-file service time; rolling excludes time waiting for a free worker slot"
+    },
+    "parallel8": {
+      "total": 48,
+      "success": 48,
+      "first_p50_ms": 297,
+      "first_p95_ms": 1545,
+      "completion_p50_ms": 4485,
+      "completion_p95_ms": 11912,
+      "note": "per-file service time; rolling excludes time waiting for a free worker slot"
+    },
+    "rolling": {
+      "total": 72,
+      "success": 72,
+      "first_p50_ms": 293,
+      "first_p95_ms": 647,
+      "completion_p50_ms": 4771,
+      "completion_p95_ms": 13399,
+      "note": "per-file service time; rolling excludes time waiting for a free worker slot"
+    }
+  },
+  "tuic": {
+    "single16": {
+      "total": 6,
+      "success": 6,
+      "first_p50_ms": 467,
+      "first_p95_ms": 1762,
+      "completion_p50_ms": 5565,
+      "completion_p95_ms": 11578,
+      "note": "per-file service time; rolling excludes time waiting for a free worker slot"
+    },
+    "parallel4": {
+      "total": 24,
+      "success": 24,
+      "first_p50_ms": 634,
+      "first_p95_ms": 861,
+      "completion_p50_ms": 4973,
+      "completion_p95_ms": 14447,
+      "note": "per-file service time; rolling excludes time waiting for a free worker slot"
+    },
+    "parallel8": {
+      "total": 48,
+      "success": 48,
+      "first_p50_ms": 688,
+      "first_p95_ms": 2757,
+      "completion_p50_ms": 5681,
+      "completion_p95_ms": 33687,
+      "note": "per-file service time; rolling excludes time waiting for a free worker slot"
+    },
+    "rolling": {
+      "total": 72,
+      "success": 72,
+      "first_p50_ms": 449,
+      "first_p95_ms": 911,
+      "completion_p50_ms": 4878,
+      "completion_p95_ms": 17450,
+      "note": "per-file service time; rolling excludes time waiting for a free worker slot"
+    }
+  }
+}

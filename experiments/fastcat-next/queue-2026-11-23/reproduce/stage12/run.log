@@ -1,0 +1,58 @@
+Running as unit: fc-opt-backend-1795401180.service; invocation ID: e71c16a4959b456c821d6eb34179d4e1
+Running as unit: fc-opt-next-1795401180.service; invocation ID: f839f5d3816347f6a8d9e4831e36d315
+/tmp/fc-next-queue/compare: 1 file pushed, 0 skipped. 35.6 MB/s (38889145 bytes in 1.042s)
+/tmp/fc-next-queue/client-1795401180.json: 1 file pushed, 0 skipped. 0.8 MB/s (432 bytes in 0.001s)
+/etc/ssl/cert.pem: 1 file pushed, 0 skipped. 159.3 MB/s (333483 bytes in 0.002s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+/tmp/fc-next-queue/reply-client-1795401180.json: 1 file pushed, 0 skipped. 4.4 MB/s (609 bytes in 0.000s)
+COMPLETE latency-baseline-b1-p1
+COMPLETE latency-budget-b1-p2
+COMPLETE latency-budget-b2-p1
+COMPLETE latency-baseline-b2-p2
+COMPLETE latency-baseline-b3-p1
+COMPLETE latency-budget-b3-p2
+COMPLETE mixed-baseline-b1-p1
+COMPLETE mixed-budget-b1-p2
+COMPLETE mixed-budget-b2-p1
+COMPLETE mixed-baseline-b2-p2
+COMPLETE mixed-baseline-b3-p1
+COMPLETE mixed-budget-b3-p2
+COMPLETE mixed-budget-b4-p1
+COMPLETE mixed-baseline-b4-p2
+COMPLETE mixed-baseline-b5-p1
+COMPLETE mixed-budget-b5-p2
+COMPLETE mixed-budget-b6-p1
+COMPLETE mixed-baseline-b6-p2
+COMPLETE parallel-baseline-b1-p1
+COMPLETE parallel-budget-b1-p2
+COMPLETE parallel-budget-b2-p1
+COMPLETE parallel-baseline-b2-p2
+COMPLETE parallel-baseline-b3-p1
+COMPLETE parallel-budget-b3-p2
+COMPLETE parallel-budget-b4-p1
+COMPLETE parallel-baseline-b4-p2
+COMPLETE parallel-baseline-b5-p1
+COMPLETE parallel-budget-b5-p2
+COMPLETE parallel-budget-b6-p1
+COMPLETE parallel-baseline-b6-p2
+COMPLETE rolling-baseline-b1-p1
+COMPLETE rolling-budget-b1-p2
+COMPLETE rolling-budget-b2-p1
+COMPLETE rolling-baseline-b2-p2
+COMPLETE rolling-baseline-b3-p1
+COMPLETE rolling-budget-b3-p2
+COMPLETE rolling-budget-b4-p1
+COMPLETE rolling-baseline-b4-p2
+COMPLETE rolling-baseline-b5-p1
+COMPLETE rolling-budget-b5-p2
+COMPLETE rolling-budget-b6-p1
+COMPLETE rolling-baseline-b6-p2
+COMPLETE latency-baseline-b1-p1
+COMPLETE latency-budget-b1-p2
+COMPLETE latency-budget-b2-p1
+COMPLETE latency-baseline-b2-p2
+COMPLETE latency-baseline-b3-p1
+COMPLETE latency-budget-b3-p2
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+VPN restored: True
+QUEUE STAGE12 COMPLETE

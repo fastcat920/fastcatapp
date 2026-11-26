@@ -1,0 +1,74 @@
+[
+  {
+    "source": "loaded-on-b1-p1",
+    "before": {
+      "InDatagrams": 9390800,
+      "NoPorts": 6296,
+      "InErrors": 27,
+      "OutDatagrams": 11733619,
+      "RcvbufErrors": 27,
+      "SndbufErrors": 2218,
+      "InCsumErrors": 0,
+      "IgnoredMulti": 0,
+      "MemErrors": 0
+    },
+    "after": {
+      "InDatagrams": 9397772,
+      "NoPorts": 6296,
+      "InErrors": 27,
+      "OutDatagrams": 11751653,
+      "RcvbufErrors": 27,
+      "SndbufErrors": 2218,
+      "InCsumErrors": 0,
+      "IgnoredMulti": 0,
+      "MemErrors": 0
+    },
+    "delta": {
+      "InDatagrams": 6972,
+      "NoPorts": 0,
+      "InErrors": 0,
+      "OutDatagrams": 18034,
+      "RcvbufErrors": 0,
+      "SndbufErrors": 0,
+      "InCsumErrors": 0,
+      "IgnoredMulti": 0,
+      "MemErrors": 0
+    }
+  },
+  {
+    "source": "unloaded-on-b1-p2",
+    "before": {
+      "InDatagrams": 9397772,
+      "NoPorts": 6296,
+      "InErrors": 27,
+      "OutDatagrams": 11751653,
+      "RcvbufErrors": 27,
+      "SndbufErrors": 2218,
+      "InCsumErrors": 0,
+      "IgnoredMulti": 0,
+      "MemErrors": 0
+    },
+    "after": {
+      "InDatagrams": 9398065,
+      "NoPorts": 6296,
+      "InErrors": 27,
+      "OutDatagrams": 11751997,
+      "RcvbufErrors": 27,
+      "SndbufErrors": 2218,
+      "InCsumErrors": 0,
+      "IgnoredMulti": 0,
+      "MemErrors": 0
+    },
+    "delta": {
+      "InDatagrams": 293,
+      "NoPorts": 0,
+      "InErrors": 0,
+      "OutDatagrams": 344,
+      "RcvbufErrors": 0,
+      "SndbufErrors": 0,
+      "InCsumErrors": 0,
+      "IgnoredMulti": 0,
+      "MemErrors": 0
+    }
+  }
+]

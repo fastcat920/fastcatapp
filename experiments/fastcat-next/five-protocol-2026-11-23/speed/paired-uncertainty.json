@@ -1,0 +1,485 @@
+{
+  "method": "paired whole-block bootstrap10000draws,10blocks; exploratory, no multiple-comparison correction, not formal significance",
+  "results": [
+    {
+      "metric": "single32",
+      "ratio": "next-base/next-opt",
+      "estimate": 0.9612843476102274,
+      "exploratory_ci95": [
+        0.80477529320055,
+        1.1179438105243449
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 6
+    },
+    {
+      "metric": "parallel4",
+      "ratio": "next-base/next-opt",
+      "estimate": 1.0086827905447973,
+      "exploratory_ci95": [
+        0.8184834725177024,
+        1.2468405126379494
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 5
+    },
+    {
+      "metric": "parallel8",
+      "ratio": "next-base/next-opt",
+      "estimate": 0.81078866178172,
+      "exploratory_ci95": [
+        0.6769493438282234,
+        0.9956033945883643
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 2
+    },
+    {
+      "metric": "rolling",
+      "ratio": "next-base/next-opt",
+      "estimate": 0.8279348805768364,
+      "exploratory_ci95": [
+        0.7403931241980443,
+        0.9229181432710362
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 2
+    },
+    {
+      "metric": "single32",
+      "ratio": "tuic/next-opt",
+      "estimate": 1.0083324152987951,
+      "exploratory_ci95": [
+        0.8900366672091755,
+        1.132135546963839
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 5
+    },
+    {
+      "metric": "parallel4",
+      "ratio": "tuic/next-opt",
+      "estimate": 1.1884338593603772,
+      "exploratory_ci95": [
+        0.9608592959172197,
+        1.402979792213723
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 9
+    },
+    {
+      "metric": "parallel8",
+      "ratio": "tuic/next-opt",
+      "estimate": 0.8598963836531578,
+      "exploratory_ci95": [
+        0.6975217772975892,
+        1.050694079241127
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 5
+    },
+    {
+      "metric": "rolling",
+      "ratio": "tuic/next-opt",
+      "estimate": 0.9526386746347597,
+      "exploratory_ci95": [
+        0.8209522386000414,
+        1.1297704468139846
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 5
+    },
+    {
+      "metric": "single32",
+      "ratio": "hysteria2/next-opt",
+      "estimate": 1.1094667709837023,
+      "exploratory_ci95": [
+        0.9938823329834493,
+        1.218045195867175
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 8
+    },
+    {
+      "metric": "parallel4",
+      "ratio": "hysteria2/next-opt",
+      "estimate": 1.0315117223607184,
+      "exploratory_ci95": [
+        0.7850005422237369,
+        1.3249085699643597
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 7
+    },
+    {
+      "metric": "parallel8",
+      "ratio": "hysteria2/next-opt",
+      "estimate": 0.8679280983916745,
+      "exploratory_ci95": [
+        0.6883606500571746,
+        1.0580306963882506
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 4
+    },
+    {
+      "metric": "rolling",
+      "ratio": "hysteria2/next-opt",
+      "estimate": 1.0477035706393503,
+      "exploratory_ci95": [
+        0.9168802810215514,
+        1.1999390225765192
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 6
+    },
+    {
+      "metric": "single32",
+      "ratio": "vless-vision/next-opt",
+      "estimate": 0.010141585224730638,
+      "exploratory_ci95": [
+        0.009222278265701026,
+        0.011134595015159416
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 0
+    },
+    {
+      "metric": "parallel4",
+      "ratio": "vless-vision/next-opt",
+      "estimate": 0.040968925383503184,
+      "exploratory_ci95": [
+        0.03619850267663143,
+        0.04561220753534902
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 0
+    },
+    {
+      "metric": "parallel8",
+      "ratio": "vless-vision/next-opt",
+      "estimate": 0.06770835979826537,
+      "exploratory_ci95": [
+        0.060430570944678186,
+        0.07592983736793868
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 0
+    },
+    {
+      "metric": "rolling",
+      "ratio": "vless-vision/next-opt",
+      "estimate": 0.03125173143993592,
+      "exploratory_ci95": [
+        0.028047326826385357,
+        0.035441174009849294
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 0
+    },
+    {
+      "metric": "single32",
+      "ratio": "tuic/next-base",
+      "estimate": 1.0489429249581876,
+      "exploratory_ci95": [
+        0.8579374771578581,
+        1.2804781683719988
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 6
+    },
+    {
+      "metric": "parallel4",
+      "ratio": "tuic/next-base",
+      "estimate": 1.1782037628682995,
+      "exploratory_ci95": [
+        0.9615931590681799,
+        1.4338817171338714
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 7
+    },
+    {
+      "metric": "parallel8",
+      "ratio": "tuic/next-base",
+      "estimate": 1.0605678448481541,
+      "exploratory_ci95": [
+        0.8539123780371152,
+        1.3426369572591588
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 6
+    },
+    {
+      "metric": "rolling",
+      "ratio": "tuic/next-base",
+      "estimate": 1.1506202927107505,
+      "exploratory_ci95": [
+        0.9434045237034423,
+        1.38801492852616
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 8
+    },
+    {
+      "metric": "single32",
+      "ratio": "hysteria2/next-base",
+      "estimate": 1.1541504589582254,
+      "exploratory_ci95": [
+        0.9693418415347486,
+        1.3843323772525387
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 7
+    },
+    {
+      "metric": "parallel4",
+      "ratio": "hysteria2/next-base",
+      "estimate": 1.0226324192599647,
+      "exploratory_ci95": [
+        0.8003622443330117,
+        1.289144376661974
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 5
+    },
+    {
+      "metric": "parallel8",
+      "ratio": "hysteria2/next-base",
+      "estimate": 1.0704738969639631,
+      "exploratory_ci95": [
+        0.8555171165062757,
+        1.2835870114077843
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 7
+    },
+    {
+      "metric": "rolling",
+      "ratio": "hysteria2/next-base",
+      "estimate": 1.2654419993869535,
+      "exploratory_ci95": [
+        1.1340204858966438,
+        1.4262422920848556
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 9
+    },
+    {
+      "metric": "single32",
+      "ratio": "vless-vision/next-base",
+      "estimate": 0.010550036781460997,
+      "exploratory_ci95": [
+        0.008881909245184378,
+        0.012795775089396699
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 0
+    },
+    {
+      "metric": "parallel4",
+      "ratio": "vless-vision/next-base",
+      "estimate": 0.04061626288020197,
+      "exploratory_ci95": [
+        0.03476558887718149,
+        0.04691194665092359
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 0
+    },
+    {
+      "metric": "parallel8",
+      "ratio": "vless-vision/next-base",
+      "estimate": 0.08350925831828389,
+      "exploratory_ci95": [
+        0.07326553873749439,
+        0.09438227753347816
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 0
+    },
+    {
+      "metric": "rolling",
+      "ratio": "vless-vision/next-base",
+      "estimate": 0.03774660564869825,
+      "exploratory_ci95": [
+        0.03290272545706486,
+        0.04310877590153141
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 0
+    },
+    {
+      "metric": "single32",
+      "ratio": "hysteria2/tuic",
+      "estimate": 1.100298625880175,
+      "exploratory_ci95": [
+        0.9233683412960663,
+        1.3044518794575353
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 8
+    },
+    {
+      "metric": "parallel4",
+      "ratio": "hysteria2/tuic",
+      "estimate": 0.8679588807036218,
+      "exploratory_ci95": [
+        0.6861045400045368,
+        1.1159108810622256
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 3
+    },
+    {
+      "metric": "parallel8",
+      "ratio": "hysteria2/tuic",
+      "estimate": 1.0093403285456266,
+      "exploratory_ci95": [
+        0.7483575839414952,
+        1.3396232207361625
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 5
+    },
+    {
+      "metric": "rolling",
+      "ratio": "hysteria2/tuic",
+      "estimate": 1.0997911364883841,
+      "exploratory_ci95": [
+        0.9352833567370497,
+        1.2970770900539663
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 4
+    },
+    {
+      "metric": "single32",
+      "ratio": "vless-vision/tuic",
+      "estimate": 0.01005777962788732,
+      "exploratory_ci95": [
+        0.008795692270544784,
+        0.011460346372166419
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 0
+    },
+    {
+      "metric": "parallel4",
+      "ratio": "vless-vision/tuic",
+      "estimate": 0.03447303782269627,
+      "exploratory_ci95": [
+        0.030096991565774212,
+        0.04122726886471788
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 0
+    },
+    {
+      "metric": "parallel8",
+      "ratio": "vless-vision/tuic",
+      "estimate": 0.07874013786476833,
+      "exploratory_ci95": [
+        0.06436855971680533,
+        0.09493005008664909
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 0
+    },
+    {
+      "metric": "rolling",
+      "ratio": "vless-vision/tuic",
+      "estimate": 0.03280544058524371,
+      "exploratory_ci95": [
+        0.029017978483180096,
+        0.03705734209094575
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 0
+    },
+    {
+      "metric": "single32",
+      "ratio": "vless-vision/hysteria2",
+      "estimate": 0.009140954456651874,
+      "exploratory_ci95": [
+        0.008275127766539247,
+        0.010114348922316833
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 0
+    },
+    {
+      "metric": "parallel4",
+      "ratio": "vless-vision/hysteria2",
+      "estimate": 0.03971736287178751,
+      "exploratory_ci95": [
+        0.03225723996847497,
+        0.04883096670907231
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 0
+    },
+    {
+      "metric": "parallel8",
+      "ratio": "vless-vision/hysteria2",
+      "estimate": 0.07801148496486428,
+      "exploratory_ci95": [
+        0.06647537316199133,
+        0.09231880009147535
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 0
+    },
+    {
+      "metric": "rolling",
+      "ratio": "vless-vision/hysteria2",
+      "estimate": 0.029828791573999192,
+      "exploratory_ci95": [
+        0.02800453620913272,
+        0.03197402251088311
+      ],
+      "higher_is_better": true,
+      "blocks": 10,
+      "wins": 0
+    }
+  ]
+}

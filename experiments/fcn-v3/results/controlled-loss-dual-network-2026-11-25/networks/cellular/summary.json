@@ -1,0 +1,4983 @@
+{
+  "run_id": "fcn3udpcellular",
+  "download": {},
+  "udp": {
+    "current": {
+      "planned": 168,
+      "valid_rows": 168,
+      "missing": 0,
+      "invalid": 0,
+      "failed": 4,
+      "failure_stages": {
+        "echo": 4
+      },
+      "attempted": 168,
+      "submitted": 168,
+      "echoed": 164,
+      "server_received": 167,
+      "server_responded": 167,
+      "echo_rtt_ms": {
+        "n": 164,
+        "p50": 111.80019150000001,
+        "p95": 178.49555414999998,
+        "mean": 120.4106425792683,
+        "min": 100.345308,
+        "max": 250.597615
+      },
+      "failure_echo_evidence": {
+        "echo": {
+          "received": 3,
+          "responded": 3
+        }
+      },
+      "by_size": {
+        "64": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "failure_stages": {},
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 24,
+          "server_received": 24,
+          "server_responded": 24,
+          "echo_rtt_ms": {
+            "n": 24,
+            "p50": 108.51142300000001,
+            "p95": 153.92688034999992,
+            "mean": 112.7162755,
+            "min": 100.345308,
+            "max": 173.389769
+          },
+          "failure_echo_evidence": {}
+        },
+        "256": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 1,
+          "failure_stages": {
+            "echo": 1
+          },
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 23,
+          "server_received": 24,
+          "server_responded": 24,
+          "echo_rtt_ms": {
+            "n": 23,
+            "p50": 110.710384,
+            "p95": 190.9769238999999,
+            "mean": 119.58999343478261,
+            "min": 104.597846,
+            "max": 205.806231
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 1,
+              "responded": 1
+            }
+          }
+        },
+        "512": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 1,
+          "failure_stages": {
+            "echo": 1
+          },
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 23,
+          "server_received": 24,
+          "server_responded": 24,
+          "echo_rtt_ms": {
+            "n": 23,
+            "p50": 111.015,
+            "p95": 123.6542388,
+            "mean": 118.26505026086956,
+            "min": 106.02,
+            "max": 249.932077
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 1,
+              "responded": 1
+            }
+          }
+        },
+        "900": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 1,
+          "failure_stages": {
+            "echo": 1
+          },
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 23,
+          "server_received": 23,
+          "server_responded": 23,
+          "echo_rtt_ms": {
+            "n": 23,
+            "p50": 114.423,
+            "p95": 183.6366615999999,
+            "mean": 120.4717423478261,
+            "min": 105.338846,
+            "max": 194.928539
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 0,
+              "responded": 0
+            }
+          }
+        },
+        "1000": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "failure_stages": {},
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 24,
+          "server_received": 24,
+          "server_responded": 24,
+          "echo_rtt_ms": {
+            "n": 24,
+            "p50": 114.303038,
+            "p95": 178.49555415,
+            "mean": 124.48667941666666,
+            "min": 106.267307,
+            "max": 182.946462
+          },
+          "failure_echo_evidence": {}
+        },
+        "1100": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 1,
+          "failure_stages": {
+            "echo": 1
+          },
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 23,
+          "server_received": 24,
+          "server_responded": 24,
+          "echo_rtt_ms": {
+            "n": 23,
+            "p50": 113.827923,
+            "p95": 156.91697739999995,
+            "mean": 121.64712713043478,
+            "min": 108.266692,
+            "max": 233.336539
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 1,
+              "responded": 1
+            }
+          }
+        },
+        "1150": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "failure_stages": {},
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 24,
+          "server_received": 24,
+          "server_responded": 24,
+          "echo_rtt_ms": {
+            "n": 24,
+            "p50": 114.68088449999999,
+            "p95": 173.73971919999997,
+            "mean": 125.62810258333333,
+            "min": 106.150077,
+            "max": 250.597615
+          },
+          "failure_echo_evidence": {}
+        }
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "position": 1,
+          "planned": 28,
+          "valid_rows": 28,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "failure_stages": {},
+          "attempted": 28,
+          "submitted": 28,
+          "echoed": 28,
+          "server_received": 28,
+          "server_responded": 28,
+          "echo_rtt_ms": {
+            "n": 28,
+            "p50": 109.45011550000001,
+            "p95": 115.04964999999999,
+            "mean": 111.09767314285715,
+            "min": 100.345308,
+            "max": 173.389769
+          },
+          "failure_echo_evidence": {},
+          "input_issues": 0,
+          "comparator_summary": {
+            "event": "udp_summary",
+            "protocol": "fcnv3",
+            "run_id": "31c697fb3bfa2614",
+            "planned": 28,
+            "attempted": 28,
+            "submitted": 28,
+            "echoed": 28,
+            "by_size": [
+              {
+                "bytes": 64,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 256,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 512,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 900,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1000,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1100,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1150,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              }
+            ],
+            "setup_ms": 495.527308,
+            "elapsed_ms": 3616.263308,
+            "echo_rtt_ms": {
+              "n": 28,
+              "p50": 109.45011550000001,
+              "p95": 115.04965
+            },
+            "wire_rx": {
+              "captured": 69,
+              "dropped": 0,
+              "rxq_overflow": {
+                "status": "no_notice",
+                "reported_drops": null,
+                "sockets": 1,
+                "enabled_sockets": 1,
+                "reported_sockets": 0,
+                "unsupported_sockets": 0,
+                "enable_failed_sockets": 0
+              }
+            }
+          },
+          "runner_metadata": {
+            "phase": "udp",
+            "round": 1,
+            "position": 1,
+            "arm": "current",
+            "args": [
+              "./compare",
+              "-config",
+              "bench.json",
+              "-protocol",
+              "fcnv3",
+              "-udp-diagnostic",
+              "-count",
+              "28",
+              "-timeout",
+              "55s",
+              "-udp-wire-rx"
+            ],
+            "host_timeout_s": 70,
+            "entry_port": 18532,
+            "before": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597472431,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "after": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597477718,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "network_stable": true,
+            "status": "exited",
+            "exit_code": 0,
+            "start_unix_ms": 1795597472431,
+            "end_unix_ms": 1795597477649,
+            "elapsed_ms": 5217.735167
+          }
+        },
+        {
+          "round": 2,
+          "position": 1,
+          "planned": 28,
+          "valid_rows": 28,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 1,
+          "failure_stages": {
+            "echo": 1
+          },
+          "attempted": 28,
+          "submitted": 28,
+          "echoed": 27,
+          "server_received": 27,
+          "server_responded": 27,
+          "echo_rtt_ms": {
+            "n": 27,
+            "p50": 109.496538,
+            "p95": 117.53743069999999,
+            "mean": 112.24797714814815,
+            "min": 102.214385,
+            "max": 178.547385
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 0,
+              "responded": 0
+            }
+          },
+          "input_issues": 0,
+          "comparator_summary": {
+            "event": "udp_summary",
+            "protocol": "fcnv3",
+            "run_id": "eb82758c20b8a374",
+            "planned": 28,
+            "attempted": 28,
+            "submitted": 28,
+            "echoed": 27,
+            "by_size": [
+              {
+                "bytes": 64,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 256,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 512,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 900,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              },
+              {
+                "bytes": 1000,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1100,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1150,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              }
+            ],
+            "setup_ms": 612.537846,
+            "elapsed_ms": 5158.344615,
+            "echo_rtt_ms": {
+              "n": 27,
+              "p50": 109.496538,
+              "p95": 117.53743069999999
+            },
+            "wire_rx": {
+              "captured": 72,
+              "dropped": 0,
+              "rxq_overflow": {
+                "status": "no_notice",
+                "reported_drops": null,
+                "sockets": 1,
+                "enabled_sockets": 1,
+                "reported_sockets": 0,
+                "unsupported_sockets": 0,
+                "enable_failed_sockets": 0
+              }
+            }
+          },
+          "runner_metadata": {
+            "phase": "udp",
+            "round": 2,
+            "position": 1,
+            "arm": "current",
+            "args": [
+              "./compare",
+              "-config",
+              "bench.json",
+              "-protocol",
+              "fcnv3",
+              "-udp-diagnostic",
+              "-count",
+              "28",
+              "-timeout",
+              "55s",
+              "-udp-wire-rx"
+            ],
+            "host_timeout_s": 70,
+            "entry_port": 18532,
+            "before": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597503793,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "after": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597510722,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "network_stable": true,
+            "status": "exited",
+            "exit_code": 1,
+            "start_unix_ms": 1795597503793,
+            "end_unix_ms": 1795597510604,
+            "elapsed_ms": 6810.297834
+          }
+        },
+        {
+          "round": 3,
+          "position": 2,
+          "planned": 28,
+          "valid_rows": 28,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "failure_stages": {},
+          "attempted": 28,
+          "submitted": 28,
+          "echoed": 28,
+          "server_received": 28,
+          "server_responded": 28,
+          "echo_rtt_ms": {
+            "n": 28,
+            "p50": 114.65199949999999,
+            "p95": 200.1410771,
+            "mean": 128.17024717857143,
+            "min": 108.144307,
+            "max": 233.336539
+          },
+          "failure_echo_evidence": {},
+          "input_issues": 0,
+          "comparator_summary": {
+            "event": "udp_summary",
+            "protocol": "fcnv3",
+            "run_id": "5fdd7291c6cf79cb",
+            "planned": 28,
+            "attempted": 28,
+            "submitted": 28,
+            "echoed": 28,
+            "by_size": [
+              {
+                "bytes": 64,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 256,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 512,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 900,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1000,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1100,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1150,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              }
+            ],
+            "setup_ms": 626.882769,
+            "elapsed_ms": 4229.758154,
+            "echo_rtt_ms": {
+              "n": 28,
+              "p50": 114.65199949999999,
+              "p95": 200.1410771
+            },
+            "wire_rx": {
+              "captured": 71,
+              "dropped": 0,
+              "rxq_overflow": {
+                "status": "no_notice",
+                "reported_drops": null,
+                "sockets": 1,
+                "enabled_sockets": 1,
+                "reported_sockets": 0,
+                "unsupported_sockets": 0,
+                "enable_failed_sockets": 0
+              }
+            }
+          },
+          "runner_metadata": {
+            "phase": "udp",
+            "round": 3,
+            "position": 2,
+            "arm": "current",
+            "args": [
+              "./compare",
+              "-config",
+              "bench.json",
+              "-protocol",
+              "fcnv3",
+              "-udp-diagnostic",
+              "-count",
+              "28",
+              "-timeout",
+              "55s",
+              "-udp-wire-rx"
+            ],
+            "host_timeout_s": 70,
+            "entry_port": 18532,
+            "before": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597550338,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "after": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597556309,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "network_stable": true,
+            "status": "exited",
+            "exit_code": 0,
+            "start_unix_ms": 1795597550339,
+            "end_unix_ms": 1795597556234,
+            "elapsed_ms": 5895.507291
+          }
+        },
+        {
+          "round": 4,
+          "position": 3,
+          "planned": 28,
+          "valid_rows": 28,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "failure_stages": {},
+          "attempted": 28,
+          "submitted": 28,
+          "echoed": 28,
+          "server_received": 28,
+          "server_responded": 28,
+          "echo_rtt_ms": {
+            "n": 28,
+            "p50": 114.909346,
+            "p95": 126.23916865,
+            "mean": 117.27360714285714,
+            "min": 107.874692,
+            "max": 182.946462
+          },
+          "failure_echo_evidence": {},
+          "input_issues": 0,
+          "comparator_summary": {
+            "event": "udp_summary",
+            "protocol": "fcnv3",
+            "run_id": "6652d83613953260",
+            "planned": 28,
+            "attempted": 28,
+            "submitted": 28,
+            "echoed": 28,
+            "by_size": [
+              {
+                "bytes": 64,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 256,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 512,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 900,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1000,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1100,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1150,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              }
+            ],
+            "setup_ms": 553.563461,
+            "elapsed_ms": 3849.769539,
+            "echo_rtt_ms": {
+              "n": 28,
+              "p50": 114.909346,
+              "p95": 126.23916865
+            },
+            "wire_rx": {
+              "captured": 68,
+              "dropped": 0,
+              "rxq_overflow": {
+                "status": "no_notice",
+                "reported_drops": null,
+                "sockets": 1,
+                "enabled_sockets": 1,
+                "reported_sockets": 0,
+                "unsupported_sockets": 0,
+                "enable_failed_sockets": 0
+              }
+            }
+          },
+          "runner_metadata": {
+            "phase": "udp",
+            "round": 4,
+            "position": 3,
+            "arm": "current",
+            "args": [
+              "./compare",
+              "-config",
+              "bench.json",
+              "-protocol",
+              "fcnv3",
+              "-udp-diagnostic",
+              "-count",
+              "28",
+              "-timeout",
+              "55s",
+              "-udp-wire-rx"
+            ],
+            "host_timeout_s": 70,
+            "entry_port": 18532,
+            "before": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597579217,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "after": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597584808,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "network_stable": true,
+            "status": "exited",
+            "exit_code": 0,
+            "start_unix_ms": 1795597579217,
+            "end_unix_ms": 1795597584722,
+            "elapsed_ms": 5504.823833
+          }
+        },
+        {
+          "round": 5,
+          "position": 2,
+          "planned": 28,
+          "valid_rows": 28,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "failure_stages": {},
+          "attempted": 28,
+          "submitted": 28,
+          "echoed": 28,
+          "server_received": 28,
+          "server_responded": 28,
+          "echo_rtt_ms": {
+            "n": 28,
+            "p50": 109.7583075,
+            "p95": 119.56287675,
+            "mean": 110.30382146428572,
+            "min": 103.030462,
+            "max": 123.576616
+          },
+          "failure_echo_evidence": {},
+          "input_issues": 0,
+          "comparator_summary": {
+            "event": "udp_summary",
+            "protocol": "fcnv3",
+            "run_id": "803a7e21efb666bc",
+            "planned": 28,
+            "attempted": 28,
+            "submitted": 28,
+            "echoed": 28,
+            "by_size": [
+              {
+                "bytes": 64,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 256,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 512,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 900,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1000,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1100,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1150,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              }
+            ],
+            "setup_ms": 774.218538,
+            "elapsed_ms": 3874.125539,
+            "echo_rtt_ms": {
+              "n": 28,
+              "p50": 109.7583075,
+              "p95": 119.56287675
+            },
+            "wire_rx": {
+              "captured": 74,
+              "dropped": 0,
+              "rxq_overflow": {
+                "status": "no_notice",
+                "reported_drops": null,
+                "sockets": 1,
+                "enabled_sockets": 1,
+                "reported_sockets": 0,
+                "unsupported_sockets": 0,
+                "enable_failed_sockets": 0
+              }
+            }
+          },
+          "runner_metadata": {
+            "phase": "udp",
+            "round": 5,
+            "position": 2,
+            "arm": "current",
+            "args": [
+              "./compare",
+              "-config",
+              "bench.json",
+              "-protocol",
+              "fcnv3",
+              "-udp-diagnostic",
+              "-count",
+              "28",
+              "-timeout",
+              "55s",
+              "-udp-wire-rx"
+            ],
+            "host_timeout_s": 70,
+            "entry_port": 18532,
+            "before": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597598029,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "after": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597603639,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "network_stable": true,
+            "status": "exited",
+            "exit_code": 0,
+            "start_unix_ms": 1795597598029,
+            "end_unix_ms": 1795597603566,
+            "elapsed_ms": 5536.500541
+          }
+        },
+        {
+          "round": 6,
+          "position": 3,
+          "planned": 28,
+          "valid_rows": 28,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 3,
+          "failure_stages": {
+            "echo": 3
+          },
+          "attempted": 28,
+          "submitted": 28,
+          "echoed": 25,
+          "server_received": 28,
+          "server_responded": 28,
+          "echo_rtt_ms": {
+            "n": 25,
+            "p50": 124.475923,
+            "p95": 239.63883099999984,
+            "mean": 145.7992092,
+            "min": 108.583692,
+            "max": 250.597615
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 3,
+              "responded": 3
+            }
+          },
+          "input_issues": 0,
+          "comparator_summary": {
+            "event": "udp_summary",
+            "protocol": "fcnv3",
+            "run_id": "94b690aaa3f5352d",
+            "planned": 28,
+            "attempted": 28,
+            "submitted": 28,
+            "echoed": 25,
+            "by_size": [
+              {
+                "bytes": 64,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 256,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              },
+              {
+                "bytes": 512,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              },
+              {
+                "bytes": 900,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1000,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1100,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              },
+              {
+                "bytes": 1150,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              }
+            ],
+            "setup_ms": 568.992308,
+            "elapsed_ms": 8728.399078,
+            "echo_rtt_ms": {
+              "n": 25,
+              "p50": 124.475923,
+              "p95": 239.63883099999993
+            },
+            "wire_rx": {
+              "captured": 69,
+              "dropped": 0,
+              "rxq_overflow": {
+                "status": "no_notice",
+                "reported_drops": null,
+                "sockets": 1,
+                "enabled_sockets": 1,
+                "reported_sockets": 0,
+                "unsupported_sockets": 0,
+                "enable_failed_sockets": 0
+              }
+            }
+          },
+          "runner_metadata": {
+            "phase": "udp",
+            "round": 6,
+            "position": 3,
+            "arm": "current",
+            "args": [
+              "./compare",
+              "-config",
+              "bench.json",
+              "-protocol",
+              "fcnv3",
+              "-udp-diagnostic",
+              "-count",
+              "28",
+              "-timeout",
+              "55s",
+              "-udp-wire-rx"
+            ],
+            "host_timeout_s": 70,
+            "entry_port": 18532,
+            "before": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597631343,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "after": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597641814,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "network_stable": true,
+            "status": "exited",
+            "exit_code": 1,
+            "start_unix_ms": 1795597631344,
+            "end_unix_ms": 1795597641723,
+            "elapsed_ms": 10379.435541
+          }
+        }
+      ],
+      "input_issues": 0,
+      "network_stable_rounds": 6,
+      "failures": [
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "eb82758c20b8a374",
+          "sequence": 25,
+          "bytes": 900,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597507433885463,
+          "echo_deadline_unix_ns": 1795597508934123848,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [],
+          "server_received": false,
+          "server_responded": false
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "94b690aaa3f5352d",
+          "sequence": 9,
+          "bytes": 256,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597633434431240,
+          "echo_deadline_unix_ns": 1795597634934579625,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "94b690aaa3f5352d",
+              "seq": 9,
+              "size": 256,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597633374365095
+            },
+            {
+              "run_id": "94b690aaa3f5352d",
+              "seq": 9,
+              "size": 256,
+              "event": "response",
+              "timestamp_unix_ns": 1795597633374570315
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "94b690aaa3f5352d",
+          "sequence": 24,
+          "bytes": 512,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597636922575856,
+          "echo_deadline_unix_ns": 1795597638422810932,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "94b690aaa3f5352d",
+              "seq": 24,
+              "size": 512,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597636855181954
+            },
+            {
+              "run_id": "94b690aaa3f5352d",
+              "seq": 24,
+              "size": 512,
+              "event": "response",
+              "timestamp_unix_ns": 1795597636855232481
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "94b690aaa3f5352d",
+          "sequence": 27,
+          "bytes": 1100,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597638722723317,
+          "echo_deadline_unix_ns": 1795597640222974010,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "94b690aaa3f5352d",
+              "seq": 27,
+              "size": 1100,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597638659658026
+            },
+            {
+              "run_id": "94b690aaa3f5352d",
+              "seq": 27,
+              "size": 1100,
+              "event": "response",
+              "timestamp_unix_ns": 1795597638659738149
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        }
+      ]
+    },
+    "adaptive": {
+      "planned": 168,
+      "valid_rows": 168,
+      "missing": 0,
+      "invalid": 0,
+      "failed": 30,
+      "failure_stages": {
+        "echo": 30
+      },
+      "attempted": 168,
+      "submitted": 168,
+      "echoed": 138,
+      "server_received": 165,
+      "server_responded": 165,
+      "echo_rtt_ms": {
+        "n": 138,
+        "p50": 120.12792300000001,
+        "p95": 252.31528060000002,
+        "mean": 150.3485145289855,
+        "min": 107.883,
+        "max": 266.483692
+      },
+      "failure_echo_evidence": {
+        "echo": {
+          "received": 27,
+          "responded": 27
+        }
+      },
+      "by_size": {
+        "64": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 2,
+          "failure_stages": {
+            "echo": 2
+          },
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 22,
+          "server_received": 24,
+          "server_responded": 24,
+          "echo_rtt_ms": {
+            "n": 22,
+            "p50": 110.881577,
+            "p95": 255.96043009999994,
+            "mean": 139.65767827272728,
+            "min": 107.883,
+            "max": 266.483692
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 2,
+              "responded": 2
+            }
+          }
+        },
+        "256": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 6,
+          "failure_stages": {
+            "echo": 6
+          },
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 18,
+          "server_received": 24,
+          "server_responded": 24,
+          "echo_rtt_ms": {
+            "n": 18,
+            "p50": 118.29353850000001,
+            "p95": 250.27403875,
+            "mean": 156.9515856111111,
+            "min": 112.970154,
+            "max": 255.139307
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 6,
+              "responded": 6
+            }
+          }
+        },
+        "512": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 4,
+          "failure_stages": {
+            "echo": 4
+          },
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 20,
+          "server_received": 24,
+          "server_responded": 24,
+          "echo_rtt_ms": {
+            "n": 20,
+            "p50": 122.26630750000001,
+            "p95": 214.86396870000002,
+            "mean": 144.12977684999998,
+            "min": 112.813846,
+            "max": 250.612615
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 4,
+              "responded": 4
+            }
+          }
+        },
+        "900": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 3,
+          "failure_stages": {
+            "echo": 3
+          },
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 21,
+          "server_received": 24,
+          "server_responded": 24,
+          "echo_rtt_ms": {
+            "n": 21,
+            "p50": 126.731385,
+            "p95": 210.976693,
+            "mean": 144.64303671428573,
+            "min": 112.745154,
+            "max": 229.544308
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 3,
+              "responded": 3
+            }
+          }
+        },
+        "1000": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 4,
+          "failure_stages": {
+            "echo": 4
+          },
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 20,
+          "server_received": 23,
+          "server_responded": 23,
+          "echo_rtt_ms": {
+            "n": 20,
+            "p50": 119.56403850000001,
+            "p95": 252.09879990000002,
+            "mean": 155.1576693,
+            "min": 112.008385,
+            "max": 257.454461
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 3,
+              "responded": 3
+            }
+          }
+        },
+        "1100": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 5,
+          "failure_stages": {
+            "echo": 5
+          },
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 19,
+          "server_received": 24,
+          "server_responded": 24,
+          "echo_rtt_ms": {
+            "n": 19,
+            "p50": 140.556923,
+            "p95": 257.198246,
+            "mean": 162.85223078947368,
+            "min": 112.408615,
+            "max": 259.208846
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 5,
+              "responded": 5
+            }
+          }
+        },
+        "1150": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 6,
+          "failure_stages": {
+            "echo": 6
+          },
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 18,
+          "server_received": 22,
+          "server_responded": 22,
+          "echo_rtt_ms": {
+            "n": 18,
+            "p50": 132.651269,
+            "p95": 253.17232264999998,
+            "mean": 151.83624794444444,
+            "min": 113.309923,
+            "max": 263.903769
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 4,
+              "responded": 4
+            }
+          }
+        }
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "position": 2,
+          "planned": 28,
+          "valid_rows": 28,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 9,
+          "failure_stages": {
+            "echo": 9
+          },
+          "attempted": 28,
+          "submitted": 28,
+          "echoed": 19,
+          "server_received": 27,
+          "server_responded": 27,
+          "echo_rtt_ms": {
+            "n": 19,
+            "p50": 143.426231,
+            "p95": 258.3587609,
+            "mean": 164.08038452631578,
+            "min": 109.821461,
+            "max": 259.208846
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 8,
+              "responded": 8
+            }
+          },
+          "input_issues": 0,
+          "comparator_summary": {
+            "event": "udp_summary",
+            "protocol": "fcnv3",
+            "run_id": "3fdb30a2f10295e2",
+            "planned": 28,
+            "attempted": 28,
+            "submitted": 28,
+            "echoed": 19,
+            "by_size": [
+              {
+                "bytes": 64,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 256,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              },
+              {
+                "bytes": 512,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 2
+              },
+              {
+                "bytes": 900,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              },
+              {
+                "bytes": 1000,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              },
+              {
+                "bytes": 1100,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 2
+              },
+              {
+                "bytes": 1150,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 2
+              }
+            ],
+            "setup_ms": 1508.317461,
+            "elapsed_ms": 18148.248001,
+            "echo_rtt_ms": {
+              "n": 19,
+              "p50": 143.426231,
+              "p95": 258.3587609
+            },
+            "wire_rx": {
+              "captured": 76,
+              "dropped": 0,
+              "rxq_overflow": {
+                "status": "no_notice",
+                "reported_drops": null,
+                "sockets": 1,
+                "enabled_sockets": 1,
+                "reported_sockets": 0,
+                "unsupported_sockets": 0,
+                "enable_failed_sockets": 0
+              }
+            }
+          },
+          "runner_metadata": {
+            "phase": "udp",
+            "round": 1,
+            "position": 2,
+            "arm": "adaptive",
+            "args": [
+              "./compare",
+              "-config",
+              "adaptive.json",
+              "-protocol",
+              "fcnv3",
+              "-udp-diagnostic",
+              "-count",
+              "28",
+              "-timeout",
+              "55s",
+              "-udp-wire-rx"
+            ],
+            "host_timeout_s": 70,
+            "entry_port": 18534,
+            "before": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597477788,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "after": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597497662,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "network_stable": true,
+            "status": "exited",
+            "exit_code": 1,
+            "start_unix_ms": 1795597477788,
+            "end_unix_ms": 1795597497563,
+            "elapsed_ms": 19774.872083
+          }
+        },
+        {
+          "round": 2,
+          "position": 3,
+          "planned": 28,
+          "valid_rows": 28,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 9,
+          "failure_stages": {
+            "echo": 9
+          },
+          "attempted": 28,
+          "submitted": 28,
+          "echoed": 19,
+          "server_received": 28,
+          "server_responded": 28,
+          "echo_rtt_ms": {
+            "n": 19,
+            "p50": 142.096615,
+            "p95": 240.67743129999997,
+            "mean": 153.09633210526314,
+            "min": 109.491077,
+            "max": 249.415462
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 9,
+              "responded": 9
+            }
+          },
+          "input_issues": 0,
+          "comparator_summary": {
+            "event": "udp_summary",
+            "protocol": "fcnv3",
+            "run_id": "042b0eccdaaf1daa",
+            "planned": 28,
+            "attempted": 28,
+            "submitted": 28,
+            "echoed": 19,
+            "by_size": [
+              {
+                "bytes": 64,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 2
+              },
+              {
+                "bytes": 256,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              },
+              {
+                "bytes": 512,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 2
+              },
+              {
+                "bytes": 900,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              },
+              {
+                "bytes": 1000,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              },
+              {
+                "bytes": 1100,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              },
+              {
+                "bytes": 1150,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              }
+            ],
+            "setup_ms": 527.453923,
+            "elapsed_ms": 16962.200617,
+            "echo_rtt_ms": {
+              "n": 19,
+              "p50": 142.096615,
+              "p95": 240.6774313
+            },
+            "wire_rx": {
+              "captured": 68,
+              "dropped": 0,
+              "rxq_overflow": {
+                "status": "no_notice",
+                "reported_drops": null,
+                "sockets": 1,
+                "enabled_sockets": 1,
+                "reported_sockets": 0,
+                "unsupported_sockets": 0,
+                "enable_failed_sockets": 0
+              }
+            }
+          },
+          "runner_metadata": {
+            "phase": "udp",
+            "round": 2,
+            "position": 3,
+            "arm": "adaptive",
+            "args": [
+              "./compare",
+              "-config",
+              "adaptive.json",
+              "-protocol",
+              "fcnv3",
+              "-udp-diagnostic",
+              "-count",
+              "28",
+              "-timeout",
+              "55s",
+              "-udp-wire-rx"
+            ],
+            "host_timeout_s": 70,
+            "entry_port": 18534,
+            "before": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597517969,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "after": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597536633,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "network_stable": true,
+            "status": "exited",
+            "exit_code": 1,
+            "start_unix_ms": 1795597517970,
+            "end_unix_ms": 1795597536544,
+            "elapsed_ms": 18574.320209
+          }
+        },
+        {
+          "round": 3,
+          "position": 1,
+          "planned": 28,
+          "valid_rows": 28,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 5,
+          "failure_stages": {
+            "echo": 5
+          },
+          "attempted": 28,
+          "submitted": 28,
+          "echoed": 23,
+          "server_received": 27,
+          "server_responded": 27,
+          "echo_rtt_ms": {
+            "n": 23,
+            "p50": 138.668615,
+            "p95": 244.91113129999994,
+            "mean": 153.11227095652174,
+            "min": 111.813923,
+            "max": 256.974846
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 4,
+              "responded": 4
+            }
+          },
+          "input_issues": 0,
+          "comparator_summary": {
+            "event": "udp_summary",
+            "protocol": "fcnv3",
+            "run_id": "dd7fb30ef4206cce",
+            "planned": 28,
+            "attempted": 28,
+            "submitted": 28,
+            "echoed": 23,
+            "by_size": [
+              {
+                "bytes": 64,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 256,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 2
+              },
+              {
+                "bytes": 512,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 900,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1000,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              },
+              {
+                "bytes": 1100,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              },
+              {
+                "bytes": 1150,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              }
+            ],
+            "setup_ms": 818.055077,
+            "elapsed_ms": 11857.310154,
+            "echo_rtt_ms": {
+              "n": 23,
+              "p50": 138.668615,
+              "p95": 244.91113129999997
+            },
+            "wire_rx": {
+              "captured": 67,
+              "dropped": 0,
+              "rxq_overflow": {
+                "status": "no_notice",
+                "reported_drops": null,
+                "sockets": 1,
+                "enabled_sockets": 1,
+                "reported_sockets": 0,
+                "unsupported_sockets": 0,
+                "enable_failed_sockets": 0
+              }
+            }
+          },
+          "runner_metadata": {
+            "phase": "udp",
+            "round": 3,
+            "position": 1,
+            "arm": "adaptive",
+            "args": [
+              "./compare",
+              "-config",
+              "adaptive.json",
+              "-protocol",
+              "fcnv3",
+              "-udp-diagnostic",
+              "-count",
+              "28",
+              "-timeout",
+              "55s",
+              "-udp-wire-rx"
+            ],
+            "host_timeout_s": 70,
+            "entry_port": 18534,
+            "before": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597536708,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "after": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597550257,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "network_stable": true,
+            "status": "exited",
+            "exit_code": 1,
+            "start_unix_ms": 1795597536709,
+            "end_unix_ms": 1795597550175,
+            "elapsed_ms": 13466.602958
+          }
+        },
+        {
+          "round": 4,
+          "position": 1,
+          "planned": 28,
+          "valid_rows": 28,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "failure_stages": {},
+          "attempted": 28,
+          "submitted": 28,
+          "echoed": 28,
+          "server_received": 28,
+          "server_responded": 28,
+          "echo_rtt_ms": {
+            "n": 28,
+            "p50": 118.84100000000001,
+            "p95": 251.08972665,
+            "mean": 154.476489,
+            "min": 108.855077,
+            "max": 255.139307
+          },
+          "failure_echo_evidence": {},
+          "input_issues": 0,
+          "comparator_summary": {
+            "event": "udp_summary",
+            "protocol": "fcnv3",
+            "run_id": "596d662cfacb7044",
+            "planned": 28,
+            "attempted": 28,
+            "submitted": 28,
+            "echoed": 28,
+            "by_size": [
+              {
+                "bytes": 64,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 256,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 512,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 900,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1000,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1100,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1150,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              }
+            ],
+            "setup_ms": 733.982769,
+            "elapsed_ms": 5071.895693,
+            "echo_rtt_ms": {
+              "n": 28,
+              "p50": 118.84100000000001,
+              "p95": 251.08972665
+            },
+            "wire_rx": {
+              "captured": 68,
+              "dropped": 0,
+              "rxq_overflow": {
+                "status": "no_notice",
+                "reported_drops": null,
+                "sockets": 1,
+                "enabled_sockets": 1,
+                "reported_sockets": 0,
+                "unsupported_sockets": 0,
+                "enable_failed_sockets": 0
+              }
+            }
+          },
+          "runner_metadata": {
+            "phase": "udp",
+            "round": 4,
+            "position": 1,
+            "arm": "adaptive",
+            "args": [
+              "./compare",
+              "-config",
+              "adaptive.json",
+              "-protocol",
+              "fcnv3",
+              "-udp-diagnostic",
+              "-count",
+              "28",
+              "-timeout",
+              "55s",
+              "-udp-wire-rx"
+            ],
+            "host_timeout_s": 70,
+            "entry_port": 18534,
+            "before": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597566550,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "after": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597573301,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "network_stable": true,
+            "status": "exited",
+            "exit_code": 0,
+            "start_unix_ms": 1795597566550,
+            "end_unix_ms": 1795597573230,
+            "elapsed_ms": 6679.270166
+          }
+        },
+        {
+          "round": 5,
+          "position": 3,
+          "planned": 28,
+          "valid_rows": 28,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "failure_stages": {},
+          "attempted": 28,
+          "submitted": 28,
+          "echoed": 28,
+          "server_received": 28,
+          "server_responded": 28,
+          "echo_rtt_ms": {
+            "n": 28,
+            "p50": 115.03226950000001,
+            "p95": 242.00278864999996,
+            "mean": 136.62047814285714,
+            "min": 109.423385,
+            "max": 263.903769
+          },
+          "failure_echo_evidence": {},
+          "input_issues": 0,
+          "comparator_summary": {
+            "event": "udp_summary",
+            "protocol": "fcnv3",
+            "run_id": "a5a7116c19f84622",
+            "planned": 28,
+            "attempted": 28,
+            "submitted": 28,
+            "echoed": 28,
+            "by_size": [
+              {
+                "bytes": 64,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 256,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 512,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 900,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1000,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1100,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1150,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              }
+            ],
+            "setup_ms": 542.096,
+            "elapsed_ms": 4379.859384,
+            "echo_rtt_ms": {
+              "n": 28,
+              "p50": 115.03226950000001,
+              "p95": 242.00278864999996
+            },
+            "wire_rx": {
+              "captured": 68,
+              "dropped": 0,
+              "rxq_overflow": {
+                "status": "no_notice",
+                "reported_drops": null,
+                "sockets": 1,
+                "enabled_sockets": 1,
+                "reported_sockets": 0,
+                "unsupported_sockets": 0,
+                "enable_failed_sockets": 0
+              }
+            }
+          },
+          "runner_metadata": {
+            "phase": "udp",
+            "round": 5,
+            "position": 3,
+            "arm": "adaptive",
+            "args": [
+              "./compare",
+              "-config",
+              "adaptive.json",
+              "-protocol",
+              "fcnv3",
+              "-udp-diagnostic",
+              "-count",
+              "28",
+              "-timeout",
+              "55s",
+              "-udp-wire-rx"
+            ],
+            "host_timeout_s": 70,
+            "entry_port": 18534,
+            "before": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597603711,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "after": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597609818,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "network_stable": true,
+            "status": "exited",
+            "exit_code": 0,
+            "start_unix_ms": 1795597603712,
+            "end_unix_ms": 1795597609732,
+            "elapsed_ms": 6020.105125
+          }
+        },
+        {
+          "round": 6,
+          "position": 2,
+          "planned": 28,
+          "valid_rows": 28,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 7,
+          "failure_stages": {
+            "echo": 7
+          },
+          "attempted": 28,
+          "submitted": 28,
+          "echoed": 21,
+          "server_received": 27,
+          "server_responded": 27,
+          "echo_rtt_ms": {
+            "n": 21,
+            "p50": 118.684231,
+            "p95": 251.816923,
+            "mean": 145.21143223809523,
+            "min": 107.883,
+            "max": 266.483692
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 6,
+              "responded": 6
+            }
+          },
+          "input_issues": 0,
+          "comparator_summary": {
+            "event": "udp_summary",
+            "protocol": "fcnv3",
+            "run_id": "1658f7f3d53336eb",
+            "planned": 28,
+            "attempted": 28,
+            "submitted": 28,
+            "echoed": 21,
+            "by_size": [
+              {
+                "bytes": 64,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 256,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 2
+              },
+              {
+                "bytes": 512,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 900,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              },
+              {
+                "bytes": 1000,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              },
+              {
+                "bytes": 1100,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              },
+              {
+                "bytes": 1150,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 2
+              }
+            ],
+            "setup_ms": 840.255923,
+            "elapsed_ms": 14411.474155,
+            "echo_rtt_ms": {
+              "n": 21,
+              "p50": 118.684231,
+              "p95": 251.816923
+            },
+            "wire_rx": {
+              "captured": 73,
+              "dropped": 0,
+              "rxq_overflow": {
+                "status": "no_notice",
+                "reported_drops": null,
+                "sockets": 1,
+                "enabled_sockets": 1,
+                "reported_sockets": 0,
+                "unsupported_sockets": 0,
+                "enable_failed_sockets": 0
+              }
+            }
+          },
+          "runner_metadata": {
+            "phase": "udp",
+            "round": 6,
+            "position": 2,
+            "arm": "adaptive",
+            "args": [
+              "./compare",
+              "-config",
+              "adaptive.json",
+              "-protocol",
+              "fcnv3",
+              "-udp-diagnostic",
+              "-count",
+              "28",
+              "-timeout",
+              "55s",
+              "-udp-wire-rx"
+            ],
+            "host_timeout_s": 70,
+            "entry_port": 18534,
+            "before": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597615124,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "after": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597631244,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "network_stable": true,
+            "status": "exited",
+            "exit_code": 1,
+            "start_unix_ms": 1795597615124,
+            "end_unix_ms": 1795597631151,
+            "elapsed_ms": 16027.2455
+          }
+        }
+      ],
+      "input_issues": 0,
+      "network_stable_rounds": 6,
+      "failures": [
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "3fdb30a2f10295e2",
+          "sequence": 2,
+          "bytes": 256,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597479790355539,
+          "echo_deadline_unix_ns": 1795597481290523231,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 1,
+          "echo_receipts": [
+            {
+              "run_id": "3fdb30a2f10295e2",
+              "seq": 2,
+              "size": 256,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597479723872920
+            },
+            {
+              "run_id": "3fdb30a2f10295e2",
+              "seq": 2,
+              "size": 256,
+              "event": "response",
+              "timestamp_unix_ns": 1795597479723996205
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "3fdb30a2f10295e2",
+          "sequence": 5,
+          "bytes": 1000,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597481593668539,
+          "echo_deadline_unix_ns": 1795597483093956846,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 1,
+          "echo_receipts": [
+            {
+              "run_id": "3fdb30a2f10295e2",
+              "seq": 5,
+              "size": 1000,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597481529605009
+            },
+            {
+              "run_id": "3fdb30a2f10295e2",
+              "seq": 5,
+              "size": 1000,
+              "event": "response",
+              "timestamp_unix_ns": 1795597481529676525
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "3fdb30a2f10295e2",
+          "sequence": 7,
+          "bytes": 1150,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597483354534000,
+          "echo_deadline_unix_ns": 1795597484854736846,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 1,
+          "echo_receipts": [
+            {
+              "run_id": "3fdb30a2f10295e2",
+              "seq": 7,
+              "size": 1150,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597483293739892
+            },
+            {
+              "run_id": "3fdb30a2f10295e2",
+              "seq": 7,
+              "size": 1150,
+              "event": "response",
+              "timestamp_unix_ns": 1795597483294000098
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "3fdb30a2f10295e2",
+          "sequence": 10,
+          "bytes": 512,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597485228822385,
+          "echo_deadline_unix_ns": 1795597486729132847,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 1,
+          "echo_receipts": [
+            {
+              "run_id": "3fdb30a2f10295e2",
+              "seq": 10,
+              "size": 512,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597485163590452
+            },
+            {
+              "run_id": "3fdb30a2f10295e2",
+              "seq": 10,
+              "size": 512,
+              "event": "response",
+              "timestamp_unix_ns": 1795597485163785485
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "3fdb30a2f10295e2",
+          "sequence": 18,
+          "bytes": 900,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597487674897693,
+          "echo_deadline_unix_ns": 1795597489175138001,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 1,
+          "echo_receipts": [
+            {
+              "run_id": "3fdb30a2f10295e2",
+              "seq": 18,
+              "size": 900,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597487609402065
+            },
+            {
+              "run_id": "3fdb30a2f10295e2",
+              "seq": 18,
+              "size": 900,
+              "event": "response",
+              "timestamp_unix_ns": 1795597487609496034
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "3fdb30a2f10295e2",
+          "sequence": 20,
+          "bytes": 1100,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597489433855847,
+          "echo_deadline_unix_ns": 1795597490934168231,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 1,
+          "echo_receipts": [
+            {
+              "run_id": "3fdb30a2f10295e2",
+              "seq": 20,
+              "size": 1100,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597489373509696
+            },
+            {
+              "run_id": "3fdb30a2f10295e2",
+              "seq": 20,
+              "size": 1100,
+              "event": "response",
+              "timestamp_unix_ns": 1795597489373581473
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "3fdb30a2f10295e2",
+          "sequence": 21,
+          "bytes": 1150,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597490936235308,
+          "echo_deadline_unix_ns": 1795597492436618616,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 1,
+          "echo_receipts": [],
+          "server_received": false,
+          "server_responded": false
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "3fdb30a2f10295e2",
+          "sequence": 24,
+          "bytes": 512,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597492794784155,
+          "echo_deadline_unix_ns": 1795597494295117155,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 1,
+          "echo_receipts": [
+            {
+              "run_id": "3fdb30a2f10295e2",
+              "seq": 24,
+              "size": 512,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597492729700889
+            },
+            {
+              "run_id": "3fdb30a2f10295e2",
+              "seq": 24,
+              "size": 512,
+              "event": "response",
+              "timestamp_unix_ns": 1795597492729946568
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "3fdb30a2f10295e2",
+          "sequence": 27,
+          "bytes": 1100,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597494645505155,
+          "echo_deadline_unix_ns": 1795597496145725770,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 1,
+          "echo_receipts": [
+            {
+              "run_id": "3fdb30a2f10295e2",
+              "seq": 27,
+              "size": 1100,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597494584680541
+            },
+            {
+              "run_id": "3fdb30a2f10295e2",
+              "seq": 27,
+              "size": 1100,
+              "event": "response",
+              "timestamp_unix_ns": 1795597494584749582
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "042b0eccdaaf1daa",
+          "sequence": 3,
+          "bytes": 512,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597519098825695,
+          "echo_deadline_unix_ns": 1795597520599077156,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "042b0eccdaaf1daa",
+              "seq": 3,
+              "size": 512,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597519040629065
+            },
+            {
+              "run_id": "042b0eccdaaf1daa",
+              "seq": 3,
+              "size": 512,
+              "event": "response",
+              "timestamp_unix_ns": 1795597519040840829
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "042b0eccdaaf1daa",
+          "sequence": 8,
+          "bytes": 64,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597521183812849,
+          "echo_deadline_unix_ns": 1795597522683958695,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "042b0eccdaaf1daa",
+              "seq": 8,
+              "size": 64,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597521120665169
+            },
+            {
+              "run_id": "042b0eccdaaf1daa",
+              "seq": 8,
+              "size": 64,
+              "event": "response",
+              "timestamp_unix_ns": 1795597521120712240
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "042b0eccdaaf1daa",
+          "sequence": 9,
+          "bytes": 256,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597522684312541,
+          "echo_deadline_unix_ns": 1795597524184369080,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "042b0eccdaaf1daa",
+              "seq": 9,
+              "size": 256,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597522625347126
+            },
+            {
+              "run_id": "042b0eccdaaf1daa",
+              "seq": 9,
+              "size": 256,
+              "event": "response",
+              "timestamp_unix_ns": 1795597522625416147
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "042b0eccdaaf1daa",
+          "sequence": 10,
+          "bytes": 512,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597524186379926,
+          "echo_deadline_unix_ns": 1795597525686776849,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "042b0eccdaaf1daa",
+              "seq": 10,
+              "size": 512,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597524135479555
+            },
+            {
+              "run_id": "042b0eccdaaf1daa",
+              "seq": 10,
+              "size": 512,
+              "event": "response",
+              "timestamp_unix_ns": 1795597524135536303
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "042b0eccdaaf1daa",
+          "sequence": 11,
+          "bytes": 900,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597525688130618,
+          "echo_deadline_unix_ns": 1795597527188355310,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "042b0eccdaaf1daa",
+              "seq": 11,
+              "size": 900,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597525630288746
+            },
+            {
+              "run_id": "042b0eccdaaf1daa",
+              "seq": 11,
+              "size": 900,
+              "event": "response",
+              "timestamp_unix_ns": 1795597525630355764
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "042b0eccdaaf1daa",
+          "sequence": 15,
+          "bytes": 64,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597527682756541,
+          "echo_deadline_unix_ns": 1795597529182898926,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "042b0eccdaaf1daa",
+              "seq": 15,
+              "size": 64,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597527615394491
+            },
+            {
+              "run_id": "042b0eccdaaf1daa",
+              "seq": 15,
+              "size": 64,
+              "event": "response",
+              "timestamp_unix_ns": 1795597527615522585
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "042b0eccdaaf1daa",
+          "sequence": 20,
+          "bytes": 1100,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597529915105772,
+          "echo_deadline_unix_ns": 1795597531415373695,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "042b0eccdaaf1daa",
+              "seq": 20,
+              "size": 1100,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597529851203192
+            },
+            {
+              "run_id": "042b0eccdaaf1daa",
+              "seq": 20,
+              "size": 1100,
+              "event": "response",
+              "timestamp_unix_ns": 1795597529851272724
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "042b0eccdaaf1daa",
+          "sequence": 21,
+          "bytes": 1150,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597531416735849,
+          "echo_deadline_unix_ns": 1795597532917001157,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "042b0eccdaaf1daa",
+              "seq": 21,
+              "size": 1150,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597531355428606
+            },
+            {
+              "run_id": "042b0eccdaaf1daa",
+              "seq": 21,
+              "size": 1150,
+              "event": "response",
+              "timestamp_unix_ns": 1795597531355599061
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "042b0eccdaaf1daa",
+          "sequence": 26,
+          "bytes": 1000,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597533550445080,
+          "echo_deadline_unix_ns": 1795597535050675926,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "042b0eccdaaf1daa",
+              "seq": 26,
+              "size": 1000,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597533485397673
+            },
+            {
+              "run_id": "042b0eccdaaf1daa",
+              "seq": 26,
+              "size": 1000,
+              "event": "response",
+              "timestamp_unix_ns": 1795597533485492665
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "dd7fb30ef4206cce",
+          "sequence": 5,
+          "bytes": 1000,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597538554925388,
+          "echo_deadline_unix_ns": 1795597540055160850,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 3,
+          "echo_receipts": [],
+          "server_received": false,
+          "server_responded": false
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "dd7fb30ef4206cce",
+          "sequence": 9,
+          "bytes": 256,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597540594771850,
+          "echo_deadline_unix_ns": 1795597542094931927,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 3,
+          "echo_receipts": [
+            {
+              "run_id": "dd7fb30ef4206cce",
+              "seq": 9,
+              "size": 256,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597540526060697
+            },
+            {
+              "run_id": "dd7fb30ef4206cce",
+              "seq": 9,
+              "size": 256,
+              "event": "response",
+              "timestamp_unix_ns": 1795597540526132524
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "dd7fb30ef4206cce",
+          "sequence": 21,
+          "bytes": 1150,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597543794775927,
+          "echo_deadline_unix_ns": 1795597545295025158,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 3,
+          "echo_receipts": [
+            {
+              "run_id": "dd7fb30ef4206cce",
+              "seq": 21,
+              "size": 1150,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597543735993079
+            },
+            {
+              "run_id": "dd7fb30ef4206cce",
+              "seq": 21,
+              "size": 1150,
+              "event": "response",
+              "timestamp_unix_ns": 1795597543736211606
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "dd7fb30ef4206cce",
+          "sequence": 23,
+          "bytes": 256,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597545409658619,
+          "echo_deadline_unix_ns": 1795597546909875235,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 3,
+          "echo_receipts": [
+            {
+              "run_id": "dd7fb30ef4206cce",
+              "seq": 23,
+              "size": 256,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597545346214055
+            },
+            {
+              "run_id": "dd7fb30ef4206cce",
+              "seq": 23,
+              "size": 256,
+              "event": "response",
+              "timestamp_unix_ns": 1795597545346406512
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "dd7fb30ef4206cce",
+          "sequence": 27,
+          "bytes": 1100,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597547314430619,
+          "echo_deadline_unix_ns": 1795597548814828466,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 3,
+          "echo_receipts": [
+            {
+              "run_id": "dd7fb30ef4206cce",
+              "seq": 27,
+              "size": 1100,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597547255932284
+            },
+            {
+              "run_id": "dd7fb30ef4206cce",
+              "seq": 27,
+              "size": 1100,
+              "event": "response",
+              "timestamp_unix_ns": 1795597547255977299
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "1658f7f3d53336eb",
+          "sequence": 2,
+          "bytes": 256,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597616459998008,
+          "echo_deadline_unix_ns": 1795597617960220547,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "1658f7f3d53336eb",
+              "seq": 2,
+              "size": 256,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597616395218897
+            },
+            {
+              "run_id": "1658f7f3d53336eb",
+              "seq": 2,
+              "size": 256,
+              "event": "response",
+              "timestamp_unix_ns": 1795597616395284412
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "1658f7f3d53336eb",
+          "sequence": 4,
+          "bytes": 900,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597618081203931,
+          "echo_deadline_unix_ns": 1795597619581467239,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "1658f7f3d53336eb",
+              "seq": 4,
+              "size": 900,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597618013926537
+            },
+            {
+              "run_id": "1658f7f3d53336eb",
+              "seq": 4,
+              "size": 900,
+              "event": "response",
+              "timestamp_unix_ns": 1795597618013971823
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "1658f7f3d53336eb",
+          "sequence": 7,
+          "bytes": 1150,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597619994354316,
+          "echo_deadline_unix_ns": 1795597621494448855,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [],
+          "server_received": false,
+          "server_responded": false
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "1658f7f3d53336eb",
+          "sequence": 16,
+          "bytes": 256,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597622600327855,
+          "echo_deadline_unix_ns": 1795597624100689085,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "1658f7f3d53336eb",
+              "seq": 16,
+              "size": 256,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597622529250881
+            },
+            {
+              "run_id": "1658f7f3d53336eb",
+              "seq": 16,
+              "size": 256,
+              "event": "response",
+              "timestamp_unix_ns": 1795597622529341133
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "1658f7f3d53336eb",
+          "sequence": 21,
+          "bytes": 1150,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597624679847855,
+          "echo_deadline_unix_ns": 1795597626180097086,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "1658f7f3d53336eb",
+              "seq": 21,
+              "size": 1150,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597624619151638
+            },
+            {
+              "run_id": "1658f7f3d53336eb",
+              "seq": 21,
+              "size": 1150,
+              "event": "response",
+              "timestamp_unix_ns": 1795597624619359464
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "1658f7f3d53336eb",
+          "sequence": 26,
+          "bytes": 1000,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597626751936855,
+          "echo_deadline_unix_ns": 1795597628252130393,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "1658f7f3d53336eb",
+              "seq": 26,
+              "size": 1000,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597626689650061
+            },
+            {
+              "run_id": "1658f7f3d53336eb",
+              "seq": 26,
+              "size": 1000,
+              "event": "response",
+              "timestamp_unix_ns": 1795597626689838270
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "1658f7f3d53336eb",
+          "sequence": 27,
+          "bytes": 1100,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597628254023855,
+          "echo_deadline_unix_ns": 1795597629754349778,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "1658f7f3d53336eb",
+              "seq": 27,
+              "size": 1100,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597628194841290
+            },
+            {
+              "run_id": "1658f7f3d53336eb",
+              "seq": 27,
+              "size": 1100,
+              "event": "response",
+              "timestamp_unix_ns": 1795597628194899762
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        }
+      ]
+    },
+    "tuic": {
+      "planned": 168,
+      "valid_rows": 168,
+      "missing": 0,
+      "invalid": 0,
+      "failed": 9,
+      "failure_stages": {
+        "echo": 9
+      },
+      "attempted": 168,
+      "submitted": 168,
+      "echoed": 159,
+      "server_received": 167,
+      "server_responded": 167,
+      "echo_rtt_ms": {
+        "n": 159,
+        "p50": 115.097923,
+        "p95": 230.1538532,
+        "mean": 133.0462603144654,
+        "min": 103.438846,
+        "max": 255.509923
+      },
+      "failure_echo_evidence": {
+        "echo": {
+          "received": 8,
+          "responded": 8
+        }
+      },
+      "by_size": {
+        "64": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 1,
+          "failure_stages": {
+            "echo": 1
+          },
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 23,
+          "server_received": 24,
+          "server_responded": 24,
+          "echo_rtt_ms": {
+            "n": 23,
+            "p50": 110.654461,
+            "p95": 160.0207538,
+            "mean": 128.3639966521739,
+            "min": 103.438846,
+            "max": 246.336308
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 1,
+              "responded": 1
+            }
+          }
+        },
+        "256": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 3,
+          "failure_stages": {
+            "echo": 3
+          },
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 21,
+          "server_received": 24,
+          "server_responded": 24,
+          "echo_rtt_ms": {
+            "n": 21,
+            "p50": 114.921615,
+            "p95": 210.938692,
+            "mean": 139.281458,
+            "min": 104.328846,
+            "max": 224.151154
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 3,
+              "responded": 3
+            }
+          }
+        },
+        "512": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "failure_stages": {},
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 24,
+          "server_received": 24,
+          "server_responded": 24,
+          "echo_rtt_ms": {
+            "n": 24,
+            "p50": 114.9118845,
+            "p95": 252.55381949999997,
+            "mean": 133.62302575,
+            "min": 108.977231,
+            "max": 255.509923
+          },
+          "failure_echo_evidence": {}
+        },
+        "900": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "failure_stages": {},
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 24,
+          "server_received": 24,
+          "server_responded": 24,
+          "echo_rtt_ms": {
+            "n": 24,
+            "p50": 119.4055005,
+            "p95": 205.27358865,
+            "mean": 131.52605116666666,
+            "min": 108.011077,
+            "max": 206.847384
+          },
+          "failure_echo_evidence": {}
+        },
+        "1000": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "failure_stages": {},
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 24,
+          "server_received": 24,
+          "server_responded": 24,
+          "echo_rtt_ms": {
+            "n": 24,
+            "p50": 113.8812695,
+            "p95": 177.70288849999994,
+            "mean": 122.953686,
+            "min": 108.383384,
+            "max": 249.406231
+          },
+          "failure_echo_evidence": {}
+        },
+        "1100": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 3,
+          "failure_stages": {
+            "echo": 3
+          },
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 21,
+          "server_received": 23,
+          "server_responded": 23,
+          "echo_rtt_ms": {
+            "n": 21,
+            "p50": 115.154384,
+            "p95": 229.953307,
+            "mean": 134.9559047142857,
+            "min": 109.225308,
+            "max": 243.532
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 2,
+              "responded": 2
+            }
+          }
+        },
+        "1150": {
+          "planned": 24,
+          "valid_rows": 24,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 2,
+          "failure_stages": {
+            "echo": 2
+          },
+          "attempted": 24,
+          "submitted": 24,
+          "echoed": 22,
+          "server_received": 24,
+          "server_responded": 24,
+          "echo_rtt_ms": {
+            "n": 22,
+            "p50": 119.341231,
+            "p95": 230.66647284999996,
+            "mean": 142.20602454545454,
+            "min": 110.194462,
+            "max": 241.685462
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 2,
+              "responded": 2
+            }
+          }
+        }
+      },
+      "rounds": [
+        {
+          "round": 1,
+          "position": 3,
+          "planned": 28,
+          "valid_rows": 28,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "failure_stages": {},
+          "attempted": 28,
+          "submitted": 28,
+          "echoed": 28,
+          "server_received": 28,
+          "server_responded": 28,
+          "echo_rtt_ms": {
+            "n": 28,
+            "p50": 115.14673049999999,
+            "p95": 243.29961929999996,
+            "mean": 142.81038189285715,
+            "min": 105.227385,
+            "max": 254.774154
+          },
+          "failure_echo_evidence": {},
+          "input_issues": 0,
+          "comparator_summary": {
+            "event": "udp_summary",
+            "protocol": "tuic",
+            "run_id": "1d194878270365c3",
+            "planned": 28,
+            "attempted": 28,
+            "submitted": 28,
+            "echoed": 28,
+            "by_size": [
+              {
+                "bytes": 64,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 256,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 512,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 900,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1000,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1100,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1150,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              }
+            ],
+            "setup_ms": 256.816847,
+            "elapsed_ms": 4267.923078,
+            "echo_rtt_ms": {
+              "n": 28,
+              "p50": 115.14673049999999,
+              "p95": 243.29961929999996
+            },
+            "wire_rx": {
+              "captured": 68,
+              "dropped": 0,
+              "rxq_overflow": {
+                "status": "no_notice",
+                "reported_drops": null,
+                "sockets": 1,
+                "enabled_sockets": 1,
+                "reported_sockets": 0,
+                "unsupported_sockets": 0,
+                "enable_failed_sockets": 0
+              }
+            }
+          },
+          "runner_metadata": {
+            "phase": "udp",
+            "round": 1,
+            "position": 3,
+            "arm": "tuic",
+            "args": [
+              "./compare",
+              "-config",
+              "bench.json",
+              "-protocol",
+              "tuic",
+              "-udp-diagnostic",
+              "-count",
+              "28",
+              "-timeout",
+              "55s",
+              "-udp-wire-rx"
+            ],
+            "host_timeout_s": 70,
+            "entry_port": 18533,
+            "before": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597497745,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "after": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597503726,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "network_stable": true,
+            "status": "exited",
+            "exit_code": 0,
+            "start_unix_ms": 1795597497746,
+            "end_unix_ms": 1795597503648,
+            "elapsed_ms": 5902.672166
+          }
+        },
+        {
+          "round": 2,
+          "position": 2,
+          "planned": 28,
+          "valid_rows": 28,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 1,
+          "failure_stages": {
+            "echo": 1
+          },
+          "attempted": 28,
+          "submitted": 28,
+          "echoed": 27,
+          "server_received": 27,
+          "server_responded": 27,
+          "echo_rtt_ms": {
+            "n": 27,
+            "p50": 119.085539,
+            "p95": 199.7865462,
+            "mean": 135.35104562962962,
+            "min": 105.390077,
+            "max": 204.947385
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 0,
+              "responded": 0
+            }
+          },
+          "input_issues": 0,
+          "comparator_summary": {
+            "event": "udp_summary",
+            "protocol": "tuic",
+            "run_id": "85e153f085ebe533",
+            "planned": 28,
+            "attempted": 28,
+            "submitted": 28,
+            "echoed": 27,
+            "by_size": [
+              {
+                "bytes": 64,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 256,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 512,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 900,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1000,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1100,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              },
+              {
+                "bytes": 1150,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              }
+            ],
+            "setup_ms": 178.012231,
+            "elapsed_ms": 5345.667616,
+            "echo_rtt_ms": {
+              "n": 27,
+              "p50": 119.085539,
+              "p95": 199.7865462
+            },
+            "wire_rx": {
+              "captured": 73,
+              "dropped": 0,
+              "rxq_overflow": {
+                "status": "no_notice",
+                "reported_drops": null,
+                "sockets": 1,
+                "enabled_sockets": 1,
+                "reported_sockets": 0,
+                "unsupported_sockets": 0,
+                "enable_failed_sockets": 0
+              }
+            }
+          },
+          "runner_metadata": {
+            "phase": "udp",
+            "round": 2,
+            "position": 2,
+            "arm": "tuic",
+            "args": [
+              "./compare",
+              "-config",
+              "bench.json",
+              "-protocol",
+              "tuic",
+              "-udp-diagnostic",
+              "-count",
+              "28",
+              "-timeout",
+              "55s",
+              "-udp-wire-rx"
+            ],
+            "host_timeout_s": 70,
+            "entry_port": 18533,
+            "before": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597510788,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "after": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597517905,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "network_stable": true,
+            "status": "exited",
+            "exit_code": 1,
+            "start_unix_ms": 1795597510791,
+            "end_unix_ms": 1795597517797,
+            "elapsed_ms": 7006.587167
+          }
+        },
+        {
+          "round": 3,
+          "position": 3,
+          "planned": 28,
+          "valid_rows": 28,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 3,
+          "failure_stages": {
+            "echo": 3
+          },
+          "attempted": 28,
+          "submitted": 28,
+          "echoed": 25,
+          "server_received": 28,
+          "server_responded": 28,
+          "echo_rtt_ms": {
+            "n": 25,
+            "p50": 111.055692,
+            "p95": 223.66340079999975,
+            "mean": 126.65287076,
+            "min": 104.802153,
+            "max": 246.336308
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 3,
+              "responded": 3
+            }
+          },
+          "input_issues": 0,
+          "comparator_summary": {
+            "event": "udp_summary",
+            "protocol": "tuic",
+            "run_id": "371739821434afae",
+            "planned": 28,
+            "attempted": 28,
+            "submitted": 28,
+            "echoed": 25,
+            "by_size": [
+              {
+                "bytes": 64,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 3
+              },
+              {
+                "bytes": 256,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 512,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 900,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1000,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1100,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1150,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 2
+              }
+            ],
+            "setup_ms": 679.839923,
+            "elapsed_ms": 8359.060846,
+            "echo_rtt_ms": {
+              "n": 25,
+              "p50": 111.055692,
+              "p95": 223.66340079999992
+            },
+            "wire_rx": {
+              "captured": 65,
+              "dropped": 0,
+              "rxq_overflow": {
+                "status": "no_notice",
+                "reported_drops": null,
+                "sockets": 1,
+                "enabled_sockets": 1,
+                "reported_sockets": 0,
+                "unsupported_sockets": 0,
+                "enable_failed_sockets": 0
+              }
+            }
+          },
+          "runner_metadata": {
+            "phase": "udp",
+            "round": 3,
+            "position": 3,
+            "arm": "tuic",
+            "args": [
+              "./compare",
+              "-config",
+              "bench.json",
+              "-protocol",
+              "tuic",
+              "-udp-diagnostic",
+              "-count",
+              "28",
+              "-timeout",
+              "55s",
+              "-udp-wire-rx"
+            ],
+            "host_timeout_s": 70,
+            "entry_port": 18533,
+            "before": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597556378,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "after": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597566470,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "network_stable": true,
+            "status": "exited",
+            "exit_code": 1,
+            "start_unix_ms": 1795597556378,
+            "end_unix_ms": 1795597566367,
+            "elapsed_ms": 9988.546
+          }
+        },
+        {
+          "round": 4,
+          "position": 2,
+          "planned": 28,
+          "valid_rows": 28,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "failure_stages": {},
+          "attempted": 28,
+          "submitted": 28,
+          "echoed": 28,
+          "server_received": 28,
+          "server_responded": 28,
+          "echo_rtt_ms": {
+            "n": 28,
+            "p50": 117.8581155,
+            "p95": 209.7427154,
+            "mean": 136.73979407142858,
+            "min": 108.352923,
+            "max": 229.953307
+          },
+          "failure_echo_evidence": {},
+          "input_issues": 0,
+          "comparator_summary": {
+            "event": "udp_summary",
+            "protocol": "tuic",
+            "run_id": "b9ea7bee7d037568",
+            "planned": 28,
+            "attempted": 28,
+            "submitted": 28,
+            "echoed": 28,
+            "by_size": [
+              {
+                "bytes": 64,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 256,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 512,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 900,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1000,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1100,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1150,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              }
+            ],
+            "setup_ms": 163.263384,
+            "elapsed_ms": 4003.093231,
+            "echo_rtt_ms": {
+              "n": 28,
+              "p50": 117.8581155,
+              "p95": 209.7427154
+            },
+            "wire_rx": {
+              "captured": 65,
+              "dropped": 0,
+              "rxq_overflow": {
+                "status": "no_notice",
+                "reported_drops": null,
+                "sockets": 1,
+                "enabled_sockets": 1,
+                "reported_sockets": 0,
+                "unsupported_sockets": 0,
+                "enable_failed_sockets": 0
+              }
+            }
+          },
+          "runner_metadata": {
+            "phase": "udp",
+            "round": 4,
+            "position": 2,
+            "arm": "tuic",
+            "args": [
+              "./compare",
+              "-config",
+              "bench.json",
+              "-protocol",
+              "tuic",
+              "-udp-diagnostic",
+              "-count",
+              "28",
+              "-timeout",
+              "55s",
+              "-udp-wire-rx"
+            ],
+            "host_timeout_s": 70,
+            "entry_port": 18533,
+            "before": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597573380,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "after": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597579131,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "network_stable": true,
+            "status": "exited",
+            "exit_code": 0,
+            "start_unix_ms": 1795597573381,
+            "end_unix_ms": 1795597579032,
+            "elapsed_ms": 5651.628291
+          }
+        },
+        {
+          "round": 5,
+          "position": 1,
+          "planned": 28,
+          "valid_rows": 28,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 5,
+          "failure_stages": {
+            "echo": 5
+          },
+          "attempted": 28,
+          "submitted": 28,
+          "echoed": 23,
+          "server_received": 28,
+          "server_responded": 28,
+          "echo_rtt_ms": {
+            "n": 23,
+            "p50": 116.366154,
+            "p95": 243.3473462,
+            "mean": 144.12356182608696,
+            "min": 106.103,
+            "max": 255.509923
+          },
+          "failure_echo_evidence": {
+            "echo": {
+              "received": 5,
+              "responded": 5
+            }
+          },
+          "input_issues": 0,
+          "comparator_summary": {
+            "event": "udp_summary",
+            "protocol": "tuic",
+            "run_id": "44ada6bd6ffe6dc0",
+            "planned": 28,
+            "attempted": 28,
+            "submitted": 28,
+            "echoed": 23,
+            "by_size": [
+              {
+                "bytes": 64,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 256,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 1
+              },
+              {
+                "bytes": 512,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 900,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1000,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1100,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 2
+              },
+              {
+                "bytes": 1150,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              }
+            ],
+            "setup_ms": 497.722231,
+            "elapsed_ms": 11333.850539,
+            "echo_rtt_ms": {
+              "n": 23,
+              "p50": 116.366154,
+              "p95": 243.3473462
+            },
+            "wire_rx": {
+              "captured": 69,
+              "dropped": 0,
+              "rxq_overflow": {
+                "status": "no_notice",
+                "reported_drops": null,
+                "sockets": 1,
+                "enabled_sockets": 1,
+                "reported_sockets": 0,
+                "unsupported_sockets": 0,
+                "enable_failed_sockets": 0
+              }
+            }
+          },
+          "runner_metadata": {
+            "phase": "udp",
+            "round": 5,
+            "position": 1,
+            "arm": "tuic",
+            "args": [
+              "./compare",
+              "-config",
+              "bench.json",
+              "-protocol",
+              "tuic",
+              "-udp-diagnostic",
+              "-count",
+              "28",
+              "-timeout",
+              "55s",
+              "-udp-wire-rx"
+            ],
+            "host_timeout_s": 70,
+            "entry_port": 18533,
+            "before": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597584873,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "after": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597597944,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "network_stable": true,
+            "status": "exited",
+            "exit_code": 1,
+            "start_unix_ms": 1795597584873,
+            "end_unix_ms": 1795597597830,
+            "elapsed_ms": 12956.982042
+          }
+        },
+        {
+          "round": 6,
+          "position": 1,
+          "planned": 28,
+          "valid_rows": 28,
+          "missing": 0,
+          "invalid": 0,
+          "failed": 0,
+          "failure_stages": {},
+          "attempted": 28,
+          "submitted": 28,
+          "echoed": 28,
+          "server_received": 28,
+          "server_responded": 28,
+          "echo_rtt_ms": {
+            "n": 28,
+            "p50": 110.6691155,
+            "p95": 120.6891461,
+            "mean": 113.975305,
+            "min": 103.438846,
+            "max": 165.321231
+          },
+          "failure_echo_evidence": {},
+          "input_issues": 0,
+          "comparator_summary": {
+            "event": "udp_summary",
+            "protocol": "tuic",
+            "run_id": "c0da376598c73c06",
+            "planned": 28,
+            "attempted": 28,
+            "submitted": 28,
+            "echoed": 28,
+            "by_size": [
+              {
+                "bytes": 64,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 256,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 512,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 900,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1000,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1100,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              },
+              {
+                "bytes": 1150,
+                "planned": 4,
+                "attempted": 4,
+                "submitted": 4,
+                "echoed": 4
+              }
+            ],
+            "setup_ms": 268.653231,
+            "elapsed_ms": 3473.321923,
+            "echo_rtt_ms": {
+              "n": 28,
+              "p50": 110.6691155,
+              "p95": 120.6891461
+            },
+            "wire_rx": {
+              "captured": 67,
+              "dropped": 0,
+              "rxq_overflow": {
+                "status": "no_notice",
+                "reported_drops": null,
+                "sockets": 1,
+                "enabled_sockets": 1,
+                "reported_sockets": 0,
+                "unsupported_sockets": 0,
+                "enable_failed_sockets": 0
+              }
+            }
+          },
+          "runner_metadata": {
+            "phase": "udp",
+            "round": 6,
+            "position": 1,
+            "arm": "tuic",
+            "args": [
+              "./compare",
+              "-config",
+              "bench.json",
+              "-protocol",
+              "tuic",
+              "-udp-diagnostic",
+              "-count",
+              "28",
+              "-timeout",
+              "55s",
+              "-udp-wire-rx"
+            ],
+            "host_timeout_s": 70,
+            "entry_port": 18533,
+            "before": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597609889,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "after": {
+              "default_net_id": 360,
+              "validated": true,
+              "transports": [
+                "CELLULAR"
+              ],
+              "observed_unix_ms": 1795597615053,
+              "exit_code": 0,
+              "probe_error": null,
+              "system_validated": true
+            },
+            "network_stable": true,
+            "status": "exited",
+            "exit_code": 0,
+            "start_unix_ms": 1795597609889,
+            "end_unix_ms": 1795597614983,
+            "elapsed_ms": 5093.64225
+          }
+        }
+      ],
+      "input_issues": 0,
+      "network_stable_rounds": 6,
+      "failures": [
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "85e153f085ebe533",
+          "sequence": 20,
+          "bytes": 1100,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597513940258387,
+          "echo_deadline_unix_ns": 1795597515440662694,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [],
+          "server_received": false,
+          "server_responded": false
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "371739821434afae",
+          "sequence": 7,
+          "bytes": 1150,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597558234843620,
+          "echo_deadline_unix_ns": 1795597559735140159,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 3,
+          "echo_receipts": [
+            {
+              "run_id": "371739821434afae",
+              "seq": 7,
+              "size": 1150,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597558174075023
+            },
+            {
+              "run_id": "371739821434afae",
+              "seq": 7,
+              "size": 1150,
+              "event": "response",
+              "timestamp_unix_ns": 1795597558174128125
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "371739821434afae",
+          "sequence": 8,
+          "bytes": 64,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597559737013466,
+          "echo_deadline_unix_ns": 1795597561237266082,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 3,
+          "echo_receipts": [
+            {
+              "run_id": "371739821434afae",
+              "seq": 8,
+              "size": 64,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597559669715510
+            },
+            {
+              "run_id": "371739821434afae",
+              "seq": 8,
+              "size": 64,
+              "event": "response",
+              "timestamp_unix_ns": 1795597559669788490
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "371739821434afae",
+          "sequence": 14,
+          "bytes": 1150,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597561925954928,
+          "echo_deadline_unix_ns": 1795597563426086313,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 3,
+          "echo_receipts": [
+            {
+              "run_id": "371739821434afae",
+              "seq": 14,
+              "size": 1150,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597561861217358
+            },
+            {
+              "run_id": "371739821434afae",
+              "seq": 14,
+              "size": 1150,
+              "event": "response",
+              "timestamp_unix_ns": 1795597561861399956
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "44ada6bd6ffe6dc0",
+          "sequence": 2,
+          "bytes": 256,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597585917026929,
+          "echo_deadline_unix_ns": 1795597587417266391,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 5,
+          "echo_receipts": [
+            {
+              "run_id": "44ada6bd6ffe6dc0",
+              "seq": 2,
+              "size": 256,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597585848259259
+            },
+            {
+              "run_id": "44ada6bd6ffe6dc0",
+              "seq": 2,
+              "size": 256,
+              "event": "response",
+              "timestamp_unix_ns": 1795597585848401289
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "44ada6bd6ffe6dc0",
+          "sequence": 9,
+          "bytes": 256,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597588282666007,
+          "echo_deadline_unix_ns": 1795597589782922930,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 5,
+          "echo_receipts": [
+            {
+              "run_id": "44ada6bd6ffe6dc0",
+              "seq": 9,
+              "size": 256,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597588212726623
+            },
+            {
+              "run_id": "44ada6bd6ffe6dc0",
+              "seq": 9,
+              "size": 256,
+              "event": "response",
+              "timestamp_unix_ns": 1795597588212853535
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "44ada6bd6ffe6dc0",
+          "sequence": 13,
+          "bytes": 1100,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597590187950007,
+          "echo_deadline_unix_ns": 1795597591688252468,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 5,
+          "echo_receipts": [
+            {
+              "run_id": "44ada6bd6ffe6dc0",
+              "seq": 13,
+              "size": 1100,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597590118155613
+            },
+            {
+              "run_id": "44ada6bd6ffe6dc0",
+              "seq": 13,
+              "size": 1100,
+              "event": "response",
+              "timestamp_unix_ns": 1795597590118325106
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "44ada6bd6ffe6dc0",
+          "sequence": 20,
+          "bytes": 1100,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597592490362622,
+          "echo_deadline_unix_ns": 1795597593990603007,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 5,
+          "echo_receipts": [
+            {
+              "run_id": "44ada6bd6ffe6dc0",
+              "seq": 20,
+              "size": 1100,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597592423380034
+            },
+            {
+              "run_id": "44ada6bd6ffe6dc0",
+              "seq": 20,
+              "size": 1100,
+              "event": "response",
+              "timestamp_unix_ns": 1795597592423533527
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "44ada6bd6ffe6dc0",
+          "sequence": 23,
+          "bytes": 256,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795597594394961776,
+          "echo_deadline_unix_ns": 1795597595895185391,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 5,
+          "echo_receipts": [
+            {
+              "run_id": "44ada6bd6ffe6dc0",
+              "seq": 23,
+              "size": 256,
+              "event": "receive",
+              "timestamp_unix_ns": 1795597594328373889
+            },
+            {
+              "run_id": "44ada6bd6ffe6dc0",
+              "seq": 23,
+              "size": 256,
+              "event": "response",
+              "timestamp_unix_ns": 1795597594328623986
+            }
+          ],
+          "server_received": true,
+          "server_responded": true
+        }
+      ]
+    }
+  },
+  "server_logs": {
+    "origin": {
+      "present": false,
+      "rows": 0,
+      "event_counts": {},
+      "issues": 0
+    },
+    "echo": {
+      "present": true,
+      "rows": 998,
+      "event_counts": {
+        "receive": 499,
+        "response": 499
+      },
+      "issues": 0
+    },
+    "current": {
+      "present": true,
+      "rows": 12,
+      "event_counts": {
+        "quic_progress": 12
+      },
+      "issues": 0
+    },
+    "adaptive": {
+      "present": true,
+      "rows": 12,
+      "event_counts": {
+        "quic_progress": 12
+      },
+      "issues": 0
+    }
+  },
+  "issues": []
+}

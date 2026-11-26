@@ -1,0 +1,2138 @@
+[
+  {
+    "bytes": 2048,
+    "chunk": 4096,
+    "first_payload_ms": 4679.735,
+    "first_response_headers_ms": 4679.671,
+    "full_request_ms": 4784.121,
+    "gap_ms": 12,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 125,
+        "shape": "http-chunk",
+        "body_bytes": 119
+      },
+      {
+        "bytes": 38,
+        "shape": "http-chunk",
+        "body_bytes": 27
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "paced",
+    "repeat": 2,
+    "pair": 0,
+    "index": 0,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 8,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.640123172695364,
+      "log_server_tcp_bytes": 8.899048433885268
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 933.767,
+    "bytes": 2048,
+    "chunk": 4096,
+    "first_payload_ms": 1035.414,
+    "full_request_ms": 1158.034,
+    "gap_ms": 12,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 125,
+        "shape": "http-chunk",
+        "body_bytes": 119
+      },
+      {
+        "bytes": 38,
+        "shape": "http-chunk",
+        "body_bytes": 27
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "paced",
+    "repeat": 2,
+    "pair": 0,
+    "index": 1,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 8,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.640123172695364,
+      "log_server_tcp_bytes": 8.872907674259846
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 81920,
+    "chunk": 4096,
+    "first_payload_ms": 2733.153,
+    "first_response_headers_ms": 2733.09,
+    "full_request_ms": 3603.748,
+    "gap_ms": 12,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 125,
+        "shape": "http-chunk",
+        "body_bytes": 119
+      },
+      {
+        "bytes": 38,
+        "shape": "http-chunk",
+        "body_bytes": 27
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "paced",
+    "repeat": 1,
+    "pair": 1,
+    "index": 2,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 28,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.640123172695364,
+      "log_server_tcp_bytes": 11.387498287162089
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 1970.78,
+    "bytes": 81920,
+    "chunk": 4096,
+    "first_payload_ms": 2221.938,
+    "full_request_ms": 2627.676,
+    "gap_ms": 12,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 125,
+        "shape": "http-chunk",
+        "body_bytes": 119
+      },
+      {
+        "bytes": 38,
+        "shape": "http-chunk",
+        "body_bytes": 27
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "paced",
+    "repeat": 1,
+    "pair": 1,
+    "index": 3,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 28,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.640123172695364,
+      "log_server_tcp_bytes": 11.380559107714086
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 81920,
+    "chunk": 16384,
+    "first_payload_ms": 1192.107,
+    "first_response_headers_ms": 1192.034,
+    "full_request_ms": 1349.265,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 103,
+        "shape": "http-chunk",
+        "body_bytes": 97
+      },
+      {
+        "bytes": 47,
+        "shape": "http-chunk",
+        "body_bytes": 36
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "burst",
+    "repeat": 2,
+    "pair": 2,
+    "index": 4,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 19,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.633853559681768,
+      "log_server_tcp_bytes": 11.38014807372949
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 5243.836,
+    "bytes": 81920,
+    "chunk": 16384,
+    "first_payload_ms": 5483.566,
+    "full_request_ms": 7264.717,
+    "gap_ms": 0,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 103,
+        "shape": "http-chunk",
+        "body_bytes": 97
+      },
+      {
+        "bytes": 47,
+        "shape": "http-chunk",
+        "body_bytes": 36
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "burst",
+    "repeat": 2,
+    "pair": 2,
+    "index": 5,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 20,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.633853559681768,
+      "log_server_tcp_bytes": 11.377174467988334
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 20480,
+    "chunk": 4096,
+    "first_payload_ms": 6494.85,
+    "first_response_headers_ms": 6494.782,
+    "full_request_ms": 6700.652,
+    "gap_ms": 12,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 111,
+        "shape": "http-chunk",
+        "body_bytes": 105
+      },
+      {
+        "bytes": 48,
+        "shape": "http-chunk",
+        "body_bytes": 37
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "paced",
+    "repeat": 1,
+    "pair": 3,
+    "index": 6,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 14,
+      "client_small_records": 4,
+      "server_small_records": 7,
+      "log_client_tcp_bytes": 7.638198244285779,
+      "log_server_tcp_bytes": 10.166851317336702
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 579.819,
+    "bytes": 20480,
+    "chunk": 4096,
+    "first_payload_ms": 678.343,
+    "full_request_ms": 971.488,
+    "gap_ms": 12,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 111,
+        "shape": "http-chunk",
+        "body_bytes": 105
+      },
+      {
+        "bytes": 48,
+        "shape": "http-chunk",
+        "body_bytes": 37
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "paced",
+    "repeat": 1,
+    "pair": 3,
+    "index": 7,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 13,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.638198244285779,
+      "log_server_tcp_bytes": 10.15467419487498
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 81920,
+    "chunk": 16384,
+    "first_payload_ms": 954.591,
+    "first_response_headers_ms": 954.512,
+    "full_request_ms": 2512.151,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 108,
+        "shape": "http-chunk",
+        "body_bytes": 102
+      },
+      {
+        "bytes": 34,
+        "shape": "http-chunk",
+        "body_bytes": 23
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "burst",
+    "repeat": 1,
+    "pair": 4,
+    "index": 8,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 21,
+      "client_small_records": 4,
+      "server_small_records": 7,
+      "log_client_tcp_bytes": 7.629975707027789,
+      "log_server_tcp_bytes": 11.381015614078866
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 1019.156,
+    "bytes": 81920,
+    "chunk": 16384,
+    "first_payload_ms": 1268.573,
+    "full_request_ms": 1699.884,
+    "gap_ms": 0,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 108,
+        "shape": "http-chunk",
+        "body_bytes": 102
+      },
+      {
+        "bytes": 34,
+        "shape": "http-chunk",
+        "body_bytes": 23
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "burst",
+    "repeat": 1,
+    "pair": 4,
+    "index": 9,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 20,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.629975707027789,
+      "log_server_tcp_bytes": 11.377151559792926
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 20480,
+    "chunk": 16384,
+    "first_payload_ms": 2066.826,
+    "first_response_headers_ms": 2066.672,
+    "full_request_ms": 2288.584,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 129,
+        "shape": "http-chunk",
+        "body_bytes": 123
+      },
+      {
+        "bytes": 50,
+        "shape": "http-chunk",
+        "body_bytes": 39
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "burst",
+    "repeat": 2,
+    "pair": 5,
+    "index": 10,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 13,
+      "client_small_records": 4,
+      "server_small_records": 7,
+      "log_client_tcp_bytes": 7.647786045440933,
+      "log_server_tcp_bytes": 10.164042488848484
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 997.506,
+    "bytes": 20480,
+    "chunk": 16384,
+    "first_payload_ms": 1368.096,
+    "full_request_ms": 1472.069,
+    "gap_ms": 0,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 129,
+        "shape": "http-chunk",
+        "body_bytes": 123
+      },
+      {
+        "bytes": 50,
+        "shape": "http-chunk",
+        "body_bytes": 39
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "burst",
+    "repeat": 2,
+    "pair": 5,
+    "index": 11,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 12,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.647786045440933,
+      "log_server_tcp_bytes": 10.152883474994404
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 2048,
+    "chunk": 4096,
+    "first_payload_ms": 816.801,
+    "first_response_headers_ms": 816.68,
+    "full_request_ms": 918.329,
+    "gap_ms": 12,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 106,
+        "shape": "http-chunk",
+        "body_bytes": 100
+      },
+      {
+        "bytes": 34,
+        "shape": "http-chunk",
+        "body_bytes": 23
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "paced",
+    "repeat": 1,
+    "pair": 6,
+    "index": 12,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 8,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.6290038896529575,
+      "log_server_tcp_bytes": 8.90150275745161
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 3179.833,
+    "bytes": 2048,
+    "chunk": 4096,
+    "first_payload_ms": 3288.293,
+    "full_request_ms": 3394.8,
+    "gap_ms": 12,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 106,
+        "shape": "http-chunk",
+        "body_bytes": 100
+      },
+      {
+        "bytes": 34,
+        "shape": "http-chunk",
+        "body_bytes": 23
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "paced",
+    "repeat": 1,
+    "pair": 6,
+    "index": 13,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 8,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.6290038896529575,
+      "log_server_tcp_bytes": 8.872907674259846
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 20480,
+    "chunk": 16384,
+    "first_payload_ms": 1169.856,
+    "first_response_headers_ms": 1169.784,
+    "full_request_ms": 1483.218,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 124,
+        "shape": "http-chunk",
+        "body_bytes": 118
+      },
+      {
+        "bytes": 20,
+        "shape": "http-chunk",
+        "body_bytes": 10
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "burst",
+    "repeat": 1,
+    "pair": 7,
+    "index": 14,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 13,
+      "client_small_records": 4,
+      "server_small_records": 7,
+      "log_client_tcp_bytes": 7.630946580890459,
+      "log_server_tcp_bytes": 10.162963033097729
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 2261.331,
+    "bytes": 20480,
+    "chunk": 16384,
+    "first_payload_ms": 2537.981,
+    "full_request_ms": 3891.978,
+    "gap_ms": 0,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 124,
+        "shape": "http-chunk",
+        "body_bytes": 118
+      },
+      {
+        "bytes": 20,
+        "shape": "http-chunk",
+        "body_bytes": 10
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "burst",
+    "repeat": 1,
+    "pair": 7,
+    "index": 15,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 12,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.630946580890459,
+      "log_server_tcp_bytes": 10.152883474994404
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 2048,
+    "chunk": 16384,
+    "first_payload_ms": 5564.434,
+    "first_response_headers_ms": 5564.38,
+    "full_request_ms": 5668.3,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 114,
+        "shape": "http-chunk",
+        "body_bytes": 108
+      },
+      {
+        "bytes": 49,
+        "shape": "http-chunk",
+        "body_bytes": 38
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "burst",
+    "repeat": 2,
+    "pair": 8,
+    "index": 16,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 8,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.640123172695364,
+      "log_server_tcp_bytes": 8.900003608959596
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 640.012,
+    "bytes": 2048,
+    "chunk": 16384,
+    "first_payload_ms": 737.981,
+    "full_request_ms": 842.96,
+    "gap_ms": 0,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 114,
+        "shape": "http-chunk",
+        "body_bytes": 108
+      },
+      {
+        "bytes": 49,
+        "shape": "http-chunk",
+        "body_bytes": 38
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "burst",
+    "repeat": 2,
+    "pair": 8,
+    "index": 17,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 8,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.640123172695364,
+      "log_server_tcp_bytes": 8.873047798971067
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 2048,
+    "chunk": 16384,
+    "first_payload_ms": 3536.337,
+    "first_response_headers_ms": 3536.263,
+    "full_request_ms": 3807.799,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 120,
+        "shape": "http-chunk",
+        "body_bytes": 114
+      },
+      {
+        "bytes": 41,
+        "shape": "http-chunk",
+        "body_bytes": 30
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "burst",
+    "repeat": 1,
+    "pair": 9,
+    "index": 18,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 8,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.639161171659173,
+      "log_server_tcp_bytes": 8.898911905794401
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 953.309,
+    "bytes": 2048,
+    "chunk": 16384,
+    "first_payload_ms": 1053.45,
+    "full_request_ms": 2401.684,
+    "gap_ms": 0,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 120,
+        "shape": "http-chunk",
+        "body_bytes": 114
+      },
+      {
+        "bytes": 41,
+        "shape": "http-chunk",
+        "body_bytes": 30
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "burst",
+    "repeat": 1,
+    "pair": 9,
+    "index": 19,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 8,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.639161171659173,
+      "log_server_tcp_bytes": 8.872907674259846
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 81920,
+    "chunk": 4096,
+    "first_payload_ms": 1651.91,
+    "first_response_headers_ms": 1651.877,
+    "full_request_ms": 3284.629,
+    "gap_ms": 12,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 116,
+        "shape": "http-chunk",
+        "body_bytes": 110
+      },
+      {
+        "bytes": 40,
+        "shape": "http-chunk",
+        "body_bytes": 29
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "paced",
+    "repeat": 2,
+    "pair": 10,
+    "index": 20,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 28,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.636752112435779,
+      "log_server_tcp_bytes": 11.387747655241999
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 6685.766,
+    "bytes": 81920,
+    "chunk": 4096,
+    "first_payload_ms": 7503.589,
+    "full_request_ms": 10780.481,
+    "gap_ms": 12,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 116,
+        "shape": "http-chunk",
+        "body_bytes": 110
+      },
+      {
+        "bytes": 40,
+        "shape": "http-chunk",
+        "body_bytes": 29
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "paced",
+    "repeat": 2,
+    "pair": 10,
+    "index": 21,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 28,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.636752112435779,
+      "log_server_tcp_bytes": 11.38054769238444
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 20480,
+    "chunk": 4096,
+    "first_payload_ms": 1140.25,
+    "first_response_headers_ms": 1140.173,
+    "full_request_ms": 1335.094,
+    "gap_ms": 12,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 121,
+        "shape": "http-chunk",
+        "body_bytes": 115
+      },
+      {
+        "bytes": 41,
+        "shape": "http-chunk",
+        "body_bytes": 30
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "paced",
+    "repeat": 2,
+    "pair": 11,
+    "index": 22,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 13,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.639642287858013,
+      "log_server_tcp_bytes": 10.167043414461599
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 594.598,
+    "bytes": 20480,
+    "chunk": 4096,
+    "first_payload_ms": 821.979,
+    "full_request_ms": 2077.739,
+    "gap_ms": 12,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 121,
+        "shape": "http-chunk",
+        "body_bytes": 115
+      },
+      {
+        "bytes": 41,
+        "shape": "http-chunk",
+        "body_bytes": 30
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "train",
+    "shape": "paced",
+    "repeat": 2,
+    "pair": 11,
+    "index": 23,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 13,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.639642287858013,
+      "log_server_tcp_bytes": 10.15467419487498
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 40960,
+    "chunk": 16384,
+    "first_payload_ms": 1134.172,
+    "first_response_headers_ms": 1134.08,
+    "full_request_ms": 1564.405,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 120,
+        "shape": "http-chunk",
+        "body_bytes": 114
+      },
+      {
+        "bytes": 31,
+        "shape": "http-chunk",
+        "body_bytes": 20
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "burst",
+    "repeat": 2,
+    "pair": 12,
+    "index": 24,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 15,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.63433723562832,
+      "log_server_tcp_bytes": 10.746325482201238
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 1472.767,
+    "bytes": 40960,
+    "chunk": 16384,
+    "first_payload_ms": 1737.146,
+    "full_request_ms": 1912.954,
+    "gap_ms": 0,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 120,
+        "shape": "http-chunk",
+        "body_bytes": 114
+      },
+      {
+        "bytes": 31,
+        "shape": "http-chunk",
+        "body_bytes": 20
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "burst",
+    "repeat": 2,
+    "pair": 12,
+    "index": 25,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 15,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.63433723562832,
+      "log_server_tcp_bytes": 10.741146247938758
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 163840,
+    "chunk": 4096,
+    "first_payload_ms": 4220.385,
+    "first_response_headers_ms": 4220.314,
+    "full_request_ms": 5294.365,
+    "gap_ms": 12,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 101,
+        "shape": "http-chunk",
+        "body_bytes": 95
+      },
+      {
+        "bytes": 49,
+        "shape": "http-chunk",
+        "body_bytes": 38
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "paced",
+    "repeat": 2,
+    "pair": 13,
+    "index": 26,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 40,
+      "client_small_records": 4,
+      "server_small_records": 9,
+      "log_client_tcp_bytes": 7.633853559681768,
+      "log_server_tcp_bytes": 12.047985059581176
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 1592.776,
+    "bytes": 163840,
+    "chunk": 4096,
+    "first_payload_ms": 1716.698,
+    "full_request_ms": 4152.736,
+    "gap_ms": 12,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 101,
+        "shape": "http-chunk",
+        "body_bytes": 95
+      },
+      {
+        "bytes": 49,
+        "shape": "http-chunk",
+        "body_bytes": 38
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "paced",
+    "repeat": 2,
+    "pair": 13,
+    "index": 27,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 48,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.633853559681768,
+      "log_server_tcp_bytes": 12.044271105705706
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 163840,
+    "chunk": 16384,
+    "first_payload_ms": 524.3,
+    "first_response_headers_ms": 524.247,
+    "full_request_ms": 4642.141,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 110,
+        "shape": "http-chunk",
+        "body_bytes": 104
+      },
+      {
+        "bytes": 37,
+        "shape": "http-chunk",
+        "body_bytes": 26
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "burst",
+    "repeat": 1,
+    "pair": 14,
+    "index": 28,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 30,
+      "client_small_records": 4,
+      "server_small_records": 11,
+      "log_client_tcp_bytes": 7.6324011266014535,
+      "log_server_tcp_bytes": 12.043565480669077
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 852.594,
+    "bytes": 163840,
+    "chunk": 16384,
+    "first_payload_ms": 1094.971,
+    "full_request_ms": 2796.074,
+    "gap_ms": 0,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 110,
+        "shape": "http-chunk",
+        "body_bytes": 104
+      },
+      {
+        "bytes": 37,
+        "shape": "http-chunk",
+        "body_bytes": 26
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "burst",
+    "repeat": 1,
+    "pair": 14,
+    "index": 29,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 30,
+      "client_small_records": 4,
+      "server_small_records": 11,
+      "log_client_tcp_bytes": 7.6324011266014535,
+      "log_server_tcp_bytes": 12.04051380606689
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 40960,
+    "chunk": 4096,
+    "first_payload_ms": 1434.082,
+    "first_response_headers_ms": 1434.015,
+    "full_request_ms": 3512.955,
+    "gap_ms": 12,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 119,
+        "shape": "http-chunk",
+        "body_bytes": 113
+      },
+      {
+        "bytes": 48,
+        "shape": "http-chunk",
+        "body_bytes": 37
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "paced",
+    "repeat": 1,
+    "pair": 15,
+    "index": 30,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 18,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.642044402873258,
+      "log_server_tcp_bytes": 10.753232416566384
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 2422.208,
+    "bytes": 40960,
+    "chunk": 4096,
+    "first_payload_ms": 2545.832,
+    "full_request_ms": 3618.263,
+    "gap_ms": 12,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 119,
+        "shape": "http-chunk",
+        "body_bytes": 113
+      },
+      {
+        "bytes": 48,
+        "shape": "http-chunk",
+        "body_bytes": 37
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "paced",
+    "repeat": 1,
+    "pair": 15,
+    "index": 31,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 18,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.642044402873258,
+      "log_server_tcp_bytes": 10.743803956312695
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 4096,
+    "chunk": 4096,
+    "first_payload_ms": 3873.809,
+    "first_response_headers_ms": 3873.692,
+    "full_request_ms": 3973.778,
+    "gap_ms": 12,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 121,
+        "shape": "http-chunk",
+        "body_bytes": 115
+      },
+      {
+        "bytes": 23,
+        "shape": "http-chunk",
+        "body_bytes": 13
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "paced",
+    "repeat": 2,
+    "pair": 16,
+    "index": 32,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 10,
+      "client_small_records": 4,
+      "server_small_records": 7,
+      "log_client_tcp_bytes": 7.630946580890459,
+      "log_server_tcp_bytes": 9.151969458649853
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 594.038,
+    "bytes": 4096,
+    "chunk": 4096,
+    "first_payload_ms": 700.134,
+    "full_request_ms": 800.506,
+    "gap_ms": 12,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 121,
+        "shape": "http-chunk",
+        "body_bytes": 115
+      },
+      {
+        "bytes": 23,
+        "shape": "http-chunk",
+        "body_bytes": 13
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "paced",
+    "repeat": 2,
+    "pair": 16,
+    "index": 33,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 9,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.630946580890459,
+      "log_server_tcp_bytes": 9.127827950401718
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 40960,
+    "chunk": 4096,
+    "first_payload_ms": 2379.723,
+    "first_response_headers_ms": 2379.651,
+    "full_request_ms": 2738.034,
+    "gap_ms": 12,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 118,
+        "shape": "http-chunk",
+        "body_bytes": 112
+      },
+      {
+        "bytes": 46,
+        "shape": "http-chunk",
+        "body_bytes": 35
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "paced",
+    "repeat": 2,
+    "pair": 17,
+    "index": 34,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 19,
+      "client_small_records": 4,
+      "server_small_records": 7,
+      "log_client_tcp_bytes": 7.640603826393634,
+      "log_server_tcp_bytes": 10.753467527122861
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 3872.737,
+    "bytes": 40960,
+    "chunk": 4096,
+    "first_payload_ms": 4299.143,
+    "full_request_ms": 4697.996,
+    "gap_ms": 12,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 118,
+        "shape": "http-chunk",
+        "body_bytes": 112
+      },
+      {
+        "bytes": 46,
+        "shape": "http-chunk",
+        "body_bytes": 35
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "paced",
+    "repeat": 2,
+    "pair": 17,
+    "index": 35,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 18,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.640603826393634,
+      "log_server_tcp_bytes": 10.743760797986367
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 4096,
+    "chunk": 16384,
+    "first_payload_ms": 2286.286,
+    "first_response_headers_ms": 2286.257,
+    "full_request_ms": 2385.34,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 120,
+        "shape": "http-chunk",
+        "body_bytes": 114
+      },
+      {
+        "bytes": 42,
+        "shape": "http-chunk",
+        "body_bytes": 31
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "burst",
+    "repeat": 2,
+    "pair": 18,
+    "index": 36,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 10,
+      "client_small_records": 4,
+      "server_small_records": 7,
+      "log_client_tcp_bytes": 7.639642287858013,
+      "log_server_tcp_bytes": 9.151969458649853
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 750.06,
+    "bytes": 4096,
+    "chunk": 16384,
+    "first_payload_ms": 2288.374,
+    "full_request_ms": 2389.032,
+    "gap_ms": 0,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 120,
+        "shape": "http-chunk",
+        "body_bytes": 114
+      },
+      {
+        "bytes": 42,
+        "shape": "http-chunk",
+        "body_bytes": 31
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "burst",
+    "repeat": 2,
+    "pair": 18,
+    "index": 37,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 9,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.639642287858013,
+      "log_server_tcp_bytes": 9.127610724377186
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 4096,
+    "chunk": 4096,
+    "first_payload_ms": 7092.239,
+    "first_response_headers_ms": 7092.106,
+    "full_request_ms": 7397.965,
+    "gap_ms": 12,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 117,
+        "shape": "http-chunk",
+        "body_bytes": 111
+      },
+      {
+        "bytes": 28,
+        "shape": "http-chunk",
+        "body_bytes": 17
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "paced",
+    "repeat": 1,
+    "pair": 19,
+    "index": 38,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 9,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.631431664576906,
+      "log_server_tcp_bytes": 9.145481799627687
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 1636.217,
+    "bytes": 4096,
+    "chunk": 4096,
+    "first_payload_ms": 2385.826,
+    "full_request_ms": 3920.037,
+    "gap_ms": 12,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 117,
+        "shape": "http-chunk",
+        "body_bytes": 111
+      },
+      {
+        "bytes": 28,
+        "shape": "http-chunk",
+        "body_bytes": 17
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "paced",
+    "repeat": 1,
+    "pair": 19,
+    "index": 39,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 9,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.631431664576906,
+      "log_server_tcp_bytes": 9.127719343287845
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 163840,
+    "chunk": 4096,
+    "first_payload_ms": 6422.219,
+    "first_response_headers_ms": 6422.152,
+    "full_request_ms": 8742.239,
+    "gap_ms": 12,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 112,
+        "shape": "http-chunk",
+        "body_bytes": 106
+      },
+      {
+        "bytes": 49,
+        "shape": "http-chunk",
+        "body_bytes": 38
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "paced",
+    "repeat": 1,
+    "pair": 20,
+    "index": 40,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 44,
+      "client_small_records": 4,
+      "server_small_records": 9,
+      "log_client_tcp_bytes": 7.639161171659173,
+      "log_server_tcp_bytes": 12.049477313307099
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 1021.841,
+    "bytes": 163840,
+    "chunk": 4096,
+    "first_payload_ms": 1293.501,
+    "full_request_ms": 2474.051,
+    "gap_ms": 12,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 112,
+        "shape": "http-chunk",
+        "body_bytes": 106
+      },
+      {
+        "bytes": 49,
+        "shape": "http-chunk",
+        "body_bytes": 38
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "paced",
+    "repeat": 1,
+    "pair": 20,
+    "index": 41,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 48,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.639161171659173,
+      "log_server_tcp_bytes": 12.044265227553915
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 40960,
+    "chunk": 16384,
+    "first_payload_ms": 797.144,
+    "first_response_headers_ms": 797.082,
+    "full_request_ms": 4009.968,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 115,
+        "shape": "http-chunk",
+        "body_bytes": 109
+      },
+      {
+        "bytes": 42,
+        "shape": "http-chunk",
+        "body_bytes": 31
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "burst",
+    "repeat": 1,
+    "pair": 21,
+    "index": 42,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 15,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.637234388789473,
+      "log_server_tcp_bytes": 10.746734361340112
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 1441.12,
+    "bytes": 40960,
+    "chunk": 16384,
+    "first_payload_ms": 1886.471,
+    "full_request_ms": 3203.464,
+    "gap_ms": 0,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 115,
+        "shape": "http-chunk",
+        "body_bytes": 109
+      },
+      {
+        "bytes": 42,
+        "shape": "http-chunk",
+        "body_bytes": 31
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "burst",
+    "repeat": 1,
+    "pair": 21,
+    "index": 43,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 15,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.637234388789473,
+      "log_server_tcp_bytes": 10.741146247938758
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 163840,
+    "chunk": 16384,
+    "first_payload_ms": 1041.786,
+    "first_response_headers_ms": 1041.695,
+    "full_request_ms": 1996.201,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 119,
+        "shape": "http-chunk",
+        "body_bytes": 113
+      },
+      {
+        "bytes": 46,
+        "shape": "http-chunk",
+        "body_bytes": 35
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "burst",
+    "repeat": 2,
+    "pair": 22,
+    "index": 44,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 31,
+      "client_small_records": 4,
+      "server_small_records": 12,
+      "log_client_tcp_bytes": 7.641084249174914,
+      "log_server_tcp_bytes": 12.04311244221484
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 923.489,
+    "bytes": 163840,
+    "chunk": 16384,
+    "first_payload_ms": 1166.904,
+    "full_request_ms": 2252.23,
+    "gap_ms": 0,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 119,
+        "shape": "http-chunk",
+        "body_bytes": 113
+      },
+      {
+        "bytes": 46,
+        "shape": "http-chunk",
+        "body_bytes": 35
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "burst",
+    "repeat": 2,
+    "pair": 22,
+    "index": 45,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 30,
+      "client_small_records": 4,
+      "server_small_records": 11,
+      "log_client_tcp_bytes": 7.641084249174914,
+      "log_server_tcp_bytes": 12.040519706311457
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "bytes": 4096,
+    "chunk": 16384,
+    "first_payload_ms": 3718.485,
+    "first_response_headers_ms": 3718.412,
+    "full_request_ms": 4123.972,
+    "gap_ms": 0,
+    "header_kind": "application-response",
+    "kind": "n1",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 103,
+        "shape": "http-chunk",
+        "body_bytes": 97
+      },
+      {
+        "bytes": 49,
+        "shape": "http-chunk",
+        "body_bytes": 38
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "burst",
+    "repeat": 1,
+    "pair": 23,
+    "index": 46,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 9,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.634820677745543,
+      "log_server_tcp_bytes": 9.145588494746486
+    },
+    "label": 1,
+    "server_rst": 0,
+    "client_rst": 0
+  },
+  {
+    "ack_headers_ms": 2286.727,
+    "bytes": 4096,
+    "chunk": 16384,
+    "first_payload_ms": 3414.908,
+    "full_request_ms": 3516.461,
+    "gap_ms": 0,
+    "kind": "rpc",
+    "payload_verified": true,
+    "request_writes": [
+      {
+        "bytes": 267,
+        "shape": "request-headers"
+      },
+      {
+        "bytes": 103,
+        "shape": "http-chunk",
+        "body_bytes": 97
+      },
+      {
+        "bytes": 49,
+        "shape": "http-chunk",
+        "body_bytes": 38
+      }
+    ],
+    "shutdown_eof_observed": true,
+    "split": "holdout",
+    "shape": "burst",
+    "repeat": 1,
+    "pair": 23,
+    "index": 47,
+    "exit_code": 0,
+    "features": {
+      "client_records": 5,
+      "server_records": 9,
+      "client_small_records": 4,
+      "server_small_records": 6,
+      "log_client_tcp_bytes": 7.634820677745543,
+      "log_server_tcp_bytes": 9.127827950401718
+    },
+    "label": 0,
+    "server_rst": 0,
+    "client_rst": 0
+  }
+]

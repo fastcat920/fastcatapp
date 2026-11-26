@@ -1,0 +1,2 @@
+{"event":"udp_packet","protocol":"fcnv3","run_id":"5996382d6dcd8e99","sequence":1,"bytes":64,"attempted":true,"submitted":true,"echoed":true,"send_unix_ns":1795606329437340989,"echo_deadline_unix_ns":1795606330937476989,"echo_rtt_ms":103.984923,"unmatched_replies":0}
+{"event":"udp_summary","protocol":"fcnv3","run_id":"5996382d6dcd8e99","planned":1,"attempted":1,"submitted":1,"echoed":1,"by_size":[{"bytes":64,"planned":1,"attempted":1,"submitted":1,"echoed":1}],"setup_ms":777.809,"elapsed_ms":883.090539,"echo_rtt_ms":{"n":1,"p50":103.984923,"p95":103.984923}}

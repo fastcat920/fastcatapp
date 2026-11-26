@@ -1,0 +1,10 @@
+﻿path,version,carrier,attempts,complete,raw_total_ms,median_complete_total_ms,median_complete_e2e_mbps,received_mib,errors
+VLESS + TCP + TLS + Vision,vless-vision,tcp-tls,2,2,"[2231, 2752]",2491.5,3.4033287114072768,2.0,[]
+Trojan + TCP + TLS,trojan,tcp-tls,2,2,"[21513, 6234]",13873.5,0.8677612770835799,2.0,[]
+Hysteria 2,hysteria2,quic,2,2,"[2121, 1667]",1894.0,4.493331680666088,2.0,[]
+TUIC v5,tuic,quic,2,2,"[3835, 1593]",2714.0,3.726522754051217,2.0,[]
+AnyTLS,anytls,tcp-tls,2,2,"[17611, 2499]",10055.0,1.916022173962321,2.0,[]
+FastCat v2 · H2,v2,h2,2,1,"[2861, 30000]",2861,2.9313919232067103,1.953125,"[""read pipe: i/o timeout""]"
+FastCat v2 · H3,v2,h3,2,0,"[30001, 30000]",,,0.8125,"[""deadline exceeded"", ""deadline exceeded""]"
+最新轻量版 · H2,v3-light-fast,h2,2,2,"[5799, 3669]",4734.0,1.8662642274211483,2.0,[]
+最新轻量版 · H3,v3-light-fast,h3,2,1,"[18387, 30001]",18387,0.45620971675435007,1.46875,"[""H3_REQUEST_CANCELLED (local)""]"

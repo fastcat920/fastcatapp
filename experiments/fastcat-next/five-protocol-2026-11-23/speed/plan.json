@@ -1,0 +1,185 @@
+{
+  "date": "2026-11-23",
+  "mode": "speed",
+  "server": "172.104.55.44",
+  "variants": {
+    "next-opt": "Next2lanes adaptiveRecoveryAware,BBR",
+    "next-base": "Next1lane,BBR",
+    "tuic": "CatNodeTUICv5,Mihomo,BBR",
+    "hysteria2": "CatNodeHysteria2,Mihomo,noBrutalBandwidth,BBRpath",
+    "vless-vision": "CatNodeVLESS+TCP+TLS+XTLSVision,systemTCPCC"
+  },
+  "orders": [
+    [
+      "next-opt",
+      "next-base",
+      "vless-vision",
+      "tuic",
+      "hysteria2"
+    ],
+    [
+      "next-base",
+      "tuic",
+      "next-opt",
+      "hysteria2",
+      "vless-vision"
+    ],
+    [
+      "tuic",
+      "hysteria2",
+      "next-base",
+      "vless-vision",
+      "next-opt"
+    ],
+    [
+      "hysteria2",
+      "vless-vision",
+      "tuic",
+      "next-opt",
+      "next-base"
+    ],
+    [
+      "vless-vision",
+      "next-opt",
+      "hysteria2",
+      "next-base",
+      "tuic"
+    ],
+    [
+      "hysteria2",
+      "tuic",
+      "vless-vision",
+      "next-base",
+      "next-opt"
+    ],
+    [
+      "vless-vision",
+      "hysteria2",
+      "next-opt",
+      "tuic",
+      "next-base"
+    ],
+    [
+      "next-opt",
+      "vless-vision",
+      "next-base",
+      "hysteria2",
+      "tuic"
+    ],
+    [
+      "next-base",
+      "next-opt",
+      "tuic",
+      "vless-vision",
+      "hysteria2"
+    ],
+    [
+      "tuic",
+      "next-base",
+      "hysteria2",
+      "next-opt",
+      "vless-vision"
+    ]
+  ],
+  "metrics": [
+    [
+      "single32",
+      10,
+      [
+        "-download-bytes",
+        "33554432",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "30s"
+      ],
+      true,
+      50
+    ],
+    [
+      "parallel4",
+      10,
+      [
+        "-download-bytes",
+        "8388608",
+        "-download-workers",
+        "4",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "30s"
+      ],
+      true,
+      50
+    ],
+    [
+      "parallel8",
+      10,
+      [
+        "-download-bytes",
+        "4194304",
+        "-download-workers",
+        "8",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "30s"
+      ],
+      true,
+      50
+    ],
+    [
+      "rolling",
+      10,
+      [
+        "-download-bytes",
+        "4194304",
+        "-download-workers",
+        "4",
+        "-download-jobs",
+        "12",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "45s"
+      ],
+      true,
+      70
+    ],
+    [
+      "echo",
+      10,
+      [
+        "-bulk-only",
+        "-bulk-rounds",
+        "1",
+        "-bulk-seconds",
+        "5",
+        "-bulk-target",
+        "172.104.55.44:19445"
+      ],
+      true,
+      60
+    ]
+  ],
+  "port_schedule": "all variants SAME numeric entry port each block;19458 odd/19451 even;10blocks gives5perport pervariant",
+  "order_design": "Williams10 sequences for5conditions, eachposition2times, bothdirections; casesrestart5s cooldown; realweb2rounds use forward/reverse only",
+  "sha256": {
+    "compare": "a34a092d7e476a2c45e3ac289bf697379575df4c3c2cb10e5c058bf489e4b9a8",
+    "next-diagnostic": "5140bce7edf5934c9b12b4519921b35e7c571f22df6f0c930b0e62e7c1c43f7f",
+    "catnode-server": "99f74451f794da2cf2217ba1f29411209cd917a6a5b41c256a53f45ba1527898"
+  },
+  "client_go": "1.26.2",
+  "server_go": "1.27.3",
+  "trace": false,
+  "measurement_changes": [
+    "recordSHA256andverifyreceivedprefix evenifpartial file; completefile checked separately",
+    "strictmixed wait15s max forbothreceive256KiB"
+  ],
+  "scope": "AndroidnativeWiFi,AppVPNoff,noAppupdate,certverified;not equalpool/congestionimplementations",
+  "notes": [
+    "legacy raw protocol=quic is comparison family label for native variants; VLESS actualcarrierTCP",
+    "prefixverified throughput and completefile throughput separate; partial not counted complete",
+    "No earlier data pooled; no failed case replacement"
+  ]
+}

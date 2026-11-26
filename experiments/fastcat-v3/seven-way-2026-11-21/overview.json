@@ -1,0 +1,9 @@
+{
+  "total_latency_rows": 1548,
+  "formal_latency_attempts": 1458,
+  "prime_rows": 90,
+  "pilot_rows": 36,
+  "throughput_groups": 54,
+  "throughput_requested_streams": 135,
+  "download_attempts": 18
+}

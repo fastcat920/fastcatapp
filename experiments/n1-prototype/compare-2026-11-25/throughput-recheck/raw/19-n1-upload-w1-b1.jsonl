@@ -1,0 +1,2 @@
+{"body_ms":0.041,"bytes":1048576,"cleanup_ms":101.441,"e2e_mbps":3.7757262599901837,"entry_ms":1254.504,"first_byte_ms":2221.682,"headers_ms":2221.662,"n1_trace":null,"phase":"upload","protocol":"n1","sample":1,"start_unix_ms":1795539319765,"success":true,"total_ms":2221.717}
+{"count":1,"elapsed_ms":2324.29,"event":"batch-ended","failed":0,"phase":"upload","protocol":"n1","workers":1}

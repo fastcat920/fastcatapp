@@ -20,29 +20,31 @@ import (
 )
 
 type StreamingProbeParams struct {
-	RunID       string            `json:"run-id"`
-	ProxyName   string            `json:"proxy-name"`
-	URL         string            `json:"url"`
-	Method      string            `json:"method"`
-	Body        string            `json:"body"`
-	Timeout     int64             `json:"timeout"`
-	MaxBodySize int64             `json:"max-body-size"`
-	Headers     map[string]string `json:"headers"`
-	NoRedirect  bool              `json:"no-redirect"`
-	PhaseTiming bool              `json:"phase-timing,omitempty"`
+	RunID         string            `json:"run-id"`
+	ProxyName     string            `json:"proxy-name"`
+	URL           string            `json:"url"`
+	Method        string            `json:"method"`
+	Body          string            `json:"body"`
+	Timeout       int64             `json:"timeout"`
+	MaxBodySize   int64             `json:"max-body-size"`
+	Headers       map[string]string `json:"headers"`
+	NoRedirect    bool              `json:"no-redirect"`
+	PhaseTiming   bool              `json:"phase-timing,omitempty"`
+	DownloadSpeed bool              `json:"download-speed,omitempty"`
 }
 
 type StreamingProbeResult struct {
-	OK          bool              `json:"ok"`
-	StatusCode  int               `json:"status-code"`
-	FinalURL    string            `json:"final-url"`
-	Headers     map[string]string `json:"headers"`
-	Body        string            `json:"body"`
-	ElapsedMs   int64             `json:"elapsed-ms"`
-	FirstByteMs *int64            `json:"first-byte-ms,omitempty"`
-	Phases      map[string]any    `json:"phases,omitempty"`
-	Truncated   bool              `json:"truncated"`
-	Error       string            `json:"error,omitempty"`
+	OK          bool                 `json:"ok"`
+	StatusCode  int                  `json:"status-code"`
+	FinalURL    string               `json:"final-url"`
+	Headers     map[string]string    `json:"headers"`
+	Body        string               `json:"body"`
+	ElapsedMs   int64                `json:"elapsed-ms"`
+	FirstByteMs *int64               `json:"first-byte-ms,omitempty"`
+	Phases      map[string]any       `json:"phases,omitempty"`
+	Truncated   bool                 `json:"truncated"`
+	Error       string               `json:"error,omitempty"`
+	Download    *downloadSpeedResult `json:"download,omitempty"`
 }
 
 // A run owns all its concurrent requests. Keep cancellation tombstones briefly
@@ -142,6 +144,11 @@ func handleStreamingProbe(paramsString string) string {
 		return finish()
 	}
 	proxy := tunnel.Proxies()[params.ProxyName]
+	if params.DownloadSpeed {
+		result.Download = measureDownloadSpeed(params.RunID, proxy)
+		result.OK = result.Download.Status == "complete"
+		return finish()
+	}
 	if proxy == nil {
 		result.Error = "proxy not found"
 		return finish()

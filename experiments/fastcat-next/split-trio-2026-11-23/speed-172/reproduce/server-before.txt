@@ -1,0 +1,71 @@
+Linux localhost 6.8.0-146-generic #146-Ubuntu SMP PREEMPT_DYNAMIC Thu Sep  3 16:12:30 UTC 2026 x86_64 x86_64 x86_64 GNU/Linux
+Architecture:                            x86_64
+CPU op-mode(s):                          32-bit, 64-bit
+Address sizes:                           48 bits physical, 48 bits virtual
+Byte Order:                              Little Endian
+CPU(s):                                  1
+On-line CPU(s) list:                     0
+Vendor ID:                               AuthenticAMD
+BIOS Vendor ID:                          QEMU
+Model name:                              AMD EPYC 7642 48-Core Processor
+BIOS Model name:                         pc-q35-10.1  CPU @ 2.0GHz
+BIOS CPU family:                         1
+CPU family:                              23
+Model:                                   49
+Thread(s) per core:                      1
+Core(s) per socket:                      1
+Socket(s):                               1
+Stepping:                                0
+BogoMIPS:                                4599.99
+Flags:                                   fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 syscall nx mmxext fxsr_opt pdpe1gb rdtscp lm rep_good nopl cpuid extd_apicid tsc_known_freq pni pclmulqdq ssse3 fma cx16 sse4_1 sse4_2 x2apic movbe popcnt tsc_deadline_timer aes xsave avx f16c rdrand hypervisor lahf_lm cmp_legacy cr8_legacy abm sse4a misalignsse 3dnowprefetch osvw perfctr_core ssbd ibrs ibpb stibp vmmcall fsgsbase tsc_adjust bmi1 avx2 smep bmi2 rdseed adx smap clflushopt clwb sha_ni xsaveopt xsavec xgetbv1 xsaves clzero xsaveerptr wbnoinvd arat umip rdpid overflow_recov succor
+Hypervisor vendor:                       KVM
+Virtualization type:                     full
+L1d cache:                               64 KiB (1 instance)
+L1i cache:                               64 KiB (1 instance)
+L2 cache:                                512 KiB (1 instance)
+L3 cache:                                16 MiB (1 instance)
+NUMA node(s):                            1
+NUMA node0 CPU(s):                       0
+Vulnerability Gather data sampling:      Not affected
+Vulnerability Indirect target selection: Not affected
+Vulnerability Itlb multihit:             Not affected
+Vulnerability L1tf:                      Not affected
+Vulnerability Mds:                       Not affected
+Vulnerability Meltdown:                  Not affected
+Vulnerability Mmio stale data:           Not affected
+Vulnerability Reg file data sampling:    Not affected
+Vulnerability Retbleed:                  Mitigation; untrained return thunk; SMT disabled
+Vulnerability Spec rstack overflow:      Mitigation; SMT disabled
+Vulnerability Spec store bypass:         Mitigation; Speculative Store Bypass disabled via prctl
+Vulnerability Spectre v1:                Mitigation; usercopy/swapgs barriers and __user pointer sanitization
+Vulnerability Spectre v2:                Mitigation; Retpolines; IBPB conditional; STIBP disabled; RSB filling; PBRSB-eIBRS Not affected; BHI Not affected
+Vulnerability Srbds:                     Not affected
+Vulnerability Tsa:                       Not affected
+Vulnerability Tsx async abort:           Not affected
+Vulnerability Vmscape:                   Not affected
+               total        used        free      shared  buff/cache   available
+Mem:             961         341         245           0         519         620
+Swap:              0           0           0
+udp UNCONN 0      0         127.0.0.54:53    0.0.0.0:*
+udp UNCONN 0      0      127.0.0.53%lo:53    0.0.0.0:*
+udp UNCONN 0      0          127.0.0.1:323   0.0.0.0:*
+udp UNCONN 0      0                  *:33793       *:*
+udp UNCONN 0      0                  *:36877       *:*
+udp UNCONN 0      0                  *:40992       *:*
+udp UNCONN 0      0                  *:32844       *:*
+udp UNCONN 0      0                  *:54943       *:*
+udp UNCONN 0      0                  *:42673       *:*
+udp UNCONN 0      0                  *:39137       *:*
+udp UNCONN 0      0                  *:53995       *:*
+udp UNCONN 0      0                  *:58648       *:*
+udp UNCONN 0      0                  *:56602       *:*
+udp UNCONN 0      0                  *:51002       *:*
+udp UNCONN 0      0              [::1]:323      [::]:*
+udp UNCONN 0      0                  *:44389       *:*
+udp UNCONN 0      0                  *:49001       *:*
+udp UNCONN 0      0                  *:37301       *:*
+tcp LISTEN 0      4096      127.0.0.54:53    0.0.0.0:*
+tcp LISTEN 0      4096   127.0.0.53%lo:53    0.0.0.0:*
+tcp LISTEN 0      4096         0.0.0.0:22    0.0.0.0:*
+tcp LISTEN 0      4096               *:20501       *:*
+tcp LISTEN 0      4096            [::]:22       [::]:*

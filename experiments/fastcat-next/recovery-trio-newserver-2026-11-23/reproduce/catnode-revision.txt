@@ -1,0 +1,2 @@
+6df47299b930b438d8d2728762aa220c50168177
+dirty Go files are represented by catnode-source-hashes.json; no production configuration included

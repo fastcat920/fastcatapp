@@ -1,0 +1,17 @@
+{
+  "phase": "concurrency",
+  "plan": [
+    {
+      "arm": "baseline",
+      "bytes": 131119,
+      "count": 16,
+      "workers": 4
+    },
+    {
+      "arm": "capped",
+      "bytes": 131119,
+      "count": 16,
+      "workers": 4
+    }
+  ]
+}

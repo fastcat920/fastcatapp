@@ -1,0 +1,51 @@
+{
+  "phase": "udp",
+  "arm": "fcnv2",
+  "entry_port": 18530,
+  "round": 4,
+  "rounds": 5,
+  "position": 5,
+  "args": [
+    "./compare",
+    "-config",
+    "bench.json",
+    "-protocol",
+    "fcnv2",
+    "-udp-diagnostic",
+    "-count",
+    "28",
+    "-timeout",
+    "55s"
+  ],
+  "planned": 28,
+  "diagnostic_id": "fcnfive04-udp-4-fcnv2",
+  "host_timeout_s": 70,
+  "before": {
+    "default_net_id": 361,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795610505747,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "after": {
+    "default_net_id": 361,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795610513214,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "network_stable": true,
+  "status": "exited",
+  "exit_code": 1,
+  "start_unix_ms": 1795610505748,
+  "end_unix_ms": 1795610513137,
+  "elapsed_ms": 7389.054417
+}

@@ -1,0 +1,23 @@
+{
+  "wire": {
+    "compare": "c70b8059b0c2b1e530ee68ce85e986a44d259d5a6c96d194ee2f39e0ac829a38",
+    "next-diagnostic": "4240b5fcb5d78fa7fcaba99e93dfa96bb639e9713e2b1243804a26ad5d228148"
+  },
+  "reply": {
+    "compare-frozen": "a639f438e20990ceb7684192de64f6d0d4d405e7103fe51ede8e8c97ac4f12d8",
+    "next-frozen": "e44d076b142d7ac2e5e435d6a6bbc300038db34a87a7141173369f2c40d5fe0f"
+  },
+  "ecn-device": {
+    "compare": "cc9d896094b837660f03e141604c564a99125d052acef54d62812858d16cba51",
+    "compare-mac": "fda66329f8df1da9890fae12f965eb1d5dbea0a8533249d6b635b2751694337b",
+    "next-diagnostic": "f6ff24df517d249e4c7fd750b7753e4f7f9e77eea30ca9f16c0350f99b0c38c2"
+  },
+  "ecn-fixed": {
+    "compare": "93ee454db395fedf24b808499ec24ccd9d6c5f3f35f94ba8085435def3ee2e64",
+    "next-diagnostic": "697bbdf66e25c0e92fd15171d59c82b220d54328fd515eff1f4ba811951acfaf"
+  },
+  "ecn-performance": {
+    "compare": "93ee454db395fedf24b808499ec24ccd9d6c5f3f35f94ba8085435def3ee2e64",
+    "next-diagnostic": "697bbdf66e25c0e92fd15171d59c82b220d54328fd515eff1f4ba811951acfaf"
+  }
+}

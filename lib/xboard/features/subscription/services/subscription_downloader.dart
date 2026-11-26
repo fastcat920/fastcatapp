@@ -217,7 +217,9 @@ class SubscriptionDownloader {
       }
 
       // 发起请求（追加 flag=meta 确保后端返回 ClashMeta 格式）
-      final uri = Uri.parse(SubscriptionUrlHelper.ensureFastCatFlag(url));
+      final uri = Uri.parse(
+        await SubscriptionUrlHelper.ensureFastCatFlagForCore(url),
+      );
       final request = await client.getUrl(uri);
 
       // 检查是否已取消

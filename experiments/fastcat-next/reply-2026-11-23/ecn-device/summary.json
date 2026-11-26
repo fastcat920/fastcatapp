@@ -1,0 +1,90 @@
+{
+  "android-default": {
+    "warm_samples": 48,
+    "success": 48,
+    "p50_ms": 400.728,
+    "p95_ms": 1000.733,
+    "status_p95_ms": 279.522,
+    "client_drops": {
+      "key_unavailable": 15
+    },
+    "server_drops": {
+      "key_unavailable": 9
+    },
+    "server_ecn_states": {
+      "testing": 52,
+      "capable": 52,
+      "unknown": 1
+    },
+    "server_sent_marks": {
+      "ECT(0)": 819
+    },
+    "client_received_marks": {
+      "ECT(0)": 687
+    }
+  },
+  "android-noecn": {
+    "warm_samples": 48,
+    "success": 48,
+    "p50_ms": 326.62,
+    "p95_ms": 712.388,
+    "status_p95_ms": 204.613,
+    "client_drops": {
+      "key_unavailable": 6
+    },
+    "server_drops": {
+      "key_unavailable": 4
+    },
+    "server_ecn_states": {},
+    "server_sent_marks": {
+      "unsupported": 817
+    },
+    "client_received_marks": {
+      "unsupported": 694
+    }
+  },
+  "mac-default": {
+    "warm_samples": 48,
+    "success": 48,
+    "p50_ms": 223.328,
+    "p95_ms": 691.151,
+    "status_p95_ms": 210.691,
+    "client_drops": {
+      "key_unavailable": 3
+    },
+    "server_drops": {
+      "key_unavailable": 2
+    },
+    "server_ecn_states": {
+      "testing": 52,
+      "capable": 52,
+      "unknown": 1
+    },
+    "server_sent_marks": {
+      "ECT(0)": 847
+    },
+    "client_received_marks": {
+      "ECT(0)": 686
+    }
+  },
+  "mac-noecn": {
+    "warm_samples": 48,
+    "success": 48,
+    "p50_ms": 326.635,
+    "p95_ms": 893.109,
+    "status_p95_ms": 210.192,
+    "client_drops": {
+      "key_unavailable": 3
+    },
+    "server_drops": {
+      "key_unavailable": 5
+    },
+    "server_ecn_states": {},
+    "server_sent_marks": {
+      "unsupported": 848
+    },
+    "client_received_marks": {
+      "unsupported": 684
+    }
+  }
+}

@@ -1,0 +1,52 @@
+Running as unit: fc-opt-backend-1795367958.service; invocation ID: 0c55a998ec834823a924f620f3bb0400
+Running as unit: fc-opt-next-1795367958.service; invocation ID: 5017615608634a7fb58fe16c5816d626
+/tmp/fc-next-ecn-perf/compare: 1 file pushed, 0 skipped. 36.7 MB/s (38889369 bytes in 1.011s)
+/tmp/fc-next-ecn-perf/client-1795367958.json: 1 file pushed, 0 skipped. 3.8 MB/s (432 bytes in 0.000s)
+/etc/ssl/cert.pem: 1 file pushed, 0 skipped. 297.4 MB/s (333483 bytes in 0.001s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+/tmp/fc-next-ecn-perf/reply-client-1795367958.json: 1 file pushed, 0 skipped. 5.4 MB/s (609 bytes in 0.000s)
+COMPLETE mixed-baseline-b1-p1
+COMPLETE mixed-noecn-b1-p2
+COMPLETE mixed-noecn-b2-p1
+COMPLETE mixed-baseline-b2-p2
+COMPLETE mixed-baseline-b3-p1
+COMPLETE mixed-noecn-b3-p2
+COMPLETE mixed-noecn-b4-p1
+COMPLETE mixed-baseline-b4-p2
+COMPLETE mixed-baseline-b5-p1
+COMPLETE mixed-noecn-b5-p2
+COMPLETE mixed-noecn-b6-p1
+COMPLETE mixed-baseline-b6-p2
+COMPLETE parallel-baseline-b1-p1
+COMPLETE parallel-noecn-b1-p2
+COMPLETE parallel-noecn-b2-p1
+COMPLETE parallel-baseline-b2-p2
+COMPLETE parallel-baseline-b3-p1
+COMPLETE parallel-noecn-b3-p2
+COMPLETE parallel-noecn-b4-p1
+COMPLETE parallel-baseline-b4-p2
+COMPLETE parallel-baseline-b5-p1
+COMPLETE parallel-noecn-b5-p2
+COMPLETE parallel-noecn-b6-p1
+COMPLETE parallel-baseline-b6-p2
+COMPLETE rolling-baseline-b1-p1
+COMPLETE rolling-noecn-b1-p2
+COMPLETE rolling-noecn-b2-p1
+COMPLETE rolling-baseline-b2-p2
+COMPLETE rolling-baseline-b3-p1
+COMPLETE rolling-noecn-b3-p2
+COMPLETE rolling-noecn-b4-p1
+COMPLETE rolling-baseline-b4-p2
+COMPLETE rolling-baseline-b5-p1
+COMPLETE rolling-noecn-b5-p2
+COMPLETE rolling-noecn-b6-p1
+COMPLETE rolling-baseline-b6-p2
+COMPLETE latency-baseline-b1-p1
+COMPLETE latency-noecn-b1-p2
+COMPLETE latency-noecn-b2-p1
+COMPLETE latency-baseline-b2-p2
+COMPLETE latency-baseline-b3-p1
+COMPLETE latency-noecn-b3-p2
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+VPN restored: True
+ECN PERFORMANCE COMPLETE

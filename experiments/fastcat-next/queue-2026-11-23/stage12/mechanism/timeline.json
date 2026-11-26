@@ -1,0 +1,50 @@
+[
+  {
+    "name": "latency-baseline-b1-p1",
+    "variant": "baseline",
+    "metric": "latency",
+    "block": 1,
+    "start": 1795401201.5306392,
+    "end": 1795401207.921935
+  },
+  {
+    "name": "latency-budget-b1-p2",
+    "variant": "budget",
+    "metric": "latency",
+    "block": 1,
+    "start": 1795401213.727561,
+    "end": 1795401224.756015
+  },
+  {
+    "name": "latency-budget-b2-p1",
+    "variant": "budget",
+    "metric": "latency",
+    "block": 2,
+    "start": 1795401230.5710762,
+    "end": 1795401237.232682
+  },
+  {
+    "name": "latency-baseline-b2-p2",
+    "variant": "baseline",
+    "metric": "latency",
+    "block": 2,
+    "start": 1795401243.1299782,
+    "end": 1795401252.4989
+  },
+  {
+    "name": "latency-baseline-b3-p1",
+    "variant": "baseline",
+    "metric": "latency",
+    "block": 3,
+    "start": 1795401258.394891,
+    "end": 1795401270.463406
+  },
+  {
+    "name": "latency-budget-b3-p2",
+    "variant": "budget",
+    "metric": "latency",
+    "block": 3,
+    "start": 1795401276.393455,
+    "end": 1795401289.009744
+  }
+]

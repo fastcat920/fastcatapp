@@ -1,0 +1,9 @@
+failed
+active
+active
+State  Recv-Q Send-Q Local Address:Port  Peer Address:Port
+LISTEN 0      4096               *:18466            *:*   
+State  Recv-Q Send-Q Local Address:Port  Peer Address:Port
+UNCONN 0      0                  *:18468            *:*   
+State  Recv-Q Send-Q Local Address:Port  Peer Address:Port
+UNCONN 0      0                  *:18469            *:*   

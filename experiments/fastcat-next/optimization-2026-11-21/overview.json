@@ -1,0 +1,10 @@
+{
+  "formal_short_requests": 2004,
+  "short_request_success": 1891,
+  "profiles": 12,
+  "download_attempts": 55,
+  "complete_verified_downloads": 39,
+  "throughput_groups": 72,
+  "valid_throughput_groups": 70,
+  "production_modified": false
+}

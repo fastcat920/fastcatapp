@@ -1,0 +1,156 @@
+{
+  "samples": 72,
+  "scope": "Synthetic implementations, one network/device; not a GFW detection probability estimate",
+  "models": {
+    "legacy-counts_only": {
+      "rule": {
+        "feature": "client_records",
+        "threshold": 5.5,
+        "sign": 1
+      },
+      "train": {
+        "tp": 12,
+        "tn": 12,
+        "fp": 0,
+        "fn": 0,
+        "tpr": 1.0,
+        "fpr": 0.0,
+        "balanced_accuracy": 1.0
+      },
+      "holdout": {
+        "tp": 12,
+        "tn": 12,
+        "fp": 0,
+        "fn": 0,
+        "tpr": 1.0,
+        "fpr": 0.0,
+        "balanced_accuracy": 1.0
+      }
+    },
+    "legacy-all": {
+      "rule": {
+        "feature": "client_records",
+        "threshold": 5.5,
+        "sign": 1
+      },
+      "train": {
+        "tp": 12,
+        "tn": 12,
+        "fp": 0,
+        "fn": 0,
+        "tpr": 1.0,
+        "fpr": 0.0,
+        "balanced_accuracy": 1.0
+      },
+      "holdout": {
+        "tp": 12,
+        "tn": 12,
+        "fp": 0,
+        "fn": 0,
+        "tpr": 1.0,
+        "fpr": 0.0,
+        "balanced_accuracy": 1.0
+      }
+    },
+    "coalesced-counts_only": {
+      "rule": {
+        "feature": "server_small_records",
+        "threshold": 6.5,
+        "sign": -1
+      },
+      "train": {
+        "tp": 9,
+        "tn": 8,
+        "fp": 4,
+        "fn": 3,
+        "tpr": 0.75,
+        "fpr": 0.3333333333333333,
+        "balanced_accuracy": 0.7083333333333334
+      },
+      "holdout": {
+        "tp": 8,
+        "tn": 8,
+        "fp": 4,
+        "fn": 4,
+        "tpr": 0.6666666666666666,
+        "fpr": 0.3333333333333333,
+        "balanced_accuracy": 0.6666666666666666
+      }
+    },
+    "coalesced-all": {
+      "rule": {
+        "feature": "log_client_tcp_bytes",
+        "threshold": 7.605711260660989,
+        "sign": 1
+      },
+      "train": {
+        "tp": 12,
+        "tn": 12,
+        "fp": 0,
+        "fn": 0,
+        "tpr": 1.0,
+        "fpr": 0.0,
+        "balanced_accuracy": 1.0
+      },
+      "holdout": {
+        "tp": 12,
+        "tn": 12,
+        "fp": 0,
+        "fn": 0,
+        "tpr": 1.0,
+        "fpr": 0.0,
+        "balanced_accuracy": 1.0
+      }
+    }
+  },
+  "workloads": {
+    "train-legacy": {
+      "samples": 12,
+      "server_records_p50": 11.0,
+      "client_records": [
+        6
+      ],
+      "rst_packets": 0
+    },
+    "train-coalesced": {
+      "samples": 12,
+      "server_records_p50": 11.0,
+      "client_records": [
+        5
+      ],
+      "rst_packets": 0
+    },
+    "train-rpc": {
+      "samples": 12,
+      "server_records_p50": 12.5,
+      "client_records": [
+        5
+      ],
+      "rst_packets": 0
+    },
+    "holdout-legacy": {
+      "samples": 12,
+      "server_records_p50": 13.0,
+      "client_records": [
+        6
+      ],
+      "rst_packets": 0
+    },
+    "holdout-coalesced": {
+      "samples": 12,
+      "server_records_p50": 13.0,
+      "client_records": [
+        5
+      ],
+      "rst_packets": 0
+    },
+    "holdout-rpc": {
+      "samples": 12,
+      "server_records_p50": 16.5,
+      "client_records": [
+        5
+      ],
+      "rst_packets": 0
+    }
+  }
+}

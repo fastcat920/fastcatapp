@@ -1,0 +1,2 @@
+{"event":"udp_packet","protocol":"hysteria2","run_id":"d57ac5fc941753b8","sequence":1,"bytes":64,"attempted":true,"submitted":true,"echoed":true,"send_unix_ns":1795609211946296930,"echo_deadline_unix_ns":1795609213446486469,"echo_rtt_ms":102.405538,"unmatched_replies":0}
+{"event":"udp_summary","protocol":"hysteria2","run_id":"d57ac5fc941753b8","planned":1,"attempted":1,"submitted":1,"echoed":1,"by_size":[{"bytes":64,"planned":1,"attempted":1,"submitted":1,"echoed":1}],"setup_ms":1363.195,"elapsed_ms":1466.853769,"echo_rtt_ms":{"n":1,"p50":102.405538,"p95":102.405538}}

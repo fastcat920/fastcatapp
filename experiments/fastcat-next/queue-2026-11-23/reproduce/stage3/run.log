@@ -1,0 +1,106 @@
+Running as unit: fc-opt-backend-1795402275.service; invocation ID: 4b27c085d48b46c5a0cda16bff90cfe6
+Running as unit: fc-opt-next-1795402275.service; invocation ID: 471fa6ae142e43b7bd7aa2e3ffbc10cf
+/tmp/fc-next-recovery/compare: 1 file pushed, 0 skipped. 38.3 MB/s (38890723 bytes in 0.969s)
+/tmp/fc-next-recovery/client-1795402275.json: 1 file pushed, 0 skipped. 4.2 MB/s (432 bytes in 0.000s)
+/etc/ssl/cert.pem: 1 file pushed, 0 skipped. 172.8 MB/s (333483 bytes in 0.002s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+/tmp/fc-next-recovery/reply-client-1795402275.json: 1 file pushed, 0 skipped. 5.7 MB/s (609 bytes in 0.000s)
+/tmp/fc-next-recovery/latency-baseline-b1-p1-1795402275.json: 1 file pushed, 0 skipped. 5.8 MB/s (637 bytes in 0.000s)
+COMPLETE latency-baseline-b1-p1
+/tmp/fc-next-recovery/latency-recovery-b1-p2-1795402275.json: 1 file pushed, 0 skipped. 5.8 MB/s (636 bytes in 0.000s)
+COMPLETE latency-recovery-b1-p2
+/tmp/fc-next-recovery/latency-recovery-b2-p1-1795402275.json: 1 file pushed, 0 skipped. 5.9 MB/s (636 bytes in 0.000s)
+COMPLETE latency-recovery-b2-p1
+/tmp/fc-next-recovery/latency-baseline-b2-p2-1795402275.json: 1 file pushed, 0 skipped. 6.1 MB/s (637 bytes in 0.000s)
+COMPLETE latency-baseline-b2-p2
+/tmp/fc-next-recovery/latency-baseline-b3-p1-1795402275.json: 1 file pushed, 0 skipped. 6.5 MB/s (637 bytes in 0.000s)
+COMPLETE latency-baseline-b3-p1
+/tmp/fc-next-recovery/latency-recovery-b3-p2-1795402275.json: 1 file pushed, 0 skipped. 6.5 MB/s (636 bytes in 0.000s)
+COMPLETE latency-recovery-b3-p2
+/tmp/fc-next-recovery/mixed-baseline-b1-p1-1795402275.json: 1 file pushed, 0 skipped. 4.6 MB/s (637 bytes in 0.000s)
+COMPLETE mixed-baseline-b1-p1
+/tmp/fc-next-recovery/mixed-recovery-b1-p2-1795402275.json: 1 file pushed, 0 skipped. 5.4 MB/s (636 bytes in 0.000s)
+COMPLETE mixed-recovery-b1-p2
+/tmp/fc-next-recovery/mixed-recovery-b2-p1-1795402275.json: 1 file pushed, 0 skipped. 5.7 MB/s (636 bytes in 0.000s)
+COMPLETE mixed-recovery-b2-p1
+/tmp/fc-next-recovery/mixed-baseline-b2-p2-1795402275.json: 1 file pushed, 0 skipped. 5.6 MB/s (637 bytes in 0.000s)
+COMPLETE mixed-baseline-b2-p2
+/tmp/fc-next-recovery/mixed-baseline-b3-p1-1795402275.json: 1 file pushed, 0 skipped. 5.5 MB/s (637 bytes in 0.000s)
+COMPLETE mixed-baseline-b3-p1
+/tmp/fc-next-recovery/mixed-recovery-b3-p2-1795402275.json: 1 file pushed, 0 skipped. 5.1 MB/s (636 bytes in 0.000s)
+COMPLETE mixed-recovery-b3-p2
+/tmp/fc-next-recovery/mixed-recovery-b4-p1-1795402275.json: 1 file pushed, 0 skipped. 6.0 MB/s (636 bytes in 0.000s)
+COMPLETE mixed-recovery-b4-p1
+/tmp/fc-next-recovery/mixed-baseline-b4-p2-1795402275.json: 1 file pushed, 0 skipped. 5.6 MB/s (637 bytes in 0.000s)
+COMPLETE mixed-baseline-b4-p2
+/tmp/fc-next-recovery/mixed-baseline-b5-p1-1795402275.json: 1 file pushed, 0 skipped. 6.2 MB/s (637 bytes in 0.000s)
+COMPLETE mixed-baseline-b5-p1
+/tmp/fc-next-recovery/mixed-recovery-b5-p2-1795402275.json: 1 file pushed, 0 skipped. 5.8 MB/s (636 bytes in 0.000s)
+COMPLETE mixed-recovery-b5-p2
+/tmp/fc-next-recovery/mixed-recovery-b6-p1-1795402275.json: 1 file pushed, 0 skipped. 6.1 MB/s (636 bytes in 0.000s)
+COMPLETE mixed-recovery-b6-p1
+/tmp/fc-next-recovery/mixed-baseline-b6-p2-1795402275.json: 1 file pushed, 0 skipped. 5.1 MB/s (637 bytes in 0.000s)
+COMPLETE mixed-baseline-b6-p2
+/tmp/fc-next-recovery/parallel-baseline-b1-p1-1795402275.json: 1 file pushed, 0 skipped. 5.8 MB/s (637 bytes in 0.000s)
+COMPLETE parallel-baseline-b1-p1
+/tmp/fc-next-recovery/parallel-recovery-b1-p2-1795402275.json: 1 file pushed, 0 skipped. 5.3 MB/s (636 bytes in 0.000s)
+COMPLETE parallel-recovery-b1-p2
+/tmp/fc-next-recovery/parallel-recovery-b2-p1-1795402275.json: 1 file pushed, 0 skipped. 5.2 MB/s (636 bytes in 0.000s)
+COMPLETE parallel-recovery-b2-p1
+/tmp/fc-next-recovery/parallel-baseline-b2-p2-1795402275.json: 1 file pushed, 0 skipped. 5.9 MB/s (637 bytes in 0.000s)
+COMPLETE parallel-baseline-b2-p2
+/tmp/fc-next-recovery/parallel-baseline-b3-p1-1795402275.json: 1 file pushed, 0 skipped. 8.4 MB/s (637 bytes in 0.000s)
+COMPLETE parallel-baseline-b3-p1
+/tmp/fc-next-recovery/parallel-recovery-b3-p2-1795402275.json: 1 file pushed, 0 skipped. 5.1 MB/s (636 bytes in 0.000s)
+COMPLETE parallel-recovery-b3-p2
+/tmp/fc-next-recovery/parallel-recovery-b4-p1-1795402275.json: 1 file pushed, 0 skipped. 5.2 MB/s (636 bytes in 0.000s)
+COMPLETE parallel-recovery-b4-p1
+/tmp/fc-next-recovery/parallel-baseline-b4-p2-1795402275.json: 1 file pushed, 0 skipped. 6.5 MB/s (637 bytes in 0.000s)
+COMPLETE parallel-baseline-b4-p2
+/tmp/fc-next-recovery/parallel-baseline-b5-p1-1795402275.json: 1 file pushed, 0 skipped. 5.1 MB/s (637 bytes in 0.000s)
+COMPLETE parallel-baseline-b5-p1
+/tmp/fc-next-recovery/parallel-recovery-b5-p2-1795402275.json: 1 file pushed, 0 skipped. 6.3 MB/s (636 bytes in 0.000s)
+COMPLETE parallel-recovery-b5-p2
+/tmp/fc-next-recovery/parallel-recovery-b6-p1-1795402275.json: 1 file pushed, 0 skipped. 5.9 MB/s (636 bytes in 0.000s)
+COMPLETE parallel-recovery-b6-p1
+/tmp/fc-next-recovery/parallel-baseline-b6-p2-1795402275.json: 1 file pushed, 0 skipped. 10.0 MB/s (637 bytes in 0.000s)
+COMPLETE parallel-baseline-b6-p2
+/tmp/fc-next-recovery/rolling-baseline-b1-p1-1795402275.json: 1 file pushed, 0 skipped. 4.8 MB/s (637 bytes in 0.000s)
+COMPLETE rolling-baseline-b1-p1
+/tmp/fc-next-recovery/rolling-recovery-b1-p2-1795402275.json: 1 file pushed, 0 skipped. 6.0 MB/s (636 bytes in 0.000s)
+COMPLETE rolling-recovery-b1-p2
+/tmp/fc-next-recovery/rolling-recovery-b2-p1-1795402275.json: 1 file pushed, 0 skipped. 6.0 MB/s (636 bytes in 0.000s)
+COMPLETE rolling-recovery-b2-p1
+/tmp/fc-next-recovery/rolling-baseline-b2-p2-1795402275.json: 1 file pushed, 0 skipped. 10.0 MB/s (637 bytes in 0.000s)
+COMPLETE rolling-baseline-b2-p2
+/tmp/fc-next-recovery/rolling-baseline-b3-p1-1795402275.json: 1 file pushed, 0 skipped. 9.1 MB/s (637 bytes in 0.000s)
+COMPLETE rolling-baseline-b3-p1
+/tmp/fc-next-recovery/rolling-recovery-b3-p2-1795402275.json: 1 file pushed, 0 skipped. 3.4 MB/s (636 bytes in 0.000s)
+COMPLETE rolling-recovery-b3-p2
+/tmp/fc-next-recovery/rolling-recovery-b4-p1-1795402275.json: 1 file pushed, 0 skipped. 5.5 MB/s (636 bytes in 0.000s)
+COMPLETE rolling-recovery-b4-p1
+/tmp/fc-next-recovery/rolling-baseline-b4-p2-1795402275.json: 1 file pushed, 0 skipped. 5.0 MB/s (637 bytes in 0.000s)
+COMPLETE rolling-baseline-b4-p2
+/tmp/fc-next-recovery/rolling-baseline-b5-p1-1795402275.json: 1 file pushed, 0 skipped. 5.1 MB/s (637 bytes in 0.000s)
+COMPLETE rolling-baseline-b5-p1
+/tmp/fc-next-recovery/rolling-recovery-b5-p2-1795402275.json: 1 file pushed, 0 skipped. 5.8 MB/s (636 bytes in 0.000s)
+COMPLETE rolling-recovery-b5-p2
+/tmp/fc-next-recovery/rolling-recovery-b6-p1-1795402275.json: 1 file pushed, 0 skipped. 5.3 MB/s (636 bytes in 0.000s)
+COMPLETE rolling-recovery-b6-p1
+/tmp/fc-next-recovery/rolling-baseline-b6-p2-1795402275.json: 1 file pushed, 0 skipped. 4.9 MB/s (637 bytes in 0.000s)
+COMPLETE rolling-baseline-b6-p2
+/tmp/fc-next-recovery/latency-baseline-b1-p1-1795402275.json: 1 file pushed, 0 skipped. 6.0 MB/s (637 bytes in 0.000s)
+COMPLETE latency-baseline-b1-p1
+/tmp/fc-next-recovery/latency-recovery-b1-p2-1795402275.json: 1 file pushed, 0 skipped. 6.6 MB/s (636 bytes in 0.000s)
+COMPLETE latency-recovery-b1-p2
+/tmp/fc-next-recovery/latency-recovery-b2-p1-1795402275.json: 1 file pushed, 0 skipped. 5.1 MB/s (636 bytes in 0.000s)
+COMPLETE latency-recovery-b2-p1
+/tmp/fc-next-recovery/latency-baseline-b2-p2-1795402275.json: 1 file pushed, 0 skipped. 5.2 MB/s (637 bytes in 0.000s)
+COMPLETE latency-baseline-b2-p2
+/tmp/fc-next-recovery/latency-baseline-b3-p1-1795402275.json: 1 file pushed, 0 skipped. 7.0 MB/s (637 bytes in 0.000s)
+COMPLETE latency-baseline-b3-p1
+/tmp/fc-next-recovery/latency-recovery-b3-p2-1795402275.json: 1 file pushed, 0 skipped. 5.1 MB/s (636 bytes in 0.000s)
+COMPLETE latency-recovery-b3-p2
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+VPN restored: True
+RECOVERY STAGE3 COMPLETE

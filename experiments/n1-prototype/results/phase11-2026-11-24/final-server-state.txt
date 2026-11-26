@@ -1,0 +1,7 @@
+NRestarts=0
+InvocationID=b223b354925b4f4388ea4c8aba89ba69
+{"active_connections":1,"active_jobs":0,"active_sessions":0,"elapsed_ms":98000,"fd_count":9,"goroutines":5,"heap_alloc":2742200,"heap_sys":7897088,"num_gc":1,"os_threads":7,"pause_total_ns":20398,"pid":733608,"rss_kib":14440,"total_alloc":5901872}
+{"active_connections":1,"active_jobs":0,"active_sessions":1,"elapsed_ms":99000,"fd_count":10,"goroutines":6,"heap_alloc":2806984,"heap_sys":7897088,"num_gc":1,"os_threads":7,"pause_total_ns":20398,"pid":733608,"rss_kib":14444,"total_alloc":5966656}
+{"active_connections":1,"active_jobs":0,"active_sessions":1,"elapsed_ms":100000,"fd_count":10,"goroutines":6,"heap_alloc":2889816,"heap_sys":7897088,"num_gc":1,"os_threads":7,"pause_total_ns":20398,"pid":733608,"rss_kib":14452,"total_alloc":6049488}
+{"active_connections":0,"active_jobs":0,"active_sessions":0,"elapsed_ms":101000,"fd_count":8,"goroutines":4,"heap_alloc":2906128,"heap_sys":7897088,"num_gc":1,"os_threads":7,"pause_total_ns":20398,"pid":733608,"rss_kib":14452,"total_alloc":6065800}
+{"active_connections":0,"active_jobs":0,"active_sessions":0,"elapsed_ms":102000,"fd_count":8,"goroutines":4,"heap_alloc":2921784,"heap_sys":7897088,"num_gc":1,"os_threads":7,"pause_total_ns":20398,"pid":733608,"rss_kib":14452,"total_alloc":6081456}

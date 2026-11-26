@@ -1,0 +1,181 @@
+{
+  "phase": "matrix",
+  "plan": [
+    {
+      "arm": "capped",
+      "pair": 0,
+      "bytes": 7001,
+      "repeat": 2,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "baseline",
+      "pair": 0,
+      "bytes": 7001,
+      "repeat": 2,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "baseline",
+      "pair": 1,
+      "bytes": 1048576,
+      "repeat": 2,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "capped",
+      "pair": 1,
+      "bytes": 1048576,
+      "repeat": 2,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "capped",
+      "pair": 2,
+      "bytes": 4194304,
+      "repeat": 2,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "baseline",
+      "pair": 2,
+      "bytes": 4194304,
+      "repeat": 2,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "capped",
+      "pair": 3,
+      "bytes": 4194304,
+      "repeat": 1,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "baseline",
+      "pair": 3,
+      "bytes": 4194304,
+      "repeat": 1,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "baseline",
+      "pair": 4,
+      "bytes": 131119,
+      "repeat": 1,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "capped",
+      "pair": 4,
+      "bytes": 131119,
+      "repeat": 1,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "capped",
+      "pair": 5,
+      "bytes": 7001,
+      "repeat": 1,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "baseline",
+      "pair": 5,
+      "bytes": 7001,
+      "repeat": 1,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "baseline",
+      "pair": 6,
+      "bytes": 49157,
+      "repeat": 1,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "capped",
+      "pair": 6,
+      "bytes": 49157,
+      "repeat": 1,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "capped",
+      "pair": 7,
+      "bytes": 1048576,
+      "repeat": 1,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "baseline",
+      "pair": 7,
+      "bytes": 1048576,
+      "repeat": 1,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "capped",
+      "pair": 8,
+      "bytes": 131119,
+      "repeat": 2,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "baseline",
+      "pair": 8,
+      "bytes": 131119,
+      "repeat": 2,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "baseline",
+      "pair": 9,
+      "bytes": 49157,
+      "repeat": 2,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "capped",
+      "pair": 9,
+      "bytes": 49157,
+      "repeat": 2,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "capped",
+      "pair": 10,
+      "bytes": 4194304,
+      "repeat": 3,
+      "count": 1,
+      "workers": 1
+    },
+    {
+      "arm": "baseline",
+      "pair": 10,
+      "bytes": 4194304,
+      "repeat": 3,
+      "count": 1,
+      "workers": 1
+    }
+  ]
+}

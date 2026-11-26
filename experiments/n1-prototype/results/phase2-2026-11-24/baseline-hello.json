@@ -1,0 +1,1477 @@
+{
+  "capture": "baseline.pcap",
+  "ipv4_entry_packets": 643,
+  "client_hellos": [
+    {
+      "hello_bytes": 1490,
+      "cipher_suites": [
+        4865,
+        4866,
+        4867
+      ],
+      "extension_order": [
+        0,
+        11,
+        65281,
+        23,
+        18,
+        5,
+        10,
+        13,
+        50,
+        16,
+        43,
+        51
+      ],
+      "sni": "zlhk.fastcat.ink",
+      "groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "signature_algorithms": [
+        2052,
+        1027,
+        2055,
+        2053,
+        2054,
+        1283,
+        1539
+      ],
+      "alpn": [
+        "http/1.1"
+      ],
+      "versions": [
+        772
+      ],
+      "key_shares": [
+        {
+          "group": 4588,
+          "bytes": 1216
+        },
+        {
+          "group": 29,
+          "bytes": 32
+        }
+      ],
+      "normalized_feature_hash": "c94627acebf3a22b24b9ff9db6b8b33a1dc3cdca547bb09094bc8f283b51f360",
+      "client_packets": 36,
+      "client_wire_bytes": 4439,
+      "server_wire_bytes": 41140,
+      "client_unique_tcp_payload_bytes": 1683,
+      "server_unique_tcp_payload_bytes": 37968,
+      "client_tls_records": [
+        {
+          "type": 22,
+          "length": 1490
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 95
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ],
+      "server_tls_records": [
+        {
+          "type": 22,
+          "length": 1210
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 42
+        },
+        {
+          "type": 23,
+          "length": 3429
+        },
+        {
+          "type": 23,
+          "length": 97
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 1203
+        },
+        {
+          "type": 23,
+          "length": 2389
+        },
+        {
+          "type": 23,
+          "length": 555
+        },
+        {
+          "type": 23,
+          "length": 4761
+        },
+        {
+          "type": 23,
+          "length": 5947
+        },
+        {
+          "type": 23,
+          "length": 7133
+        },
+        {
+          "type": 23,
+          "length": 8319
+        },
+        {
+          "type": 23,
+          "length": 2735
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ]
+    },
+    {
+      "hello_bytes": 1490,
+      "cipher_suites": [
+        4865,
+        4866,
+        4867
+      ],
+      "extension_order": [
+        0,
+        11,
+        65281,
+        23,
+        18,
+        5,
+        10,
+        13,
+        50,
+        16,
+        43,
+        51
+      ],
+      "sni": "zlhk.fastcat.ink",
+      "groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "signature_algorithms": [
+        2052,
+        1027,
+        2055,
+        2053,
+        2054,
+        1283,
+        1539
+      ],
+      "alpn": [
+        "http/1.1"
+      ],
+      "versions": [
+        772
+      ],
+      "key_shares": [
+        {
+          "group": 4588,
+          "bytes": 1216
+        },
+        {
+          "group": 29,
+          "bytes": 32
+        }
+      ],
+      "normalized_feature_hash": "c94627acebf3a22b24b9ff9db6b8b33a1dc3cdca547bb09094bc8f283b51f360",
+      "client_packets": 36,
+      "client_wire_bytes": 4319,
+      "server_wire_bytes": 39464,
+      "client_unique_tcp_payload_bytes": 1683,
+      "server_unique_tcp_payload_bytes": 37968,
+      "client_tls_records": [
+        {
+          "type": 22,
+          "length": 1490
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 95
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ],
+      "server_tls_records": [
+        {
+          "type": 22,
+          "length": 1210
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 42
+        },
+        {
+          "type": 23,
+          "length": 3429
+        },
+        {
+          "type": 23,
+          "length": 97
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 1203
+        },
+        {
+          "type": 23,
+          "length": 2389
+        },
+        {
+          "type": 23,
+          "length": 555
+        },
+        {
+          "type": 23,
+          "length": 4761
+        },
+        {
+          "type": 23,
+          "length": 5947
+        },
+        {
+          "type": 23,
+          "length": 7133
+        },
+        {
+          "type": 23,
+          "length": 8319
+        },
+        {
+          "type": 23,
+          "length": 2735
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ]
+    },
+    {
+      "hello_bytes": 1490,
+      "cipher_suites": [
+        4865,
+        4866,
+        4867
+      ],
+      "extension_order": [
+        0,
+        11,
+        65281,
+        23,
+        18,
+        5,
+        10,
+        13,
+        50,
+        16,
+        43,
+        51
+      ],
+      "sni": "zlhk.fastcat.ink",
+      "groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "signature_algorithms": [
+        2052,
+        1027,
+        2055,
+        2053,
+        2054,
+        1283,
+        1539
+      ],
+      "alpn": [
+        "http/1.1"
+      ],
+      "versions": [
+        772
+      ],
+      "key_shares": [
+        {
+          "group": 4588,
+          "bytes": 1216
+        },
+        {
+          "group": 29,
+          "bytes": 32
+        }
+      ],
+      "normalized_feature_hash": "c94627acebf3a22b24b9ff9db6b8b33a1dc3cdca547bb09094bc8f283b51f360",
+      "client_packets": 38,
+      "client_wire_bytes": 5015,
+      "server_wire_bytes": 68591,
+      "client_unique_tcp_payload_bytes": 1683,
+      "server_unique_tcp_payload_bytes": 37967,
+      "client_tls_records": [
+        {
+          "type": 22,
+          "length": 1490
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 95
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ],
+      "server_tls_records": [
+        {
+          "type": 22,
+          "length": 1210
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 42
+        },
+        {
+          "type": 23,
+          "length": 3429
+        },
+        {
+          "type": 23,
+          "length": 96
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 1203
+        },
+        {
+          "type": 23,
+          "length": 2389
+        },
+        {
+          "type": 23,
+          "length": 555
+        },
+        {
+          "type": 23,
+          "length": 4761
+        },
+        {
+          "type": 23,
+          "length": 5947
+        },
+        {
+          "type": 23,
+          "length": 7133
+        },
+        {
+          "type": 23,
+          "length": 8319
+        },
+        {
+          "type": 23,
+          "length": 2735
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ]
+    },
+    {
+      "hello_bytes": 1490,
+      "cipher_suites": [
+        4865,
+        4866,
+        4867
+      ],
+      "extension_order": [
+        0,
+        11,
+        65281,
+        23,
+        18,
+        5,
+        10,
+        13,
+        50,
+        16,
+        43,
+        51
+      ],
+      "sni": "zlhk.fastcat.ink",
+      "groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "signature_algorithms": [
+        2052,
+        1027,
+        2055,
+        2053,
+        2054,
+        1283,
+        1539
+      ],
+      "alpn": [
+        "http/1.1"
+      ],
+      "versions": [
+        772
+      ],
+      "key_shares": [
+        {
+          "group": 4588,
+          "bytes": 1216
+        },
+        {
+          "group": 29,
+          "bytes": 32
+        }
+      ],
+      "normalized_feature_hash": "c94627acebf3a22b24b9ff9db6b8b33a1dc3cdca547bb09094bc8f283b51f360",
+      "client_packets": 36,
+      "client_wire_bytes": 4855,
+      "server_wire_bytes": 59605,
+      "client_unique_tcp_payload_bytes": 1683,
+      "server_unique_tcp_payload_bytes": 37967,
+      "client_tls_records": [
+        {
+          "type": 22,
+          "length": 1490
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 95
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ],
+      "server_tls_records": [
+        {
+          "type": 22,
+          "length": 1210
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 42
+        },
+        {
+          "type": 23,
+          "length": 3429
+        },
+        {
+          "type": 23,
+          "length": 96
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 1203
+        },
+        {
+          "type": 23,
+          "length": 2389
+        },
+        {
+          "type": 23,
+          "length": 555
+        },
+        {
+          "type": 23,
+          "length": 4761
+        },
+        {
+          "type": 23,
+          "length": 5947
+        },
+        {
+          "type": 23,
+          "length": 7133
+        },
+        {
+          "type": 23,
+          "length": 8319
+        },
+        {
+          "type": 23,
+          "length": 2735
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ]
+    },
+    {
+      "hello_bytes": 1490,
+      "cipher_suites": [
+        4865,
+        4866,
+        4867
+      ],
+      "extension_order": [
+        0,
+        11,
+        65281,
+        23,
+        18,
+        5,
+        10,
+        13,
+        50,
+        16,
+        43,
+        51
+      ],
+      "sni": "zlhk.fastcat.ink",
+      "groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "signature_algorithms": [
+        2052,
+        1027,
+        2055,
+        2053,
+        2054,
+        1283,
+        1539
+      ],
+      "alpn": [
+        "http/1.1"
+      ],
+      "versions": [
+        772
+      ],
+      "key_shares": [
+        {
+          "group": 4588,
+          "bytes": 1216
+        },
+        {
+          "group": 29,
+          "bytes": 32
+        }
+      ],
+      "normalized_feature_hash": "c94627acebf3a22b24b9ff9db6b8b33a1dc3cdca547bb09094bc8f283b51f360",
+      "client_packets": 37,
+      "client_wire_bytes": 4715,
+      "server_wire_bytes": 43993,
+      "client_unique_tcp_payload_bytes": 1683,
+      "server_unique_tcp_payload_bytes": 37967,
+      "client_tls_records": [
+        {
+          "type": 22,
+          "length": 1490
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 95
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ],
+      "server_tls_records": [
+        {
+          "type": 22,
+          "length": 1210
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 42
+        },
+        {
+          "type": 23,
+          "length": 3429
+        },
+        {
+          "type": 23,
+          "length": 96
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 1203
+        },
+        {
+          "type": 23,
+          "length": 2389
+        },
+        {
+          "type": 23,
+          "length": 555
+        },
+        {
+          "type": 23,
+          "length": 4761
+        },
+        {
+          "type": 23,
+          "length": 5947
+        },
+        {
+          "type": 23,
+          "length": 7133
+        },
+        {
+          "type": 23,
+          "length": 8319
+        },
+        {
+          "type": 23,
+          "length": 2735
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ]
+    },
+    {
+      "hello_bytes": 1490,
+      "cipher_suites": [
+        4865,
+        4866,
+        4867
+      ],
+      "extension_order": [
+        0,
+        11,
+        65281,
+        23,
+        18,
+        5,
+        10,
+        13,
+        50,
+        16,
+        43,
+        51
+      ],
+      "sni": "zlhk.fastcat.ink",
+      "groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "signature_algorithms": [
+        2052,
+        1027,
+        2055,
+        2053,
+        2054,
+        1283,
+        1539
+      ],
+      "alpn": [
+        "http/1.1"
+      ],
+      "versions": [
+        772
+      ],
+      "key_shares": [
+        {
+          "group": 4588,
+          "bytes": 1216
+        },
+        {
+          "group": 29,
+          "bytes": 32
+        }
+      ],
+      "normalized_feature_hash": "c94627acebf3a22b24b9ff9db6b8b33a1dc3cdca547bb09094bc8f283b51f360",
+      "client_packets": 36,
+      "client_wire_bytes": 4523,
+      "server_wire_bytes": 42382,
+      "client_unique_tcp_payload_bytes": 1683,
+      "server_unique_tcp_payload_bytes": 37966,
+      "client_tls_records": [
+        {
+          "type": 22,
+          "length": 1490
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 95
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ],
+      "server_tls_records": [
+        {
+          "type": 22,
+          "length": 1210
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 42
+        },
+        {
+          "type": 23,
+          "length": 3429
+        },
+        {
+          "type": 23,
+          "length": 95
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 1203
+        },
+        {
+          "type": 23,
+          "length": 2389
+        },
+        {
+          "type": 23,
+          "length": 555
+        },
+        {
+          "type": 23,
+          "length": 4761
+        },
+        {
+          "type": 23,
+          "length": 5947
+        },
+        {
+          "type": 23,
+          "length": 7133
+        },
+        {
+          "type": 23,
+          "length": 8319
+        },
+        {
+          "type": 23,
+          "length": 2735
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ]
+    },
+    {
+      "hello_bytes": 1490,
+      "cipher_suites": [
+        4865,
+        4866,
+        4867
+      ],
+      "extension_order": [
+        0,
+        11,
+        65281,
+        23,
+        18,
+        5,
+        10,
+        13,
+        50,
+        16,
+        43,
+        51
+      ],
+      "sni": "zlhk.fastcat.ink",
+      "groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "signature_algorithms": [
+        2052,
+        1027,
+        2055,
+        2053,
+        2054,
+        1283,
+        1539
+      ],
+      "alpn": [
+        "http/1.1"
+      ],
+      "versions": [
+        772
+      ],
+      "key_shares": [
+        {
+          "group": 4588,
+          "bytes": 1216
+        },
+        {
+          "group": 29,
+          "bytes": 32
+        }
+      ],
+      "normalized_feature_hash": "c94627acebf3a22b24b9ff9db6b8b33a1dc3cdca547bb09094bc8f283b51f360",
+      "client_packets": 37,
+      "client_wire_bytes": 4795,
+      "server_wire_bytes": 45960,
+      "client_unique_tcp_payload_bytes": 1683,
+      "server_unique_tcp_payload_bytes": 37968,
+      "client_tls_records": [
+        {
+          "type": 22,
+          "length": 1490
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 95
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ],
+      "server_tls_records": [
+        {
+          "type": 22,
+          "length": 1210
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 42
+        },
+        {
+          "type": 23,
+          "length": 3429
+        },
+        {
+          "type": 23,
+          "length": 97
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 1203
+        },
+        {
+          "type": 23,
+          "length": 2389
+        },
+        {
+          "type": 23,
+          "length": 555
+        },
+        {
+          "type": 23,
+          "length": 4761
+        },
+        {
+          "type": 23,
+          "length": 5947
+        },
+        {
+          "type": 23,
+          "length": 7133
+        },
+        {
+          "type": 23,
+          "length": 8319
+        },
+        {
+          "type": 23,
+          "length": 2735
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ]
+    },
+    {
+      "hello_bytes": 1490,
+      "cipher_suites": [
+        4865,
+        4866,
+        4867
+      ],
+      "extension_order": [
+        0,
+        11,
+        65281,
+        23,
+        18,
+        5,
+        10,
+        13,
+        50,
+        16,
+        43,
+        51
+      ],
+      "sni": "zlhk.fastcat.ink",
+      "groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "signature_algorithms": [
+        2052,
+        1027,
+        2055,
+        2053,
+        2054,
+        1283,
+        1539
+      ],
+      "alpn": [
+        "http/1.1"
+      ],
+      "versions": [
+        772
+      ],
+      "key_shares": [
+        {
+          "group": 4588,
+          "bytes": 1216
+        },
+        {
+          "group": 29,
+          "bytes": 32
+        }
+      ],
+      "normalized_feature_hash": "c94627acebf3a22b24b9ff9db6b8b33a1dc3cdca547bb09094bc8f283b51f360",
+      "client_packets": 37,
+      "client_wire_bytes": 4643,
+      "server_wire_bytes": 40540,
+      "client_unique_tcp_payload_bytes": 1683,
+      "server_unique_tcp_payload_bytes": 37966,
+      "client_tls_records": [
+        {
+          "type": 22,
+          "length": 1490
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 95
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ],
+      "server_tls_records": [
+        {
+          "type": 22,
+          "length": 1210
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 42
+        },
+        {
+          "type": 23,
+          "length": 3429
+        },
+        {
+          "type": 23,
+          "length": 95
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 1203
+        },
+        {
+          "type": 23,
+          "length": 2389
+        },
+        {
+          "type": 23,
+          "length": 555
+        },
+        {
+          "type": 23,
+          "length": 4761
+        },
+        {
+          "type": 23,
+          "length": 5947
+        },
+        {
+          "type": 23,
+          "length": 7133
+        },
+        {
+          "type": 23,
+          "length": 8319
+        },
+        {
+          "type": 23,
+          "length": 2735
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ]
+    },
+    {
+      "hello_bytes": 1490,
+      "cipher_suites": [
+        4865,
+        4866,
+        4867
+      ],
+      "extension_order": [
+        0,
+        11,
+        65281,
+        23,
+        18,
+        5,
+        10,
+        13,
+        50,
+        16,
+        43,
+        51
+      ],
+      "sni": "zlhk.fastcat.ink",
+      "groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "signature_algorithms": [
+        2052,
+        1027,
+        2055,
+        2053,
+        2054,
+        1283,
+        1539
+      ],
+      "alpn": [
+        "http/1.1"
+      ],
+      "versions": [
+        772
+      ],
+      "key_shares": [
+        {
+          "group": 4588,
+          "bytes": 1216
+        },
+        {
+          "group": 29,
+          "bytes": 32
+        }
+      ],
+      "normalized_feature_hash": "c94627acebf3a22b24b9ff9db6b8b33a1dc3cdca547bb09094bc8f283b51f360",
+      "client_packets": 39,
+      "client_wire_bytes": 5107,
+      "server_wire_bytes": 53837,
+      "client_unique_tcp_payload_bytes": 1683,
+      "server_unique_tcp_payload_bytes": 37967,
+      "client_tls_records": [
+        {
+          "type": 22,
+          "length": 1490
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 95
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ],
+      "server_tls_records": [
+        {
+          "type": 22,
+          "length": 1210
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 42
+        },
+        {
+          "type": 23,
+          "length": 3429
+        },
+        {
+          "type": 23,
+          "length": 96
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 1203
+        },
+        {
+          "type": 23,
+          "length": 2389
+        },
+        {
+          "type": 23,
+          "length": 555
+        },
+        {
+          "type": 23,
+          "length": 4761
+        },
+        {
+          "type": 23,
+          "length": 5947
+        },
+        {
+          "type": 23,
+          "length": 7133
+        },
+        {
+          "type": 23,
+          "length": 8319
+        },
+        {
+          "type": 23,
+          "length": 2735
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ]
+    },
+    {
+      "hello_bytes": 1490,
+      "cipher_suites": [
+        4865,
+        4866,
+        4867
+      ],
+      "extension_order": [
+        0,
+        11,
+        65281,
+        23,
+        18,
+        5,
+        10,
+        13,
+        50,
+        16,
+        43,
+        51
+      ],
+      "sni": "zlhk.fastcat.ink",
+      "groups": [
+        4588,
+        4587,
+        4589,
+        29,
+        23,
+        24,
+        25
+      ],
+      "signature_algorithms": [
+        2052,
+        1027,
+        2055,
+        2053,
+        2054,
+        1283,
+        1539
+      ],
+      "alpn": [
+        "http/1.1"
+      ],
+      "versions": [
+        772
+      ],
+      "key_shares": [
+        {
+          "group": 4588,
+          "bytes": 1216
+        },
+        {
+          "group": 29,
+          "bytes": 32
+        }
+      ],
+      "normalized_feature_hash": "c94627acebf3a22b24b9ff9db6b8b33a1dc3cdca547bb09094bc8f283b51f360",
+      "client_packets": 36,
+      "client_wire_bytes": 4295,
+      "server_wire_bytes": 39535,
+      "client_unique_tcp_payload_bytes": 1683,
+      "server_unique_tcp_payload_bytes": 37967,
+      "client_tls_records": [
+        {
+          "type": 22,
+          "length": 1490
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 95
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ],
+      "server_tls_records": [
+        {
+          "type": 22,
+          "length": 1210
+        },
+        {
+          "type": 20,
+          "length": 1
+        },
+        {
+          "type": 23,
+          "length": 42
+        },
+        {
+          "type": 23,
+          "length": 3429
+        },
+        {
+          "type": 23,
+          "length": 96
+        },
+        {
+          "type": 23,
+          "length": 53
+        },
+        {
+          "type": 23,
+          "length": 1203
+        },
+        {
+          "type": 23,
+          "length": 2389
+        },
+        {
+          "type": 23,
+          "length": 555
+        },
+        {
+          "type": 23,
+          "length": 4761
+        },
+        {
+          "type": 23,
+          "length": 5947
+        },
+        {
+          "type": 23,
+          "length": 7133
+        },
+        {
+          "type": 23,
+          "length": 8319
+        },
+        {
+          "type": 23,
+          "length": 2735
+        },
+        {
+          "type": 23,
+          "length": 19
+        }
+      ]
+    }
+  ],
+  "limitations": "IPv4 TCP only; no encrypted content decryption; no detection-probability estimate"
+}

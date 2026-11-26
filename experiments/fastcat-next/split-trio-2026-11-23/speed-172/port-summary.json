@@ -1,0 +1,298 @@
+{
+  "latency": {
+    "next-opt": {
+      "19451": {
+        "total": 0,
+        "success": 0,
+        "p95_ms": null
+      },
+      "19458": {
+        "total": 0,
+        "success": 0,
+        "p95_ms": null
+      }
+    },
+    "next-base": {
+      "19451": {
+        "total": 0,
+        "success": 0,
+        "p95_ms": null
+      },
+      "19458": {
+        "total": 0,
+        "success": 0,
+        "p95_ms": null
+      }
+    },
+    "tuic": {
+      "19451": {
+        "total": 0,
+        "success": 0,
+        "p95_ms": null
+      },
+      "19458": {
+        "total": 0,
+        "success": 0,
+        "p95_ms": null
+      }
+    }
+  },
+  "mixed": {
+    "next-opt": {
+      "19451": {
+        "total": 0,
+        "success": 0,
+        "p95_ms": null
+      },
+      "19458": {
+        "total": 0,
+        "success": 0,
+        "p95_ms": null
+      }
+    },
+    "next-base": {
+      "19451": {
+        "total": 0,
+        "success": 0,
+        "p95_ms": null
+      },
+      "19458": {
+        "total": 0,
+        "success": 0,
+        "p95_ms": null
+      }
+    },
+    "tuic": {
+      "19451": {
+        "total": 0,
+        "success": 0,
+        "p95_ms": null
+      },
+      "19458": {
+        "total": 0,
+        "success": 0,
+        "p95_ms": null
+      }
+    }
+  },
+  "single64": {
+    "next-opt": {
+      "19451": {
+        "groups": 3,
+        "success": 3,
+        "jobs": 3,
+        "aggregate_mbps": 38.46055677340784
+      },
+      "19458": {
+        "groups": 3,
+        "success": 3,
+        "jobs": 3,
+        "aggregate_mbps": 37.490112799981375
+      }
+    },
+    "next-base": {
+      "19451": {
+        "groups": 3,
+        "success": 3,
+        "jobs": 3,
+        "aggregate_mbps": 38.25774331931875
+      },
+      "19458": {
+        "groups": 3,
+        "success": 3,
+        "jobs": 3,
+        "aggregate_mbps": 37.91996835711259
+      }
+    },
+    "tuic": {
+      "19451": {
+        "groups": 3,
+        "success": 3,
+        "jobs": 3,
+        "aggregate_mbps": 35.48543086278311
+      },
+      "19458": {
+        "groups": 3,
+        "success": 3,
+        "jobs": 3,
+        "aggregate_mbps": 38.65068599265676
+      }
+    }
+  },
+  "parallel4": {
+    "next-opt": {
+      "19451": {
+        "groups": 3,
+        "success": 12,
+        "jobs": 12,
+        "aggregate_mbps": 37.91907559741024
+      },
+      "19458": {
+        "groups": 3,
+        "success": 12,
+        "jobs": 12,
+        "aggregate_mbps": 36.70326639624447
+      }
+    },
+    "next-base": {
+      "19451": {
+        "groups": 3,
+        "success": 12,
+        "jobs": 12,
+        "aggregate_mbps": 37.26803655968716
+      },
+      "19458": {
+        "groups": 3,
+        "success": 12,
+        "jobs": 12,
+        "aggregate_mbps": 39.1077296037296
+      }
+    },
+    "tuic": {
+      "19451": {
+        "groups": 3,
+        "success": 12,
+        "jobs": 12,
+        "aggregate_mbps": 38.2423006933232
+      },
+      "19458": {
+        "groups": 3,
+        "success": 12,
+        "jobs": 12,
+        "aggregate_mbps": 35.069736881069545
+      }
+    }
+  },
+  "parallel8": {
+    "next-opt": {
+      "19451": {
+        "groups": 3,
+        "success": 24,
+        "jobs": 24,
+        "aggregate_mbps": 36.450747657629115
+      },
+      "19458": {
+        "groups": 3,
+        "success": 24,
+        "jobs": 24,
+        "aggregate_mbps": 34.96087902928217
+      }
+    },
+    "next-base": {
+      "19451": {
+        "groups": 3,
+        "success": 24,
+        "jobs": 24,
+        "aggregate_mbps": 38.43577548682703
+      },
+      "19458": {
+        "groups": 3,
+        "success": 24,
+        "jobs": 24,
+        "aggregate_mbps": 38.12823104966621
+      }
+    },
+    "tuic": {
+      "19451": {
+        "groups": 3,
+        "success": 24,
+        "jobs": 24,
+        "aggregate_mbps": 35.069736881069545
+      },
+      "19458": {
+        "groups": 3,
+        "success": 24,
+        "jobs": 24,
+        "aggregate_mbps": 37.613562260625876
+      }
+    }
+  },
+  "rolling": {
+    "next-opt": {
+      "19451": {
+        "groups": 3,
+        "success": 36,
+        "jobs": 36,
+        "aggregate_mbps": 36.381036412372374
+      },
+      "19458": {
+        "groups": 3,
+        "success": 36,
+        "jobs": 36,
+        "aggregate_mbps": 37.30688260909849
+      }
+    },
+    "next-base": {
+      "19451": {
+        "groups": 3,
+        "success": 36,
+        "jobs": 36,
+        "aggregate_mbps": 36.92880121062044
+      },
+      "19458": {
+        "groups": 3,
+        "success": 36,
+        "jobs": 36,
+        "aggregate_mbps": 37.818463792617635
+      }
+    },
+    "tuic": {
+      "19451": {
+        "groups": 3,
+        "success": 36,
+        "jobs": 36,
+        "aggregate_mbps": 36.211446917577234
+      },
+      "19458": {
+        "groups": 3,
+        "success": 36,
+        "jobs": 36,
+        "aggregate_mbps": 37.23845282611711
+      }
+    }
+  },
+  "rolling-small": {
+    "next-opt": {
+      "19451": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      },
+      "19458": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      }
+    },
+    "next-base": {
+      "19451": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      },
+      "19458": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      }
+    },
+    "tuic": {
+      "19451": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      },
+      "19458": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      }
+    }
+  }
+}

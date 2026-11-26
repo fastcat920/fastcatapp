@@ -1,0 +1,290 @@
+[
+  {
+    "name": "controlled-c1-b1-p1-next-base",
+    "version": "next-base",
+    "cycle": 1,
+    "block": 1,
+    "position": 1,
+    "start": 1795329069.099873,
+    "end": 1795329079.384887
+  },
+  {
+    "name": "controlled-c1-b1-p2-next-opt",
+    "version": "next-opt",
+    "cycle": 1,
+    "block": 1,
+    "position": 2,
+    "start": 1795329086.140737,
+    "end": 1795329097.732918
+  },
+  {
+    "name": "controlled-c1-b1-p3-tuic",
+    "version": "tuic",
+    "cycle": 1,
+    "block": 1,
+    "position": 3,
+    "start": 1795329103.3026009,
+    "end": 1795329133.607711
+  },
+  {
+    "name": "controlled-c1-b1-p4-next-primary",
+    "version": "next-primary",
+    "cycle": 1,
+    "block": 1,
+    "position": 4,
+    "start": 1795329140.981807,
+    "end": 1795329156.05989
+  },
+  {
+    "name": "controlled-c1-b2-p1-next-opt",
+    "version": "next-opt",
+    "cycle": 1,
+    "block": 2,
+    "position": 1,
+    "start": 1795329162.230433,
+    "end": 1795329170.357203
+  },
+  {
+    "name": "controlled-c1-b2-p2-next-primary",
+    "version": "next-primary",
+    "cycle": 1,
+    "block": 2,
+    "position": 2,
+    "start": 1795329176.334717,
+    "end": 1795329185.743568
+  },
+  {
+    "name": "controlled-c1-b2-p3-next-base",
+    "version": "next-base",
+    "cycle": 1,
+    "block": 2,
+    "position": 3,
+    "start": 1795329191.302433,
+    "end": 1795329197.2405891
+  },
+  {
+    "name": "controlled-c1-b2-p4-tuic",
+    "version": "tuic",
+    "cycle": 1,
+    "block": 2,
+    "position": 4,
+    "start": 1795329203.134238,
+    "end": 1795329212.242743
+  },
+  {
+    "name": "controlled-c1-b3-p1-next-primary",
+    "version": "next-primary",
+    "cycle": 1,
+    "block": 3,
+    "position": 1,
+    "start": 1795329218.2229812,
+    "end": 1795329224.5544162
+  },
+  {
+    "name": "controlled-c1-b3-p2-tuic",
+    "version": "tuic",
+    "cycle": 1,
+    "block": 3,
+    "position": 2,
+    "start": 1795329230.7555132,
+    "end": 1795329321.182059
+  },
+  {
+    "name": "controlled-c1-b3-p3-next-opt",
+    "version": "next-opt",
+    "cycle": 1,
+    "block": 3,
+    "position": 3,
+    "start": 1795329327.675689,
+    "end": 1795329344.446232
+  },
+  {
+    "name": "controlled-c1-b3-p4-next-base",
+    "version": "next-base",
+    "cycle": 1,
+    "block": 3,
+    "position": 4,
+    "start": 1795329350.898528,
+    "end": 1795329356.66324
+  },
+  {
+    "name": "controlled-c1-b4-p1-tuic",
+    "version": "tuic",
+    "cycle": 1,
+    "block": 4,
+    "position": 1,
+    "start": 1795329362.26349,
+    "end": 1795329380.9435441
+  },
+  {
+    "name": "controlled-c1-b4-p2-next-base",
+    "version": "next-base",
+    "cycle": 1,
+    "block": 4,
+    "position": 2,
+    "start": 1795329386.517411,
+    "end": 1795329393.365355
+  },
+  {
+    "name": "controlled-c1-b4-p3-next-primary",
+    "version": "next-primary",
+    "cycle": 1,
+    "block": 4,
+    "position": 3,
+    "start": 1795329399.88039,
+    "end": 1795329405.507396
+  },
+  {
+    "name": "controlled-c1-b4-p4-next-opt",
+    "version": "next-opt",
+    "cycle": 1,
+    "block": 4,
+    "position": 4,
+    "start": 1795329412.493653,
+    "end": 1795329418.6905038
+  },
+  {
+    "name": "controlled-c2-b1-p1-next-base",
+    "version": "next-base",
+    "cycle": 2,
+    "block": 1,
+    "position": 1,
+    "start": 1795329425.828959,
+    "end": 1795329431.293108
+  },
+  {
+    "name": "controlled-c2-b1-p2-next-opt",
+    "version": "next-opt",
+    "cycle": 2,
+    "block": 1,
+    "position": 2,
+    "start": 1795329436.9933991,
+    "end": 1795329454.740563
+  },
+  {
+    "name": "controlled-c2-b1-p3-tuic",
+    "version": "tuic",
+    "cycle": 2,
+    "block": 1,
+    "position": 3,
+    "start": 1795329463.535224,
+    "end": 1795329469.275933
+  },
+  {
+    "name": "controlled-c2-b1-p4-next-primary",
+    "version": "next-primary",
+    "cycle": 2,
+    "block": 1,
+    "position": 4,
+    "start": 1795329475.3098712,
+    "end": 1795329565.854153
+  },
+  {
+    "name": "controlled-c2-b2-p1-next-opt",
+    "version": "next-opt",
+    "cycle": 2,
+    "block": 2,
+    "position": 1,
+    "start": 1795329572.8253922,
+    "end": 1795329596.557107
+  },
+  {
+    "name": "controlled-c2-b2-p2-next-primary",
+    "version": "next-primary",
+    "cycle": 2,
+    "block": 2,
+    "position": 2,
+    "start": 1795329602.864172,
+    "end": 1795329616.846097
+  },
+  {
+    "name": "controlled-c2-b2-p3-next-base",
+    "version": "next-base",
+    "cycle": 2,
+    "block": 2,
+    "position": 3,
+    "start": 1795329622.403928,
+    "end": 1795329640.2282119
+  },
+  {
+    "name": "controlled-c2-b2-p4-tuic",
+    "version": "tuic",
+    "cycle": 2,
+    "block": 2,
+    "position": 4,
+    "start": 1795329646.369636,
+    "end": 1795329651.8532858
+  },
+  {
+    "name": "controlled-c2-b3-p1-next-primary",
+    "version": "next-primary",
+    "cycle": 2,
+    "block": 3,
+    "position": 1,
+    "start": 1795329658.723199,
+    "end": 1795329674.281705
+  },
+  {
+    "name": "controlled-c2-b3-p2-tuic",
+    "version": "tuic",
+    "cycle": 2,
+    "block": 3,
+    "position": 2,
+    "start": 1795329680.812717,
+    "end": 1795329771.2653708
+  },
+  {
+    "name": "controlled-c2-b3-p3-next-opt",
+    "version": "next-opt",
+    "cycle": 2,
+    "block": 3,
+    "position": 3,
+    "start": 1795329777.174921,
+    "end": 1795329802.1991968
+  },
+  {
+    "name": "controlled-c2-b3-p4-next-base",
+    "version": "next-base",
+    "cycle": 2,
+    "block": 3,
+    "position": 4,
+    "start": 1795329808.655648,
+    "end": 1795329832.3200781
+  },
+  {
+    "name": "controlled-c2-b4-p1-tuic",
+    "version": "tuic",
+    "cycle": 2,
+    "block": 4,
+    "position": 1,
+    "start": 1795329840.8955362,
+    "end": 1795329851.9447281
+  },
+  {
+    "name": "controlled-c2-b4-p2-next-base",
+    "version": "next-base",
+    "cycle": 2,
+    "block": 4,
+    "position": 2,
+    "start": 1795329857.5104,
+    "end": 1795329885.649589
+  },
+  {
+    "name": "controlled-c2-b4-p3-next-primary",
+    "version": "next-primary",
+    "cycle": 2,
+    "block": 4,
+    "position": 3,
+    "start": 1795329891.705868,
+    "end": 1795329911.633292
+  },
+  {
+    "name": "controlled-c2-b4-p4-next-opt",
+    "version": "next-opt",
+    "cycle": 2,
+    "block": 4,
+    "position": 4,
+    "start": 1795329917.9889479,
+    "end": 1795329924.624094
+  }
+]

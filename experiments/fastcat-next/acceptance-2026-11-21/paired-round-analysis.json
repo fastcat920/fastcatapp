@@ -1,0 +1,74 @@
+[
+  {
+    "workload": "controlled",
+    "phase": "cold",
+    "paired_rounds": 20,
+    "next_faster_rounds": 9,
+    "median_round_difference_ms": 105.00649999999985,
+    "block_bootstrap_median_diff_95ci_ms": [
+      -868.1719999999999,
+      203.48649999999998
+    ],
+    "note": "Next minus v2 BBR; concurrency samples grouped by round; reference interval for these rounds only"
+  },
+  {
+    "workload": "controlled",
+    "phase": "warm",
+    "paired_rounds": 20,
+    "next_faster_rounds": 11,
+    "median_round_difference_ms": -40.94449999999995,
+    "block_bootstrap_median_diff_95ci_ms": [
+      -267.80150000000003,
+      128.17049999999995
+    ],
+    "note": "Next minus v2 BBR; concurrency samples grouped by round; reference interval for these rounds only"
+  },
+  {
+    "workload": "controlled",
+    "phase": "batch",
+    "paired_rounds": 5,
+    "next_faster_rounds": 4,
+    "median_round_difference_ms": -244.35350000000005,
+    "block_bootstrap_median_diff_95ci_ms": [
+      -378.56799999999987,
+      330.56450000000007
+    ],
+    "note": "Next minus v2 BBR; concurrency samples grouped by round; reference interval for these rounds only"
+  },
+  {
+    "workload": "internet",
+    "phase": "cold",
+    "paired_rounds": 20,
+    "next_faster_rounds": 11,
+    "median_round_difference_ms": -47.09500000000003,
+    "block_bootstrap_median_diff_95ci_ms": [
+      -373.8715,
+      175.90949999999998
+    ],
+    "note": "Next minus v2 BBR; concurrency samples grouped by round; reference interval for these rounds only"
+  },
+  {
+    "workload": "internet",
+    "phase": "warm",
+    "paired_rounds": 20,
+    "next_faster_rounds": 13,
+    "median_round_difference_ms": -98.94950000000003,
+    "block_bootstrap_median_diff_95ci_ms": [
+      -263.8225,
+      81.64500000000001
+    ],
+    "note": "Next minus v2 BBR; concurrency samples grouped by round; reference interval for these rounds only"
+  },
+  {
+    "workload": "internet",
+    "phase": "batch",
+    "paired_rounds": 5,
+    "next_faster_rounds": 5,
+    "median_round_difference_ms": -280.561,
+    "block_bootstrap_median_diff_95ci_ms": [
+      -402.79550000000006,
+      -49.56449999999995
+    ],
+    "note": "Next minus v2 BBR; concurrency samples grouped by round; reference interval for these rounds only"
+  }
+]

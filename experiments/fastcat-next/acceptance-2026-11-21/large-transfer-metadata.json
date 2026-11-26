@@ -1,0 +1,20 @@
+{
+  "compare_sha256": "8e51faa59c685c4f40f7f8c5c9406c382aa64545dfb424d64046461b90b16269",
+  "server_sha256": "d6dd75f4ac9e48e1c2ffcd005cdb739049deaa61c7871fdd9feea1de5a43ea80",
+  "profiles": [
+    "next/h2",
+    "v2-bbr/h3",
+    "next/quic"
+  ],
+  "sizes": [
+    10485760,
+    104857600
+  ],
+  "attempts_each": 1,
+  "whole_download_deadlines_seconds": [
+    90,
+    240
+  ],
+  "no_automatic_retry": true,
+  "backend_cap_bytes": 134217728
+}

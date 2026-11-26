@@ -1,0 +1,1 @@
+32 groups, 384 tasks verified. Android VPN CONNECTED; stay_on_while_plugged_in=0. Temporary lab services, credentials, runtime directories, phone test files removed. Production TCP/UDP 443 and 18447 listening. No app update or default change.

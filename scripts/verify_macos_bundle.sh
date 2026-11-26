@@ -22,9 +22,9 @@ verify_macos_minimum_version() {
   local minimum
   minimum="$(otool -l "$binary" | awk '
     /LC_BUILD_VERSION/ { found=1; next }
-    found && /minos / { print $2; exit }
+    !reported && found && /minos / { print $2; reported=1 }
     /LC_VERSION_MIN_MACOSX/ { legacy=1; next }
-    legacy && /version / { print $2; exit }
+    !reported && legacy && /version / { print $2; reported=1 }
   ')"
   case "$minimum" in
     10.*|11.*|12.*) ;;

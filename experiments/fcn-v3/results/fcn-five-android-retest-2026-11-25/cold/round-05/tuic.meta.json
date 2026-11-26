@@ -1,0 +1,56 @@
+{
+  "phase": "cold",
+  "arm": "tuic",
+  "entry_port": 18533,
+  "round": 5,
+  "rounds": 5,
+  "position": 5,
+  "args": [
+    "./compare",
+    "-config",
+    "bench.json",
+    "-protocol",
+    "tuic",
+    "-phase",
+    "cold",
+    "-bytes",
+    "4096",
+    "-count",
+    "4",
+    "-timeout",
+    "12s",
+    "-diagnostic-id",
+    "fcnfive03-cold-5-tuic"
+  ],
+  "planned": 4,
+  "diagnostic_id": "fcnfive03-cold-5-tuic",
+  "host_timeout_s": 64,
+  "before": {
+    "default_net_id": 361,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795606440480,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "after": {
+    "default_net_id": 361,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795606445334,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "network_stable": true,
+  "status": "exited",
+  "exit_code": 0,
+  "start_unix_ms": 1795606440500,
+  "end_unix_ms": 1795606445225,
+  "elapsed_ms": 4724.903292
+}

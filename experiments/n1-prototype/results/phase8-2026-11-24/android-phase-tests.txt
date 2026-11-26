@@ -1,0 +1,15 @@
+=== RUN   TestSetupCancellationDuringTLS
+--- PASS: TestSetupCancellationDuringTLS (0.07s)
+=== RUN   TestBodyFailurePhaseAndPartialByteCount
+--- PASS: TestBodyFailurePhaseAndPartialByteCount (0.05s)
+=== RUN   TestTraceSeparatesDNSAndTCP
+--- PASS: TestTraceSeparatesDNSAndTCP (0.06s)
+=== RUN   TestSyntheticDNSFailureStage
+--- PASS: TestSyntheticDNSFailureStage (0.00s)
+=== RUN   TestSyntheticTCPFailureStage
+--- PASS: TestSyntheticTCPFailureStage (0.00s)
+=== RUN   TestWriteCapEveryPaddingLength
+--- PASS: TestWriteCapEveryPaddingLength (0.01s)
+=== RUN   TestWriteCapPreservesStreamAndFIN
+--- PASS: TestWriteCapPreservesStreamAndFIN (0.04s)
+PASS

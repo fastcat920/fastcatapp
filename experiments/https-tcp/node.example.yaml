@@ -1,0 +1,9 @@
+# Merge this node into an existing TEST profile; do not replace the default route.
+proxies:
+  - name: FastCat HTTPS v1 测试
+    type: fastcat-https
+    server: gateway.example.com
+    port: 443
+    sni: gateway.example.com
+    token: REPLACE_WITH_RANDOM_TOKEN_AT_LEAST_24_BYTES
+    # ca-file: /absolute/path/test-ca.pem

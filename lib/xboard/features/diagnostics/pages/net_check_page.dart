@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:fl_clash/clash/clash.dart';
+import 'package:fl_clash/common/common.dart' show system;
 import 'package:fl_clash/common/sensitive_masker.dart';
 import 'package:fl_clash/enum/enum.dart';
 import 'package:fl_clash/l10n/l10n.dart';
@@ -45,6 +46,10 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
   final _domainController = TextEditingController(text: _defaultDomain);
   bool _running = false;
   bool _copyingReport = false;
+  bool _downloadStopping = false;
+  String? _downloadRunId;
+  DateTime? _downloadSession;
+  TabController? _diagnosticsTabs;
   int _runGeneration = 0;
   String? _vpnStatus;
   List<_StepResult> _dnsResults = [];
@@ -59,7 +64,19 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
   NetworkDiagnosticDecision? _conclusion;
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final tabs = DefaultTabController.maybeOf(context);
+    if (tabs == _diagnosticsTabs) return;
+    _diagnosticsTabs?.removeListener(_stopDownloadOnTabChange);
+    _diagnosticsTabs = tabs;
+    tabs?.addListener(_stopDownloadOnTabChange);
+  }
+
+  @override
   void dispose() {
+    _diagnosticsTabs?.removeListener(_stopDownloadOnTabChange);
+    _stopDownload();
     _domainController.dispose();
     super.dispose();
   }
@@ -76,6 +93,7 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
     final domain = _domainController.text.trim();
     if (domain.isEmpty) return;
     final generation = ++_runGeneration;
+    final session = globalState.startTime;
 
     setState(() {
       _running = true;
@@ -93,7 +111,7 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
     });
 
     try {
-      await _runDiagnostics(generation, domain, l10n);
+      await _runDiagnostics(generation, domain, l10n, session);
     } catch (_) {
       if (_isRunValid(generation)) {
         XBoardNotification.showError(l10n.xboardOperationFailed);
@@ -109,6 +127,7 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
     int generation,
     String domain,
     AppLocalizations l10n,
+    DateTime? session,
   ) async {
     final networkType = await _resolveNetworkType(l10n);
     if (!_isRunValid(generation)) return;
@@ -143,15 +162,12 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
         ref.read(patchClashConfigProvider).tun.enable ||
         Platform.isAndroid ||
         Platform.isIOS;
-    final baselineDetail = directMayUseTun
-        ? l10n.xboardNetworkDiagnosticsNativeTunDetail
-        : l10n.xboardNetworkDiagnosticsNativeDirectDetail;
     final results = await Future.wait<Object>([
       Future.wait(
         _directTargets.map((url) => _checkNativeRoute(
               url,
               _routeTargetLabel(url, l10n),
-              baselineDetail,
+              l10n,
             )),
       ),
       nodeName == null || !coreReady
@@ -159,7 +175,7 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
           : Future.wait(
               _proxyTargets.map((url) => _checkRoute(url, nodeName, l10n)),
             ),
-      _checkIpConnectivity(baselineDetail),
+      _checkIpConnectivity(l10n),
       _diagnoseNode(nodeName, coreReady: coreReady),
       nodeName == null || !coreReady
           ? Future.value(_StepResult.skipped(
@@ -214,23 +230,29 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
           networkType == l10n.xboardNetworkDiagnosticsNetworkNone,
     );
     final conclusionMessage = _conclusionMessage(conclusion, l10n);
-    final snapshot = NetworkDiagnosticSnapshot(
-      generatedAt: DateTime.now(),
-      networkType: networkType,
-      vpnConnected: connected,
-      vpnStatus: _vpnStatus ?? '-',
-      nodeAvailable: nodeName != null,
-      conclusion: conclusionMessage,
-      conclusionSeverity: conclusion.severity,
-      conclusionReason: conclusion.reason,
-      dnsResults: _toSnapshotItems(dnsResults),
-      ipResults: _toSnapshotItems(ipResults),
-      nodeLayerResults: _toSnapshotItems(nodeLayerResults),
-      directResults: _toSnapshotItems(directResults),
-      proxyResults: _toSnapshotItems(proxyResults),
-      nodeResult: sanitizeNetworkDiagnosticNodeResult(nodeDiagnostic),
-      localProxyResults: _toSnapshotItems(localProxyResults),
-    );
+    final generatedAt = DateTime.now();
+    final vpnStatus = _vpnStatus ?? '-';
+    NetworkDiagnosticSnapshot buildSnapshot(
+            [NetworkDiagnosticDownload? download]) =>
+        NetworkDiagnosticSnapshot(
+          generatedAt: generatedAt,
+          networkType: networkType,
+          vpnConnected: connected,
+          vpnStatus: vpnStatus,
+          nodeAvailable: nodeName != null,
+          conclusion: conclusionMessage,
+          conclusionSeverity: conclusion.severity,
+          conclusionReason: conclusion.reason,
+          dnsResults: _toSnapshotItems(dnsResults),
+          ipResults: _toSnapshotItems(ipResults),
+          nodeLayerResults: _toSnapshotItems(nodeLayerResults),
+          directResults: _toSnapshotItems(directResults),
+          proxyResults: _toSnapshotItems(proxyResults),
+          nodeResult: sanitizeNetworkDiagnosticNodeResult(nodeDiagnostic),
+          localProxyResults: _toSnapshotItems(localProxyResults),
+          download: download,
+        );
+    final snapshot = buildSnapshot();
     NetworkDiagnosticSnapshotStore.latest = snapshot;
     setState(() {
       _nodeName = nodeName;
@@ -241,8 +263,87 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
       _nodeLayerResults = nodeLayerResults;
       _reportSnapshot = snapshot;
       _conclusion = conclusion;
-      _running = false;
     });
+    if (system.isTV) return;
+    final download = await _runDownload(nodeName, coreReady, session);
+    final completedSnapshot = buildSnapshot(download);
+    if (identical(NetworkDiagnosticSnapshotStore.latest, snapshot)) {
+      NetworkDiagnosticSnapshotStore.latest = completedSnapshot;
+    }
+    if (mounted && generation == _runGeneration) {
+      setState(() => _reportSnapshot = completedSnapshot);
+    }
+  }
+
+  Future<NetworkDiagnosticDownload> _runDownload(
+    String? nodeName,
+    bool coreReady,
+    DateTime? session,
+  ) async {
+    if (session != globalState.startTime ||
+        (_diagnosticsTabs?.index ?? 0) != 0 ||
+        (nodeName != null && nodeName != _currentNodeName())) {
+      return const NetworkDiagnosticDownload(
+          NetworkDiagnosticDownloadStatus.cancelled);
+    }
+    if (nodeName == null || !coreReady) {
+      return const NetworkDiagnosticDownload(
+          NetworkDiagnosticDownloadStatus.noNode);
+    }
+    final runId = 'download-${DateTime.now().microsecondsSinceEpoch}';
+    setState(() {
+      _downloadRunId = runId;
+      _downloadSession = session;
+      _downloadStopping = false;
+    });
+    var result =
+        const NetworkDiagnosticDownload(NetworkDiagnosticDownloadStatus.failed);
+    try {
+      final response = await clashCore.streamingProbe(
+        '',
+        nodeName,
+        runId: runId,
+        downloadSpeed: true,
+        followRedirects: false,
+        timeout: const Duration(seconds: 10),
+      );
+      if (response['download'] == null) _stopDownloadRequest(runId);
+      result = NetworkDiagnosticDownload.fromProbe(response['download']);
+    } catch (_) {
+      _stopDownloadRequest(runId);
+    }
+    if (_downloadStopping ||
+        session != globalState.startTime ||
+        (mounted && nodeName != _currentNodeName())) {
+      result = NetworkDiagnosticDownload(
+        NetworkDiagnosticDownloadStatus.cancelled,
+        bytes: result.bytes,
+        sampleUs: result.sampleUs,
+      );
+    }
+    if (mounted) setState(() => _downloadRunId = null);
+    return result;
+  }
+
+  void _stopDownload() {
+    final runId = _downloadRunId;
+    if (runId == null || _downloadStopping) return;
+    _downloadStopping = true;
+    _stopDownloadRequest(runId);
+  }
+
+  void _stopDownloadRequest(String runId) {
+    unawaited(clashCore.cancelStreamingProbes(runId).catchError((Object _) {}));
+  }
+
+  void _stopDownloadIfNodeChanged() {
+    if (_downloadRunId != null && _currentNodeName() != _nodeName) {
+      _stopDownload();
+    }
+  }
+
+  void _stopDownloadOnTabChange() {
+    if ((_diagnosticsTabs?.index ?? 0) != 0) _stopDownload();
   }
 
   Future<Map<String, dynamic>> _diagnoseNode(
@@ -602,29 +703,35 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
 
   Future<String?> _resolveCurrentNodeName() async {
     for (var attempt = 0; attempt < 6; attempt++) {
-      try {
-        final controller = globalState.appController;
-        final groups = controller.getCurrentGroups();
-        final currentGroupName = controller.getCurrentGroupName()?.toString();
-        final candidates = [
-          ...groups.where((group) => group.name == currentGroupName),
-          ...groups.where((group) => group.realNow.isNotEmpty),
-        ];
-        for (final group in candidates) {
-          final selected =
-              controller.getSelectedProxyName(group.name)?.toString();
-          final candidate =
-              selected?.isNotEmpty == true ? selected! : group.realNow;
-          if (candidate.isEmpty) continue;
-          final state = controller.getProxyCardState(candidate);
-          return state.proxyName.isEmpty ? candidate : state.proxyName;
-        }
-      } catch (_) {
-        // Core groups may still be synchronizing immediately after connect.
-      }
+      final name = _currentNodeName();
+      if (name != null) return name;
       if (attempt < 5) {
         await Future<void>.delayed(const Duration(milliseconds: 300));
       }
+    }
+    return null;
+  }
+
+  String? _currentNodeName() {
+    try {
+      final controller = globalState.appController;
+      final groups = controller.getCurrentGroups();
+      final currentGroupName = controller.getCurrentGroupName()?.toString();
+      final candidates = [
+        ...groups.where((group) => group.name == currentGroupName),
+        ...groups.where((group) => group.realNow.isNotEmpty),
+      ];
+      for (final group in candidates) {
+        final selected =
+            controller.getSelectedProxyName(group.name)?.toString();
+        final candidate =
+            selected?.isNotEmpty == true ? selected! : group.realNow;
+        if (candidate.isEmpty) continue;
+        final state = controller.getProxyCardState(candidate);
+        return state.proxyName.isEmpty ? candidate : state.proxyName;
+      }
+    } catch (_) {
+      // Core groups may still be synchronizing immediately after connect.
     }
     return null;
   }
@@ -644,9 +751,13 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
           .timeout(const Duration(seconds: 8));
       final value = delay.value;
       if (value == null || value <= 0) {
+        final failureLabel =
+            delay.effectiveFailureKind == DelayFailureKind.timeout
+                ? l10n.xboardTimeout
+                : l10n.xboardLatencyTestFailed;
         return _StepResult.fail(
           l10n.xboardCurrentNode,
-          '$resolvedName · ${l10n.xboardTimeout}',
+          '$resolvedName · $failureLabel',
         );
       }
       return _StepResult(
@@ -754,14 +865,14 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
     };
   }
 
-  Future<List<_StepResult>> _checkIpConnectivity(String detail) async {
+  Future<List<_StepResult>> _checkIpConnectivity(AppLocalizations l10n) async {
     return Future.wait([
-      _checkNativeRoute('https://ipv4.icanhazip.com', 'IPv4', detail,
+      _checkNativeRoute('https://ipv4.icanhazip.com', 'IPv4', l10n,
           expectedStatus: HttpStatus.ok),
       _checkNativeRoute(
         'https://ipv6.icanhazip.com',
         'IPv6',
-        detail,
+        l10n,
         expectedStatus: HttpStatus.ok,
       ),
     ]);
@@ -770,13 +881,19 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
   Future<_StepResult> _checkNativeRoute(
     String url,
     String label,
-    String detail, {
+    AppLocalizations l10n, {
     int expectedStatus = HttpStatus.noContent,
   }) async {
     final result = await probeNativeNetwork(
       target: Uri.parse(url),
       expectedStatus: expectedStatus,
     );
+    final detail = switch ((result.ok, result.timedOut, result.statusCode)) {
+      (true, _, _) => l10n.xboardNetworkDiagnosticsReachable,
+      (false, true, _) => l10n.xboardTimeout,
+      (false, false, final int code) => 'HTTP $code',
+      _ => l10n.xboardNetworkDiagnosticsUnreachable,
+    };
     return _StepResult(
       label: label,
       ok: result.ok,
@@ -902,7 +1019,21 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final connected = ref.watch(runTimeProvider) != null;
+    final download = _reportSnapshot?.download;
+    if (!system.isTV) {
+      ref.listen(selectedMapProvider, (_, __) => _stopDownloadIfNodeChanged());
+      ref.listen(
+          currentGroupsStateProvider, (_, __) => _stopDownloadIfNodeChanged());
+      ref.listen(
+          currentProfileProvider.select((profile) => profile?.currentGroupName),
+          (_, __) => _stopDownloadIfNodeChanged());
+    }
     ref.listen(runTimeProvider, (previous, next) {
+      if (_downloadRunId != null &&
+          (next == null || globalState.startTime != _downloadSession)) {
+        _stopDownload();
+        return;
+      }
       if (previous != null &&
           next == null &&
           (_running || _reportSnapshot != null)) {
@@ -958,12 +1089,10 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
                       ),
                     ),
                     OutlinedButton.icon(
-                      onPressed: !connected ||
-                              _running ||
-                              _copyingReport ||
-                              _reportSnapshot == null
-                          ? null
-                          : _copyReport,
+                      onPressed:
+                          _running || _copyingReport || _reportSnapshot == null
+                              ? null
+                              : _copyReport,
                       icon: _copyingReport
                           ? const SizedBox.square(
                               dimension: 18,
@@ -1009,6 +1138,29 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
             },
           ),
         ],
+        if (_downloadRunId != null || download != null) ...[
+          const SizedBox(height: 12),
+          _DiagnosticStatusRow(
+            icon: Icons.speed_outlined,
+            title: l10n.xboardNetworkDiagnosticsDownloadSpeed,
+            detail: l10n.xboardNetworkDiagnosticsDownloadRunning,
+            detailParts: download?.describe(l10n),
+            healthy: switch (download?.status) {
+              NetworkDiagnosticDownloadStatus.complete => true,
+              NetworkDiagnosticDownloadStatus.failed => false,
+              _ => null,
+            },
+          ),
+          if (_downloadRunId != null)
+            Align(
+              alignment: Alignment.centerRight,
+              child: TextButton(
+                onPressed:
+                    _downloadStopping ? null : () => setState(_stopDownload),
+                child: Text(l10n.xboardNetworkDiagnosticsDownloadCancel),
+              ),
+            ),
+        ],
         if (_networkType != null) ...[
           _SectionHeader(l10n.xboardNetworkDiagnosticsNetworkType),
           _DiagnosticStatusRow(
@@ -1023,7 +1175,10 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
           _ResultList(results: _dnsResults),
         ],
         if (_ipResults.isNotEmpty) ...[
-          _SectionHeader(l10n.xboardNetworkDiagnosticsIpConnectivity),
+          _SectionHeader(
+            l10n.xboardNetworkDiagnosticsIpConnectivity,
+            note: l10n.xboardNetworkDiagnosticsNativeRouteNote,
+          ),
           _ResultList(results: _ipResults),
         ],
         if (_nodeLayerResults.isNotEmpty) ...[
@@ -1031,7 +1186,10 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
           _ResultList(results: _nodeLayerResults),
         ],
         if (_directResults.isNotEmpty) ...[
-          _SectionHeader(l10n.xboardNetworkDiagnosticsDirectHttps),
+          _SectionHeader(
+            l10n.xboardNetworkDiagnosticsDirectHttps,
+            note: l10n.xboardNetworkDiagnosticsNativeRouteNote,
+          ),
           _ResultList(results: _directResults),
         ],
         if (_localProxyResults.isNotEmpty) ...[
@@ -1059,7 +1217,11 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
           child: Padding(
             padding: const EdgeInsets.all(12),
             child: Text(
-              l10n.xboardNetworkDiagnosticsDescription,
+              [
+                l10n.xboardNetworkDiagnosticsDescription,
+                if (!system.isTV)
+                  l10n.xboardNetworkDiagnosticsDownloadTrafficNote,
+              ].join('\n'),
               style: theme.textTheme.bodySmall?.copyWith(height: 1.6),
             ),
           ),
@@ -1070,20 +1232,31 @@ class _NetCheckPageState extends ConsumerState<NetCheckPage> {
 }
 
 class _SectionHeader extends StatelessWidget {
-  const _SectionHeader(this.text);
+  const _SectionHeader(this.text, {this.note});
 
   final String text;
+  final String? note;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(4, 8, 4, 10),
-      child: Text(
-        text,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            text,
+            style: theme.textTheme.titleSmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
               fontWeight: XbFontWeight.bold,
             ),
+          ),
+          if (note case final text?) ...[
+            const SizedBox(height: 4),
+            Text(text, style: theme.textTheme.bodySmall),
+          ],
+        ],
       ),
     );
   }
@@ -1164,6 +1337,7 @@ class _DiagnosticStatusRow extends StatelessWidget {
     required this.icon,
     required this.title,
     required this.detail,
+    this.detailParts,
     this.trailing,
     this.healthy,
   });
@@ -1171,6 +1345,7 @@ class _DiagnosticStatusRow extends StatelessWidget {
   final IconData icon;
   final String title;
   final String detail;
+  final List<String>? detailParts;
   final String? trailing;
   final bool? healthy;
 
@@ -1214,12 +1389,19 @@ class _DiagnosticStatusRow extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 3),
-                Text(
-                  detail,
+                DefaultTextStyle.merge(
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                     height: 1.25,
                   ),
+                  child: detailParts == null
+                      ? Text(detail)
+                      : Wrap(
+                          spacing: 16,
+                          runSpacing: 4,
+                          children:
+                              detailParts!.map((part) => Text(part)).toList(),
+                        ),
                 ),
               ],
             ),

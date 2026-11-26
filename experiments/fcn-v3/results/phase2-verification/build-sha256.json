@@ -1,0 +1,7 @@
+{
+  "fcn-v3-phase2-compare-android-arm64": "a71cbf51f382d769e54c4eb4cf1afc846645485a259e9f698449dc3cb7fe53bc",
+  "fcn-v3-phase2-server-linux-amd64": "8e6e48ea51ce5f2564c2b576423f2bae5aaffd8f48294b985b8eddb618e4841b",
+  "tuic-fixture-linux-amd64": "7c852da903c0a1c41917f8eba281065a515ec0e88b03fe12f6326fde78d9debc",
+  "origin-linux-amd64": "223c45da405fecfe53d53f2523a5a89752b3fd8477211d760b05d46aade9d115",
+  "fcn3-phase2-wire-linux": "82d8df16df7f1d71f6622963efe7f45e93cbba0bd50e6cbb607a50d92d6729df"
+}

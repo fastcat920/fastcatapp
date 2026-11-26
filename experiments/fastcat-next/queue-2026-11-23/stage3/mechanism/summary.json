@@ -1,0 +1,96 @@
+{
+  "phase": "mechanism",
+  "summary": {
+    "baseline": {
+      "loaded_success": 36,
+      "loaded_total": 36,
+      "loaded_p50": 420.979,
+      "loaded_p95": 768.851,
+      "foreground_success": 36,
+      "foreground_total": 36,
+      "background_success": 6,
+      "background_total": 6,
+      "parallel": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0,
+        "median_mbps": null
+      },
+      "rolling": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0,
+        "median_mbps": null
+      },
+      "cold": {
+        "success": 0,
+        "total": 0,
+        "p50": null,
+        "p95": null
+      },
+      "warm": {
+        "success": 0,
+        "total": 0,
+        "p50": null,
+        "p95": null
+      },
+      "batch": {
+        "success": 0,
+        "total": 0,
+        "p50": null,
+        "p95": null
+      },
+      "combined": 0,
+      "flushed": 0,
+      "first_byte_only_frames": 48
+    },
+    "recovery": {
+      "loaded_success": 36,
+      "loaded_total": 36,
+      "loaded_p50": 318.582,
+      "loaded_p95": 982.447,
+      "foreground_success": 36,
+      "foreground_total": 36,
+      "background_success": 6,
+      "background_total": 6,
+      "parallel": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0,
+        "median_mbps": null
+      },
+      "rolling": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0,
+        "median_mbps": null
+      },
+      "cold": {
+        "success": 0,
+        "total": 0,
+        "p50": null,
+        "p95": null
+      },
+      "warm": {
+        "success": 0,
+        "total": 0,
+        "p50": null,
+        "p95": null
+      },
+      "batch": {
+        "success": 0,
+        "total": 0,
+        "p50": null,
+        "p95": null
+      },
+      "combined": 0,
+      "flushed": 0,
+      "first_byte_only_frames": 43
+    }
+  },
+  "rows": 1701
+}

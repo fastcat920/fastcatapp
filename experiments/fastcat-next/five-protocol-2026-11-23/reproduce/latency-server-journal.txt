@@ -1,0 +1,1203 @@
+Started Isolated FastCat comparison.
+time="2026-11-23T12:50:27Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:50:44Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:50:52Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:51:00Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:51:28Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:51:36Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:51:43Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:52:19Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:52:40Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:52:52Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:53:20Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:53:46Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:54:01Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:54:36Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:54:48Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:55:17Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:55:56Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:56:10Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:56:35Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:57:13Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:57:49Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:58:16Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:58:28Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:58:41Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:58:52Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:59:32Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T12:59:56Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:00:25Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:01:01Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:01:38Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:01:52Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:02:32Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:02:46Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:03:05Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:03:17Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:03:43Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:04:08Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:04:58Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:05:09Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:05:17Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:05:34Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:05:51Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:05:59Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:06:10Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:06:18Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:06:36Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:06:57Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:07:06Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:07:18Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:07:45Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:08:04Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:08:23Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:08:32Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:08:41Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:08:49Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:09:17Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:09:28Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:09:45Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:10:12Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:10:31Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:10:39Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:11:05Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:11:14Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:11:24Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:11:33Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:11:52Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:12:09Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:13:23Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:13:30Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795438173.service: Consumed 3.800s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:14:00Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795438173.service: Consumed 3.727s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:15:02Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795438173.service: Consumed 3.849s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:16:03Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795438173.service: Consumed 3.500s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:16:34Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:16:41Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795438173.service: Consumed 3.184s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:17:14Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795438173.service: Consumed 2.756s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:18:13Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:18:52Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795438173.service: Consumed 3.057s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:19:21Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795438173.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:22:34Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:22:54Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:23:02Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:23:12Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:23:41Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:23:50Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:23:59Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:25:08Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:25:42Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:26:11Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:27:08Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:28:05Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:28:35Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:29:04Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:29:33Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:30:31Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:31:30Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:31:59Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:32:30Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:33:56Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:34:58Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:35:55Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:36:25Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:36:54Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:37:22Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:38:49Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:39:19Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:40:14Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:41:41Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:42:40Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:43:09Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:44:38Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:45:06Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:45:36Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:46:06Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:47:03Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:47:59Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795440097.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:49:37Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:49:54Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:50:04Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:50:13Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:50:40Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:50:48Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:50:56Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:51:43Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:52:02Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:52:21Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:53:41Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:54:14Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.236s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:54:46Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.406s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:55:48Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.345s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:56:47Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.157s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:57:18Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:57:56Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.004s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:58:26Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 1.956s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T13:59:29Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:00:41Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.584s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:01:11Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:01:43Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.067s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:03:12Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:04:21Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.176s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:05:25Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.440s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:05:56Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.151s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:06:26Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.444s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:06:56Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:08:45Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:09:19Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 1.754s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:10:21Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.093s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:11:51Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:13:06Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.311s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:13:36Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 1.864s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:15:10Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.205s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:15:40Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:16:26Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.406s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:16:57Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.339s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:17:58Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.408s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:18:58Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:20:33Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.217s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:21:02Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.003s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:21:32Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:22:06Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:23:20Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 1.928s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:23:50Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.131s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:26:27Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.234s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:27:00Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.237s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:27:32Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:28:15Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:28:52Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.069s CPU time.
+Started Isolated FastCat comparison.
+time="2026-11-23T14:29:22Z" level=info msg="Xray Core Version: 26.10.31"
+[Warning] core: Xray 26.10.31 started
+[Warning] transport/internet/tls: ignoring invalid OCSP > common/ocsp: no OCSP server specified in cert
+Stopping Isolated FastCat comparison...
+fc-opt-node-1795441723.service: Deactivated successfully.
+Stopped Isolated FastCat comparison.
+fc-opt-node-1795441723.service: Consumed 2.127s CPU time.

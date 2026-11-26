@@ -1,0 +1,25 @@
+Running as unit: fc-opt-backend-1795404461.service; invocation ID: 0d60755dcd6f4f76b95c4dc83ffc3b5e
+Running as unit: fc-opt-next-1795404461.service; invocation ID: cd6a46d8257e46bf99539b3e5e37a07b
+/tmp/fc-next-web/compare: 1 file pushed, 0 skipped. 36.2 MB/s (38896345 bytes in 1.026s)
+/tmp/fc-next-web/client-1795404461.json: 1 file pushed, 0 skipped. 5.2 MB/s (432 bytes in 0.000s)
+/etc/ssl/cert.pem: 1 file pushed, 0 skipped. 198.2 MB/s (333483 bytes in 0.002s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+/tmp/fc-next-web/web1-baseline-b1-p1-1795404461.json: 1 file pushed, 0 skipped. 5.4 MB/s (668 bytes in 0.000s)
+COMPLETE web1-baseline-b1-p1
+/tmp/fc-next-web/web1-selected-b1-p2-1795404461.json: 1 file pushed, 0 skipped. 6.4 MB/s (667 bytes in 0.000s)
+COMPLETE web1-selected-b1-p2
+/tmp/fc-next-web/web1-selected-b2-p1-1795404461.json: 1 file pushed, 0 skipped. 3.8 MB/s (667 bytes in 0.000s)
+COMPLETE web1-selected-b2-p1
+/tmp/fc-next-web/web1-baseline-b2-p2-1795404461.json: 1 file pushed, 0 skipped. 4.9 MB/s (668 bytes in 0.000s)
+COMPLETE web1-baseline-b2-p2
+/tmp/fc-next-web/web2-baseline-b1-p1-1795404461.json: 1 file pushed, 0 skipped. 5.5 MB/s (668 bytes in 0.000s)
+COMPLETE web2-baseline-b1-p1
+/tmp/fc-next-web/web2-selected-b1-p2-1795404461.json: 1 file pushed, 0 skipped. 5.9 MB/s (667 bytes in 0.000s)
+COMPLETE web2-selected-b1-p2
+/tmp/fc-next-web/web2-selected-b2-p1-1795404461.json: 1 file pushed, 0 skipped. 5.0 MB/s (667 bytes in 0.000s)
+COMPLETE web2-selected-b2-p1
+/tmp/fc-next-web/web2-baseline-b2-p2-1795404461.json: 1 file pushed, 0 skipped. 5.8 MB/s (668 bytes in 0.000s)
+COMPLETE web2-baseline-b2-p2
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+VPN restored: True
+NEXT REMOTE WEB COMPLETE

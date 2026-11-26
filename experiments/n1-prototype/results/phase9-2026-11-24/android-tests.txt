@@ -1,0 +1,15 @@
+=== RUN   TestRetryOnlyBeforeAuthentication
+--- PASS: TestRetryOnlyBeforeAuthentication (0.07s)
+=== RUN   TestSetupCancellationDoesNotKillEstablishedStream
+--- PASS: TestSetupCancellationDoesNotKillEstablishedStream (0.06s)
+=== RUN   TestRuntimeMetricsPrivateBoundedAndReleased
+--- PASS: TestRuntimeMetricsPrivateBoundedAndReleased (0.00s)
+=== RUN   TestClientRuntimeMetricsWithoutServerState
+--- PASS: TestClientRuntimeMetricsWithoutServerState (0.00s)
+=== RUN   TestSessionCacheResumesAndSeparatesNetworkEpoch
+--- PASS: TestSessionCacheResumesAndSeparatesNetworkEpoch (0.20s)
+=== RUN   TestCacheBoundsAndDefaultOff
+--- PASS: TestCacheBoundsAndDefaultOff (0.00s)
+=== RUN   TestCacheForcesFullValidationAfterProfileLifetime
+--- PASS: TestCacheForcesFullValidationAfterProfileLifetime (0.16s)
+PASS

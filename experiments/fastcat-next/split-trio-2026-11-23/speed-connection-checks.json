@@ -1,0 +1,18 @@
+[
+  {
+    "source": "Mac",
+    "target": "104.64.221.179:22",
+    "returncode": 255,
+    "elapsed_seconds": 6.01764988899231,
+    "output": "ssh: connect to host 104.64.221.179 port 22: Operation timed out",
+    "time_unix": 1795423172.598569
+  },
+  {
+    "source": "154.37.155.240",
+    "target": "104.64.221.179:22",
+    "returncode": 124,
+    "elapsed_seconds": 6.155276775360107,
+    "output": "",
+    "time_unix": 1795423178.61625
+  }
+]

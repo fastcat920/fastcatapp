@@ -1,0 +1,84 @@
+{
+  "baseline": {
+    "requests": 36,
+    "success": 36,
+    "slow_ge500ms": 12,
+    "slow_with_downstream_recovery": 12,
+    "slow_status_recovery": 3,
+    "first_ms": {
+      "p50": 452.693,
+      "p95": 905.867
+    },
+    "status_wait_ms": {
+      "p50": 119.962,
+      "p95": 395.367
+    },
+    "tls_after_status_ms": {
+      "p50": 63.941,
+      "p95": 448.213
+    },
+    "response_ms": {
+      "p50": 125.64,
+      "p95": 437.676
+    },
+    "server_dial_ms": {
+      "p50": 1.006,
+      "p95": 1.73
+    },
+    "target_first_read_ms": {
+      "p50": 2.03,
+      "p95": 66.455
+    },
+    "first_write_wait_ms": {
+      "p50": 1.636,
+      "p95": 6.674
+    },
+    "first_packetize_wait_ms": {
+      "p50": 0.103,
+      "p95": 3.831
+    },
+    "budget_flows_yielded": 0,
+    "budget_total_yields": 0
+  },
+  "budget": {
+    "requests": 36,
+    "success": 36,
+    "slow_ge500ms": 3,
+    "slow_with_downstream_recovery": 3,
+    "slow_status_recovery": 0,
+    "first_ms": {
+      "p50": 349.591,
+      "p95": 555.263
+    },
+    "status_wait_ms": {
+      "p50": 117.297,
+      "p95": 255.438
+    },
+    "tls_after_status_ms": {
+      "p50": 52.961,
+      "p95": 188.446
+    },
+    "response_ms": {
+      "p50": 118.671,
+      "p95": 291.195
+    },
+    "server_dial_ms": {
+      "p50": 0.77,
+      "p95": 1.585
+    },
+    "target_first_read_ms": {
+      "p50": 2.027,
+      "p95": 7.823
+    },
+    "first_write_wait_ms": {
+      "p50": 0.342,
+      "p95": 4.241
+    },
+    "first_packetize_wait_ms": {
+      "p50": 0.103,
+      "p95": 2.237
+    },
+    "budget_flows_yielded": 2,
+    "budget_total_yields": 280
+  }
+}

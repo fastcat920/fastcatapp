@@ -1,0 +1,20 @@
+{
+  "latency": {
+    "host": "154.37.155.240",
+    "status": "complete",
+    "measured_cases": 84
+  },
+  "speed": {
+    "host": "172.104.55.44",
+    "status": "complete",
+    "measured_cases": 90,
+    "failed_official_cases": 0,
+    "auxiliary_direct_controls": {
+      "attempts": 3,
+      "complete": 0,
+      "timeouts": 3
+    }
+  },
+  "superseded_unreachable_host": "104.64.221.179",
+  "cleanup": "complete; original services retained; Android VPN restored"
+}

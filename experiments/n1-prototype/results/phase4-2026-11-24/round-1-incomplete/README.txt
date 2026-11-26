@@ -1,0 +1,1 @@
+Stopped at case 38, ordinary GET TLS handshake timeout. 38 complete requests plus one failure, no dropped/retried case. No held-out classifier score is reported from this incomplete round. Full independent collection restarted without code/threshold changes.

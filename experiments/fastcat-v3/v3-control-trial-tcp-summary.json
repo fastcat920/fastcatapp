@@ -1,0 +1,129 @@
+{
+  "h2_time_windows": [
+    {
+      "phase": "cold",
+      "version": "v2",
+      "requests": 20,
+      "requests_overlapping_repeated_tcp_ranges": 16
+    },
+    {
+      "phase": "cold",
+      "version": "v3",
+      "requests": 20,
+      "requests_overlapping_repeated_tcp_ranges": 13
+    },
+    {
+      "phase": "warm",
+      "version": "v2",
+      "requests": 20,
+      "requests_overlapping_repeated_tcp_ranges": 2
+    },
+    {
+      "phase": "warm",
+      "version": "v3",
+      "requests": 20,
+      "requests_overlapping_repeated_tcp_ranges": 5
+    },
+    {
+      "phase": "batch",
+      "version": "v2",
+      "requests": 20,
+      "requests_overlapping_repeated_tcp_ranges": 8
+    },
+    {
+      "phase": "batch",
+      "version": "v3",
+      "requests": 20,
+      "requests_overlapping_repeated_tcp_ranges": 20
+    }
+  ],
+  "note": "Repeated TCP byte ranges observed at server; capture/offload and packet loss location limit inference. UDP/QUIC loss not analyzed.",
+  "aggregate": [
+    {
+      "port": 19442,
+      "direction": "client_to_server",
+      "connections": 21,
+      "packets": 896,
+      "payload_bytes": 50318,
+      "repeated_payload_packets": 2,
+      "repeated_payload_bytes": 141,
+      "zero_windows": 0
+    },
+    {
+      "port": 19442,
+      "direction": "server_to_client",
+      "connections": 21,
+      "packets": 809,
+      "payload_bytes": 457482,
+      "repeated_payload_packets": 78,
+      "repeated_payload_bytes": 64354,
+      "zero_windows": 0
+    },
+    {
+      "port": 19443,
+      "direction": "client_to_server",
+      "connections": 21,
+      "packets": 1256,
+      "payload_bytes": 87845,
+      "repeated_payload_packets": 3,
+      "repeated_payload_bytes": 193,
+      "zero_windows": 0
+    },
+    {
+      "port": 19443,
+      "direction": "server_to_client",
+      "connections": 21,
+      "packets": 1101,
+      "payload_bytes": 468375,
+      "repeated_payload_packets": 63,
+      "repeated_payload_bytes": 41737,
+      "zero_windows": 0
+    }
+  ],
+  "longest_flows": [
+    {
+      "port": 19442,
+      "direction": "client_to_server",
+      "packets": 399,
+      "payload_bytes": 26704,
+      "repeated_payload_packets": 0,
+      "repeated_payload_bytes": 0,
+      "zero_windows": 0,
+      "start": 1795195229.122671,
+      "end": 1795195288.860882
+    },
+    {
+      "port": 19442,
+      "direction": "server_to_client",
+      "packets": 360,
+      "payload_bytes": 223380,
+      "repeated_payload_packets": 10,
+      "repeated_payload_bytes": 10594,
+      "zero_windows": 0,
+      "start": 1795195229.122694,
+      "end": 1795195288.765603
+    },
+    {
+      "port": 19443,
+      "direction": "client_to_server",
+      "packets": 596,
+      "payload_bytes": 47385,
+      "repeated_payload_packets": 0,
+      "repeated_payload_bytes": 0,
+      "zero_windows": 0,
+      "start": 1795195229.926736,
+      "end": 1795195288.872006
+    },
+    {
+      "port": 19443,
+      "direction": "server_to_client",
+      "packets": 535,
+      "payload_bytes": 243826,
+      "repeated_payload_packets": 19,
+      "repeated_payload_bytes": 10613,
+      "zero_windows": 0,
+      "start": 1795195229.926776,
+      "end": 1795195288.768804
+    }
+  ]
+}

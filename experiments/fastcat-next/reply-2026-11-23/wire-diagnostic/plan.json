@@ -1,0 +1,57 @@
+{
+  "conditions": [
+    [
+      "default",
+      false,
+      0
+    ],
+    [
+      "no-gso",
+      true,
+      0
+    ],
+    [
+      "fixed1200",
+      false,
+      1200
+    ],
+    [
+      "no-gso-fixed1200",
+      true,
+      1200
+    ]
+  ],
+  "orders": [
+    [
+      0,
+      1,
+      3,
+      2
+    ],
+    [
+      1,
+      2,
+      0,
+      3
+    ],
+    [
+      2,
+      3,
+      1,
+      0
+    ],
+    [
+      3,
+      0,
+      2,
+      1
+    ]
+  ],
+  "foreground_samples": 12,
+  "policy": "next-opt unchanged",
+  "capture": "sanitized timestamps/direction/UDP payload lengths only; no pcap or payload saved",
+  "sha256": {
+    "compare": "c70b8059b0c2b1e530ee68ce85e986a44d259d5a6c96d194ee2f39e0ac829a38",
+    "next-diagnostic": "4240b5fcb5d78fa7fcaba99e93dfa96bb639e9713e2b1243804a26ad5d228148"
+  }
+}

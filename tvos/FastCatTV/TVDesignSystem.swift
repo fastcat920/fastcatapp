@@ -427,6 +427,32 @@ struct TVDialog<Content: View, Actions: View>: View {
   }
 }
 
+/// Matches Flutter's compact Material latency indicator.
+struct TVLatencySpinner: View {
+  @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+  var body: some View {
+    TimelineView(.animation(paused: reduceMotion)) { context in
+      let elapsed = context.date.timeIntervalSinceReferenceDate
+      let path = (elapsed / 1.333).truncatingRemainder(dividingBy: 1)
+      let rotation = (elapsed / 2.222).truncatingRemainder(dividingBy: 1)
+      let head = ease(min(path * 2, 1))
+      let tail = ease(max(path * 2 - 1, 0))
+      Circle()
+        .trim(from: 0, to: reduceMotion ? 0.26 : max(0.001, (head - tail) * 0.75))
+        .stroke(TVTheme.primary, style: StrokeStyle(lineWidth: tv(1.7), lineCap: .round))
+        .rotationEffect(.degrees(reduceMotion ? -90 : -90 + tail * 270 + rotation * 360 + path * 90))
+        .padding(tv(0.85))
+    }
+    .frame(width: tv(14), height: tv(14))
+    .accessibilityHidden(true)
+  }
+
+  private func ease(_ progress: Double) -> Double {
+    (1 - cos(progress * .pi)) / 2
+  }
+}
+
 struct TVLatencyIndicator: View {
   let delay: Int?
   var testing = false
@@ -436,7 +462,7 @@ struct TVLatencyIndicator: View {
   private var color: Color { failed ? TVTheme.danger : (active == 2 ? TVTheme.warning : TVTheme.success) }
   var body: some View {
     Group {
-      if testing { ProgressView().tint(TVTheme.primary).scaleEffect(0.7) }
+      if testing { TVLatencySpinner() }
       else if delay == nil || delay == 0 { Image(systemName: "bolt.fill").font(.system(size: tv(22))).foregroundStyle(TVTheme.primary) }
       else {
         Canvas { context, size in

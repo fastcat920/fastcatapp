@@ -1,0 +1,34 @@
+{
+  "legacy": {
+    "success": 10,
+    "failed": 0,
+    "first_response_headers_ms": {
+      "p50": 1209.98,
+      "p95": 3579.948,
+      "min": 502.707,
+      "max": 3579.948
+    },
+    "full_request_ms": {
+      "p50": 1308.403,
+      "p95": 4477.972,
+      "min": 598.733,
+      "max": 4477.972
+    }
+  },
+  "coalesced": {
+    "success": 10,
+    "failed": 0,
+    "first_response_headers_ms": {
+      "p50": 680.449,
+      "p95": 3950.916,
+      "min": 461.45,
+      "max": 3950.916
+    },
+    "full_request_ms": {
+      "p50": 1229.364,
+      "p95": 4364.141,
+      "min": 596.217,
+      "max": 4364.141
+    }
+  }
+}

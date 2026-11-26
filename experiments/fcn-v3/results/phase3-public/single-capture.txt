@@ -1,0 +1,11 @@
+Started fastcat-fcn3-p34-pcap-single.service - [systemd-run] /usr/bin/tcpdump -i any -nn --immediate-mode -U -s 112 -B 4096 -c 1000000 -w /opt/fastcat-fcn3-phase34/single.pcap "udp portrange 18532-18536".
+tcpdump: WARNING: any: That device doesn't support promiscuous mode
+(Promiscuous mode not supported on the "any" device)
+tcpdump: listening on any, link-type LINUX_SLL2 (Linux cooked v2), snapshot length 112 bytes
+Stopping fastcat-fcn3-p34-pcap-single.service - [systemd-run] /usr/bin/tcpdump -i any -nn --immediate-mode -U -s 112 -B 4096 -c 1000000 -w /opt/fastcat-fcn3-phase34/single.pcap "udp portrange 18532-18536"...
+120117 packets captured
+120117 packets received by filter
+0 packets dropped by kernel
+fastcat-fcn3-p34-pcap-single.service: Deactivated successfully.
+Stopped fastcat-fcn3-p34-pcap-single.service - [systemd-run] /usr/bin/tcpdump -i any -nn --immediate-mode -U -s 112 -B 4096 -c 1000000 -w /opt/fastcat-fcn3-phase34/single.pcap "udp portrange 18532-18536".
+fastcat-fcn3-p34-pcap-single.service: Consumed 1.945s CPU time, 19.2M memory peak.

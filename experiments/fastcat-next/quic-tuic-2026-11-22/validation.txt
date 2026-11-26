@@ -1,0 +1,3 @@
+go test -race ./fastcatnext ./tools/fastcat-next ./tools/fastcat-v3-compare: PASS (19.815s / 2.273s)
+go vet same packages: PASS
+Additional bbr-legacy concurrent echo race test: PASS (2.466s)

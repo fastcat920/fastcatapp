@@ -1,0 +1,95 @@
+{
+  "design": "two Williams cycles; 8 cases per mode",
+  "bytes_per_job": 4194304,
+  "jobs": 12,
+  "workers": 4,
+  "group_timeout_seconds": 150,
+  "transport_restart_each_case": true,
+  "cooldown_seconds": 5,
+  "blocks": [
+    {
+      "cycle": 1,
+      "block": 1,
+      "order": [
+        "next-base",
+        "next-opt",
+        "tuic",
+        "next-primary"
+      ]
+    },
+    {
+      "cycle": 1,
+      "block": 2,
+      "order": [
+        "next-opt",
+        "next-primary",
+        "next-base",
+        "tuic"
+      ]
+    },
+    {
+      "cycle": 1,
+      "block": 3,
+      "order": [
+        "next-primary",
+        "tuic",
+        "next-opt",
+        "next-base"
+      ]
+    },
+    {
+      "cycle": 1,
+      "block": 4,
+      "order": [
+        "tuic",
+        "next-base",
+        "next-primary",
+        "next-opt"
+      ]
+    },
+    {
+      "cycle": 2,
+      "block": 1,
+      "order": [
+        "next-base",
+        "next-opt",
+        "tuic",
+        "next-primary"
+      ]
+    },
+    {
+      "cycle": 2,
+      "block": 2,
+      "order": [
+        "next-opt",
+        "next-primary",
+        "next-base",
+        "tuic"
+      ]
+    },
+    {
+      "cycle": 2,
+      "block": 3,
+      "order": [
+        "next-primary",
+        "tuic",
+        "next-opt",
+        "next-base"
+      ]
+    },
+    {
+      "cycle": 2,
+      "block": 4,
+      "order": [
+        "tuic",
+        "next-base",
+        "next-primary",
+        "next-opt"
+      ]
+    }
+  ],
+  "sha256": {
+    "compare": "50ff066467739786f3fe180f3c191563392ea6ada101a3b41e2b872c56ff6f44",
+    "next-diagnostic": "4cb5f199fe72d60cc4cde2a5f636a145988eafa84aaf613d964adbec8796d245"
+  }
+}

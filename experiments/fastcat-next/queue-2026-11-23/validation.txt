@@ -1,0 +1,24 @@
+Final validation 2026-11-23
+
+All authorized stages implemented and tested sequentially.
+Stage12: FAIL rolling effective throughput (24.17 vs29.28 Mbps, ~82.6% retained), default off.
+Stage3: PASS predefined main gate; loaded P95 630.467 ->502.029ms; warm P95 862.295 ->565.618ms.
+Stage3 cold primary P95 regressed 1666.411 ->2207.040ms; retained in report.
+Cold confirm: 48/48 each; fixed LOCAL source port P95 529.217 ->543.070ms; PASS supplemental <=10% regression gate.
+Fixed local port does not prove identical public mapping or intermediate route. Do not pool cold cohorts.
+Stage4: FAIL loaded P95 improvement (632.479 ->629.572ms); control is stage3 recovery-aware, not original old scheduling. Default off.
+Valid remote web: 24/24 loaded foreground each variant each target, 4/4 background each; both target non-regression checks PASS.
+Invalid initial remote cohort preserved separately: background IP / SAN mismatch. Not used as loaded performance data; certificate verification never disabled.
+
+All package race tests and vet PASS. Protocol tests cover out-of-order / duplicates / conflicting copies / bounds / deadline rearming / legacy kind0 / auth / UDP separation / concurrent streams / exact business counters.
+Prefix deadline tests repeated ten times under race detector; final full race suite includes additional concurrency and cursor saturation tests.
+Client Android arm64 Go1.26.2; Linux amd64 server Go1.27.3.
+Frozen binary SHA256 matches each plan, final core matches stage4 snapshot; web comparator snapshot differs only for the foreground-target measurement feature.
+Packet tracing OFF in main performance and supplemental cohorts; stage4+web use identical request-boundary snapshots for both conditions.
+
+No production App installed or defaults changed; selected recovery profile remains opt-in experimental.
+Cleanup: no fc-opt active units, lab listeners, run directories or uploaded binaries. Production TCP/UDP443 and18447 listening.
+Android: VPN connected, Wi-Fi on, stay-on restored to0, standalone comparator exited.
+Temporary private account/config files removed. No credentials, ciphertext payloads, TLS keys or actual QUIC CIDs in artifacts.
+
+Case counts: {"cold-confirm": 12, "stage12/mechanism": 6, "stage12/performance": 42, "remote-web-invalid-tls-name": 8, "remote-web": 8, "stage4/mechanism": 6, "stage4/performance": 42, "stage3/mechanism": 6, "stage3/performance": 42}

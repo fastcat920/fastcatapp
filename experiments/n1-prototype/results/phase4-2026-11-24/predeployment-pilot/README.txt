@@ -1,0 +1,1 @@
+Excluded predeployment pilot: old server binary was still active. GET ignored variable n and returned its default 32768 bytes; N1 origin did not yet implement pacing. Neither row is part of the 72-flow dataset. Failure retained for traceability.

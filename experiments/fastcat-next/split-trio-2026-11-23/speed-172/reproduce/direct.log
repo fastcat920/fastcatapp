@@ -1,0 +1,8 @@
+Running as unit: fc-opt-backend-1795430098.service; invocation ID: 88bb11308ff44d9997dbbfcdd55788e6
+/tmp/fc-split-speed/compare: 1 file pushed, 0 skipped. 36.2 MB/s (38898266 bytes in 1.024s)
+/tmp/fc-split-speed/client-1795430098.json: 1 file pushed, 0 skipped. 3.3 MB/s (422 bytes in 0.000s)
+/tmp/fc-split-speed/ca.pem: 1 file pushed, 0 skipped. 120.4 MB/s (334634 bytes in 0.003s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+/tmp/fc-split-speed/direct: 1 file pushed, 0 skipped. 39.6 MB/s (8662146 bytes in 0.209s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+VPN restored: True

@@ -1,0 +1,1 @@
+Final contexts completed. Android VPN CONNECTED; stay_on_while_plugged_in=0. No running fc-opt-* services, /run/fc-opt-* directories, /usr/local/bin/fc-opt-* files, or timestamped local private JSON files. No temporary lab listeners 19445/46/48/50/51/52/54/56/57/58/59. Production TCP+UDP 443/18447 listening.

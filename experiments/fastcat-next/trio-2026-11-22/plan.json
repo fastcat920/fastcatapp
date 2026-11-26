@@ -1,0 +1,198 @@
+{
+  "date": "2026-11-22",
+  "device": "TFY-AN00 Android12",
+  "network": "Wi-Fi required; prototype core CLI; App VPN temporarily disconnected",
+  "versions": [
+    "next-base",
+    "next-opt",
+    "tuic"
+  ],
+  "orders": [
+    [
+      "next-base",
+      "next-opt",
+      "tuic"
+    ],
+    [
+      "next-base",
+      "tuic",
+      "next-opt"
+    ],
+    [
+      "next-opt",
+      "next-base",
+      "tuic"
+    ],
+    [
+      "next-opt",
+      "tuic",
+      "next-base"
+    ],
+    [
+      "tuic",
+      "next-base",
+      "next-opt"
+    ],
+    [
+      "tuic",
+      "next-opt",
+      "next-base"
+    ]
+  ],
+  "metrics": [
+    [
+      "latency",
+      3,
+      [
+        "-samples",
+        "12",
+        "-pools",
+        "1",
+        "-batches",
+        "3",
+        "-workers",
+        "4"
+      ],
+      false,
+      450
+    ],
+    [
+      "batch8",
+      3,
+      [
+        "-workload",
+        "batch-only",
+        "-samples",
+        "1",
+        "-pools",
+        "1",
+        "-batches",
+        "3",
+        "-workers",
+        "8"
+      ],
+      false,
+      180
+    ],
+    [
+      "single16",
+      6,
+      [
+        "-download-bytes",
+        "16777216",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "90s"
+      ],
+      true,
+      120
+    ],
+    [
+      "parallel4",
+      6,
+      [
+        "-download-bytes",
+        "4194304",
+        "-download-workers",
+        "4",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "90s"
+      ],
+      true,
+      120
+    ],
+    [
+      "parallel8",
+      6,
+      [
+        "-download-bytes",
+        "2097152",
+        "-download-workers",
+        "8",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "90s"
+      ],
+      true,
+      120
+    ],
+    [
+      "rolling",
+      6,
+      [
+        "-download-bytes",
+        "4194304",
+        "-download-workers",
+        "4",
+        "-download-jobs",
+        "12",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "150s"
+      ],
+      true,
+      180
+    ],
+    [
+      "mixed",
+      3,
+      [
+        "-mixed-download-bytes",
+        "16777216",
+        "-samples",
+        "12",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "90s"
+      ],
+      true,
+      120
+    ],
+    [
+      "echo",
+      3,
+      [
+        "-bulk-only",
+        "-bulk-rounds",
+        "1",
+        "-bulk-seconds",
+        "10",
+        "-bulk-target",
+        "191.223.214.8:19445"
+      ],
+      true,
+      100
+    ],
+    [
+      "idle",
+      3,
+      [
+        "-idle-seconds",
+        "20"
+      ],
+      false,
+      100
+    ]
+  ],
+  "services_restart_each_case": true,
+  "cooldown_seconds": 5,
+  "trace": false,
+  "sha256": {
+    "compare": "50ff066467739786f3fe180f3c191563392ea6ada101a3b41e2b872c56ff6f44",
+    "next-diagnostic": "4cb5f199fe72d60cc4cde2a5f636a145988eafa84aaf613d964adbec8796d245"
+  },
+  "notes": "Same frozen binaries as previous experiment. No parameter tuning during run. Idle first resume distinguished from next 2 requests. Echo is simultaneous bidirectional echo, not pure upload. Resource readings are Go heap snapshots, not app power or OS peak RSS.",
+  "completed_cases": 117,
+  "raw_rows": 1251,
+  "native_server_sha256": "97ceb7e53aef37522948f3ff5e43deb903d1211eb6e853aa75cd0796be10e1f0",
+  "app_updated": false,
+  "default_changed": false,
+  "conclusion": "tradeoffs remain; retain existing scheduler, no universal winner",
+  "validation": "counts and frozen binary hashes verified; ZIP CRC verified"
+}

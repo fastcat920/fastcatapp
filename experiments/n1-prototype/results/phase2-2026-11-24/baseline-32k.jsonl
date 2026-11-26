@@ -1,0 +1,10 @@
+{"bytes":32768,"first_response_headers_ms":1081.737,"full_request_ms":1291.985,"mode":"ordinary-https-32k","sample":1}
+{"bytes":32768,"first_response_headers_ms":383.345,"full_request_ms":521.481,"mode":"ordinary-https-32k","sample":2}
+{"bytes":32768,"first_response_headers_ms":758.559,"full_request_ms":2035.565,"mode":"ordinary-https-32k","sample":3}
+{"bytes":32768,"first_response_headers_ms":356.268,"full_request_ms":1136.027,"mode":"ordinary-https-32k","sample":4}
+{"bytes":32768,"first_response_headers_ms":1085.333,"full_request_ms":1277.26,"mode":"ordinary-https-32k","sample":5}
+{"bytes":32768,"first_response_headers_ms":370.201,"full_request_ms":616.64,"mode":"ordinary-https-32k","sample":6}
+{"bytes":32768,"first_response_headers_ms":624.471,"full_request_ms":1590.928,"mode":"ordinary-https-32k","sample":7}
+{"bytes":32768,"first_response_headers_ms":410.364,"full_request_ms":550.267,"mode":"ordinary-https-32k","sample":8}
+{"bytes":32768,"first_response_headers_ms":662.45,"full_request_ms":991.848,"mode":"ordinary-https-32k","sample":9}
+{"bytes":32768,"first_response_headers_ms":359.086,"full_request_ms":493.65,"mode":"ordinary-https-32k","sample":10}

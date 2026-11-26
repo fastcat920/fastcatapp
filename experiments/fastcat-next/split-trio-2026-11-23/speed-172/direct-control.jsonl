@@ -1,0 +1,3 @@
+{"bytes":8011776,"error":"context deadline exceeded (Client.Timeout or context cancellation while reading body)","mbps":0.5341050952729435,"round":1,"seconds":120.002989238,"sha256":"c2755c26bc247d01d2f8b22569d6fca15e39aa80a192cf4ff0833d8f60068a1d"}
+{"bytes":7110656,"error":"context deadline exceeded (Client.Timeout or context cancellation while reading body)","mbps":0.4740325643676647,"round":2,"seconds":120.002827392,"sha256":"8dd70a34acc287a0e7866bc596b2b0984fa92ea0ec0b660dfc6799cec91c365c"}
+{"bytes":6422528,"error":"context deadline exceeded (Client.Timeout or context cancellation while reading body)","mbps":0.42815828248547755,"round":3,"seconds":120.002873007,"sha256":"eee4fb0e03f1f14ee64da35f408e22b7fab1c491779a2304a993828d1728a1ac"}

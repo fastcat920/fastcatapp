@@ -1,0 +1,14 @@
+{
+  "baseline": {
+    "requests": 72,
+    "downstream_recovery": 50,
+    "status_recovery_at_unblock": 13,
+    "meta_drops": 0
+  },
+  "coalesce5": {
+    "requests": 72,
+    "downstream_recovery": 52,
+    "status_recovery_at_unblock": 15,
+    "meta_drops": 0
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "kernel": "6.12.117+deb13-amd64",
+  "architecture": "x86_64",
+  "logical_cpus": 1,
+  "udp_settings": {
+    "net.core.rmem_max": "212992",
+    "net.core.wmem_max": "212992",
+    "net.ipv4.udp_rmem_min": "4096",
+    "net.ipv4.udp_wmem_min": "4096"
+  }
+}

@@ -1,0 +1,180 @@
+Running as unit: fc-opt-backend-1795420804.service
+/tmp/fc-split-latency/compare: 1 file pushed, 0 skipped. 31.4 MB/s (38898266 bytes in 1.180s)
+/tmp/fc-split-latency/client-1795420804.json: 1 file pushed, 0 skipped. 3.3 MB/s (425 bytes in 0.000s)
+/tmp/fc-split-latency/ca.pem: 1 file pushed, 0 skipped. 134.1 MB/s (334634 bytes in 0.002s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+/tmp/fc-split-latency/pilot-ports1-1795420804.json: 1 file pushed, 0 skipped. 6.4 MB/s (752 bytes in 0.000s)
+COMPLETE pilot-ports1
+/tmp/fc-split-latency/pilot-ports2-1795420804.json: 1 file pushed, 0 skipped. 7.0 MB/s (752 bytes in 0.000s)
+COMPLETE pilot-ports2
+/tmp/fc-split-latency/latency-b1-p1-next-opt-1795420804.json: 1 file pushed, 0 skipped. 5.9 MB/s (752 bytes in 0.000s)
+COMPLETE latency-b1-p1-next-opt
+/tmp/fc-split-latency/latency-b1-p2-next-base-1795420804.json: 1 file pushed, 0 skipped. 5.3 MB/s (752 bytes in 0.000s)
+COMPLETE latency-b1-p2-next-base
+/tmp/fc-split-latency/latency-b1-p3-tuic-1795420804.json: 1 file pushed, 0 skipped. 5.1 MB/s (752 bytes in 0.000s)
+COMPLETE latency-b1-p3-tuic
+/tmp/fc-split-latency/latency-b2-p1-next-opt-1795420804.json: 1 file pushed, 0 skipped. 5.7 MB/s (752 bytes in 0.000s)
+COMPLETE latency-b2-p1-next-opt
+/tmp/fc-split-latency/latency-b2-p2-tuic-1795420804.json: 1 file pushed, 0 skipped. 6.1 MB/s (752 bytes in 0.000s)
+COMPLETE latency-b2-p2-tuic
+/tmp/fc-split-latency/latency-b2-p3-next-base-1795420804.json: 1 file pushed, 0 skipped. 5.8 MB/s (752 bytes in 0.000s)
+COMPLETE latency-b2-p3-next-base
+/tmp/fc-split-latency/latency-b3-p1-next-base-1795420804.json: 1 file pushed, 0 skipped. 7.2 MB/s (752 bytes in 0.000s)
+COMPLETE latency-b3-p1-next-base
+/tmp/fc-split-latency/latency-b3-p2-next-opt-1795420804.json: 1 file pushed, 0 skipped. 7.0 MB/s (752 bytes in 0.000s)
+COMPLETE latency-b3-p2-next-opt
+/tmp/fc-split-latency/latency-b3-p3-tuic-1795420804.json: 1 file pushed, 0 skipped. 6.1 MB/s (752 bytes in 0.000s)
+COMPLETE latency-b3-p3-tuic
+/tmp/fc-split-latency/latency-b4-p1-next-base-1795420804.json: 1 file pushed, 0 skipped. 5.7 MB/s (752 bytes in 0.000s)
+COMPLETE latency-b4-p1-next-base
+/tmp/fc-split-latency/latency-b4-p2-tuic-1795420804.json: 1 file pushed, 0 skipped. 5.7 MB/s (752 bytes in 0.000s)
+COMPLETE latency-b4-p2-tuic
+/tmp/fc-split-latency/latency-b4-p3-next-opt-1795420804.json: 1 file pushed, 0 skipped. 5.8 MB/s (752 bytes in 0.000s)
+COMPLETE latency-b4-p3-next-opt
+/tmp/fc-split-latency/latency-b5-p1-tuic-1795420804.json: 1 file pushed, 0 skipped. 6.4 MB/s (752 bytes in 0.000s)
+COMPLETE latency-b5-p1-tuic
+/tmp/fc-split-latency/latency-b5-p2-next-opt-1795420804.json: 1 file pushed, 0 skipped. 6.2 MB/s (752 bytes in 0.000s)
+COMPLETE latency-b5-p2-next-opt
+/tmp/fc-split-latency/latency-b5-p3-next-base-1795420804.json: 1 file pushed, 0 skipped. 7.1 MB/s (752 bytes in 0.000s)
+COMPLETE latency-b5-p3-next-base
+/tmp/fc-split-latency/latency-b6-p1-tuic-1795420804.json: 1 file pushed, 0 skipped. 5.6 MB/s (752 bytes in 0.000s)
+COMPLETE latency-b6-p1-tuic
+/tmp/fc-split-latency/latency-b6-p2-next-base-1795420804.json: 1 file pushed, 0 skipped. 4.8 MB/s (752 bytes in 0.000s)
+COMPLETE latency-b6-p2-next-base
+/tmp/fc-split-latency/latency-b6-p3-next-opt-1795420804.json: 1 file pushed, 0 skipped. 6.6 MB/s (752 bytes in 0.000s)
+COMPLETE latency-b6-p3-next-opt
+/tmp/fc-split-latency/batch8-b1-p1-next-opt-1795420804.json: 1 file pushed, 0 skipped. 5.1 MB/s (752 bytes in 0.000s)
+COMPLETE batch8-b1-p1-next-opt
+/tmp/fc-split-latency/batch8-b1-p2-next-base-1795420804.json: 1 file pushed, 0 skipped. 9.8 MB/s (752 bytes in 0.000s)
+COMPLETE batch8-b1-p2-next-base
+/tmp/fc-split-latency/batch8-b1-p3-tuic-1795420804.json: 1 file pushed, 0 skipped. 6.5 MB/s (752 bytes in 0.000s)
+COMPLETE batch8-b1-p3-tuic
+/tmp/fc-split-latency/batch8-b2-p1-next-opt-1795420804.json: 1 file pushed, 0 skipped. 3.8 MB/s (752 bytes in 0.000s)
+COMPLETE batch8-b2-p1-next-opt
+/tmp/fc-split-latency/batch8-b2-p2-tuic-1795420804.json: 1 file pushed, 0 skipped. 7.8 MB/s (752 bytes in 0.000s)
+COMPLETE batch8-b2-p2-tuic
+/tmp/fc-split-latency/batch8-b2-p3-next-base-1795420804.json: 1 file pushed, 0 skipped. 5.8 MB/s (752 bytes in 0.000s)
+COMPLETE batch8-b2-p3-next-base
+/tmp/fc-split-latency/batch8-b3-p1-next-base-1795420804.json: 1 file pushed, 0 skipped. 7.2 MB/s (752 bytes in 0.000s)
+COMPLETE batch8-b3-p1-next-base
+/tmp/fc-split-latency/batch8-b3-p2-next-opt-1795420804.json: 1 file pushed, 0 skipped. 6.6 MB/s (752 bytes in 0.000s)
+COMPLETE batch8-b3-p2-next-opt
+/tmp/fc-split-latency/batch8-b3-p3-tuic-1795420804.json: 1 file pushed, 0 skipped. 6.7 MB/s (752 bytes in 0.000s)
+COMPLETE batch8-b3-p3-tuic
+/tmp/fc-split-latency/batch8-b4-p1-next-base-1795420804.json: 1 file pushed, 0 skipped. 5.9 MB/s (752 bytes in 0.000s)
+COMPLETE batch8-b4-p1-next-base
+/tmp/fc-split-latency/batch8-b4-p2-tuic-1795420804.json: 1 file pushed, 0 skipped. 6.4 MB/s (752 bytes in 0.000s)
+COMPLETE batch8-b4-p2-tuic
+/tmp/fc-split-latency/batch8-b4-p3-next-opt-1795420804.json: 1 file pushed, 0 skipped. 6.2 MB/s (752 bytes in 0.000s)
+COMPLETE batch8-b4-p3-next-opt
+/tmp/fc-split-latency/batch8-b5-p1-tuic-1795420804.json: 1 file pushed, 0 skipped. 5.4 MB/s (752 bytes in 0.000s)
+COMPLETE batch8-b5-p1-tuic
+/tmp/fc-split-latency/batch8-b5-p2-next-opt-1795420804.json: 1 file pushed, 0 skipped. 6.4 MB/s (752 bytes in 0.000s)
+COMPLETE batch8-b5-p2-next-opt
+/tmp/fc-split-latency/batch8-b5-p3-next-base-1795420804.json: 1 file pushed, 0 skipped. 6.9 MB/s (752 bytes in 0.000s)
+COMPLETE batch8-b5-p3-next-base
+/tmp/fc-split-latency/batch8-b6-p1-tuic-1795420804.json: 1 file pushed, 0 skipped. 6.4 MB/s (752 bytes in 0.000s)
+COMPLETE batch8-b6-p1-tuic
+/tmp/fc-split-latency/batch8-b6-p2-next-base-1795420804.json: 1 file pushed, 0 skipped. 6.6 MB/s (752 bytes in 0.000s)
+COMPLETE batch8-b6-p2-next-base
+/tmp/fc-split-latency/batch8-b6-p3-next-opt-1795420804.json: 1 file pushed, 0 skipped. 7.0 MB/s (752 bytes in 0.000s)
+COMPLETE batch8-b6-p3-next-opt
+/tmp/fc-split-latency/mixed-b1-p1-next-opt-1795420804.json: 1 file pushed, 0 skipped. 5.1 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b1-p1-next-opt
+/tmp/fc-split-latency/mixed-b1-p2-next-base-1795420804.json: 1 file pushed, 0 skipped. 5.7 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b1-p2-next-base
+/tmp/fc-split-latency/mixed-b1-p3-tuic-1795420804.json: 1 file pushed, 0 skipped. 10.3 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b1-p3-tuic
+/tmp/fc-split-latency/mixed-b2-p1-next-opt-1795420804.json: 1 file pushed, 0 skipped. 7.0 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b2-p1-next-opt
+/tmp/fc-split-latency/mixed-b2-p2-tuic-1795420804.json: 1 file pushed, 0 skipped. 6.7 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b2-p2-tuic
+/tmp/fc-split-latency/mixed-b2-p3-next-base-1795420804.json: 1 file pushed, 0 skipped. 6.5 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b2-p3-next-base
+/tmp/fc-split-latency/mixed-b3-p1-next-base-1795420804.json: 1 file pushed, 0 skipped. 8.2 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b3-p1-next-base
+/tmp/fc-split-latency/mixed-b3-p2-next-opt-1795420804.json: 1 file pushed, 0 skipped. 7.0 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b3-p2-next-opt
+/tmp/fc-split-latency/mixed-b3-p3-tuic-1795420804.json: 1 file pushed, 0 skipped. 5.9 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b3-p3-tuic
+/tmp/fc-split-latency/mixed-b4-p1-next-base-1795420804.json: 1 file pushed, 0 skipped. 6.4 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b4-p1-next-base
+/tmp/fc-split-latency/mixed-b4-p2-tuic-1795420804.json: 1 file pushed, 0 skipped. 6.3 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b4-p2-tuic
+/tmp/fc-split-latency/mixed-b4-p3-next-opt-1795420804.json: 1 file pushed, 0 skipped. 5.5 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b4-p3-next-opt
+/tmp/fc-split-latency/mixed-b5-p1-tuic-1795420804.json: 1 file pushed, 0 skipped. 5.1 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b5-p1-tuic
+/tmp/fc-split-latency/mixed-b5-p2-next-opt-1795420804.json: 1 file pushed, 0 skipped. 5.8 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b5-p2-next-opt
+/tmp/fc-split-latency/mixed-b5-p3-next-base-1795420804.json: 1 file pushed, 0 skipped. 6.8 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b5-p3-next-base
+/tmp/fc-split-latency/mixed-b6-p1-tuic-1795420804.json: 1 file pushed, 0 skipped. 6.0 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b6-p1-tuic
+/tmp/fc-split-latency/mixed-b6-p2-next-base-1795420804.json: 1 file pushed, 0 skipped. 6.3 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b6-p2-next-base
+/tmp/fc-split-latency/mixed-b6-p3-next-opt-1795420804.json: 1 file pushed, 0 skipped. 6.3 MB/s (752 bytes in 0.000s)
+COMPLETE mixed-b6-p3-next-opt
+/tmp/fc-split-latency/idle-b1-p1-next-opt-1795420804.json: 1 file pushed, 0 skipped. 6.9 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b1-p1-next-opt
+/tmp/fc-split-latency/idle-b1-p2-next-base-1795420804.json: 1 file pushed, 0 skipped. 7.7 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b1-p2-next-base
+/tmp/fc-split-latency/idle-b1-p3-tuic-1795420804.json: 1 file pushed, 0 skipped. 7.2 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b1-p3-tuic
+/tmp/fc-split-latency/idle-b2-p1-next-opt-1795420804.json: 1 file pushed, 0 skipped. 6.8 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b2-p1-next-opt
+/tmp/fc-split-latency/idle-b2-p2-tuic-1795420804.json: 1 file pushed, 0 skipped. 6.1 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b2-p2-tuic
+/tmp/fc-split-latency/idle-b2-p3-next-base-1795420804.json: 1 file pushed, 0 skipped. 6.6 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b2-p3-next-base
+/tmp/fc-split-latency/idle-b3-p1-next-base-1795420804.json: 1 file pushed, 0 skipped. 9.8 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b3-p1-next-base
+/tmp/fc-split-latency/idle-b3-p2-next-opt-1795420804.json: 1 file pushed, 0 skipped. 5.7 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b3-p2-next-opt
+/tmp/fc-split-latency/idle-b3-p3-tuic-1795420804.json: 1 file pushed, 0 skipped. 5.3 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b3-p3-tuic
+/tmp/fc-split-latency/idle-b4-p1-next-base-1795420804.json: 1 file pushed, 0 skipped. 5.4 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b4-p1-next-base
+/tmp/fc-split-latency/idle-b4-p2-tuic-1795420804.json: 1 file pushed, 0 skipped. 5.9 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b4-p2-tuic
+/tmp/fc-split-latency/idle-b4-p3-next-opt-1795420804.json: 1 file pushed, 0 skipped. 6.5 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b4-p3-next-opt
+/tmp/fc-split-latency/idle-b5-p1-tuic-1795420804.json: 1 file pushed, 0 skipped. 6.8 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b5-p1-tuic
+/tmp/fc-split-latency/idle-b5-p2-next-opt-1795420804.json: 1 file pushed, 0 skipped. 7.1 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b5-p2-next-opt
+/tmp/fc-split-latency/idle-b5-p3-next-base-1795420804.json: 1 file pushed, 0 skipped. 5.5 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b5-p3-next-base
+/tmp/fc-split-latency/idle-b6-p1-tuic-1795420804.json: 1 file pushed, 0 skipped. 7.7 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b6-p1-tuic
+/tmp/fc-split-latency/idle-b6-p2-next-base-1795420804.json: 1 file pushed, 0 skipped. 8.9 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b6-p2-next-base
+/tmp/fc-split-latency/idle-b6-p3-next-opt-1795420804.json: 1 file pushed, 0 skipped. 6.5 MB/s (752 bytes in 0.000s)
+COMPLETE idle-b6-p3-next-opt
+/tmp/fc-split-latency/web-example-b1-p1-next-opt-1795420804.json: 1 file pushed, 0 skipped. 5.7 MB/s (752 bytes in 0.000s)
+COMPLETE web-example-b1-p1-next-opt
+/tmp/fc-split-latency/web-example-b1-p2-next-base-1795420804.json: 1 file pushed, 0 skipped. 8.7 MB/s (752 bytes in 0.000s)
+COMPLETE web-example-b1-p2-next-base
+/tmp/fc-split-latency/web-example-b1-p3-tuic-1795420804.json: 1 file pushed, 0 skipped. 5.5 MB/s (752 bytes in 0.000s)
+COMPLETE web-example-b1-p3-tuic
+/tmp/fc-split-latency/web-example-b2-p1-tuic-1795420804.json: 1 file pushed, 0 skipped. 7.3 MB/s (752 bytes in 0.000s)
+COMPLETE web-example-b2-p1-tuic
+/tmp/fc-split-latency/web-example-b2-p2-next-base-1795420804.json: 1 file pushed, 0 skipped. 6.4 MB/s (752 bytes in 0.000s)
+COMPLETE web-example-b2-p2-next-base
+/tmp/fc-split-latency/web-example-b2-p3-next-opt-1795420804.json: 1 file pushed, 0 skipped. 9.5 MB/s (752 bytes in 0.000s)
+COMPLETE web-example-b2-p3-next-opt
+/tmp/fc-split-latency/web-google-b1-p1-next-opt-1795420804.json: 1 file pushed, 0 skipped. 6.1 MB/s (752 bytes in 0.000s)
+COMPLETE web-google-b1-p1-next-opt
+/tmp/fc-split-latency/web-google-b1-p2-next-base-1795420804.json: 1 file pushed, 0 skipped. 6.0 MB/s (752 bytes in 0.000s)
+COMPLETE web-google-b1-p2-next-base
+/tmp/fc-split-latency/web-google-b1-p3-tuic-1795420804.json: 1 file pushed, 0 skipped. 3.2 MB/s (752 bytes in 0.000s)
+COMPLETE web-google-b1-p3-tuic
+/tmp/fc-split-latency/web-google-b2-p1-tuic-1795420804.json: 1 file pushed, 0 skipped. 6.3 MB/s (752 bytes in 0.000s)
+COMPLETE web-google-b2-p1-tuic
+/tmp/fc-split-latency/web-google-b2-p2-next-base-1795420804.json: 1 file pushed, 0 skipped. 6.5 MB/s (752 bytes in 0.000s)
+COMPLETE web-google-b2-p2-next-base
+/tmp/fc-split-latency/web-google-b2-p3-next-opt-1795420804.json: 1 file pushed, 0 skipped. 5.6 MB/s (752 bytes in 0.000s)
+COMPLETE web-google-b2-p3-next-opt
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+VPN restored: True
+RECOVERY TRIO COMPLETE

@@ -1,0 +1,136 @@
+Starting fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config...
+Started fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config.
+{"session":1,"bytes_in_flight":27,"stage":"server_quic_end","carrier":"quic","duration_us":834168,"ok":true,"packets_sent":18,"packets_received":14,"declared_lost":1,"max_pto":1}
+{"session":2,"bytes_in_flight":27,"stage":"server_quic_end","carrier":"quic","duration_us":913426,"ok":true,"packets_sent":21,"packets_received":15,"declared_lost":2,"max_pto":1}
+{"session":3,"bytes_in_flight":1366,"stage":"server_quic_progress","carrier":"quic","duration_us":5003069,"ok":true,"packets_sent":20,"packets_received":14,"declared_lost":3}
+{"session":3,"cwnd_bytes":51493,"smoothed_rtt_us":120039,"stage":"server_quic_progress","carrier":"quic","duration_us":10000400,"ok":true,"packets_sent":32,"packets_received":26,"declared_lost":5}
+{"session":3,"cwnd_bytes":66474,"smoothed_rtt_us":108764,"stage":"server_quic_end","carrier":"quic","duration_us":11881144,"ok":true,"packets_sent":65,"packets_received":51,"declared_lost":10,"max_pto":1}
+Stopping fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config...
+fc-opt-next-1795277542.service: Deactivated successfully.
+Stopped fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config.
+Starting fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config...
+Started fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config.
+{"session":1,"bytes_in_flight":94849,"stage":"server_quic_progress","carrier":"quic","duration_us":5001777,"ok":true,"packets_sent":1901,"packets_received":584,"declared_lost":573,"max_pto":2}
+{"session":1,"bytes_in_flight":97679,"stage":"server_quic_progress","carrier":"quic","duration_us":10002232,"ok":true,"packets_sent":5009,"packets_received":1563,"declared_lost":1519,"max_pto":2}
+{"session":1,"bytes_in_flight":90544,"stage":"server_quic_progress","carrier":"quic","duration_us":15001889,"ok":true,"packets_sent":8555,"packets_received":2660,"declared_lost":2664,"max_pto":2}
+{"session":1,"bytes_in_flight":91519,"stage":"server_quic_progress","carrier":"quic","duration_us":20002214,"ok":true,"packets_sent":11475,"packets_received":3567,"declared_lost":3619,"max_pto":2}
+{"session":1,"bytes_in_flight":78258,"stage":"server_quic_progress","carrier":"quic","duration_us":25001726,"ok":true,"packets_sent":14618,"packets_received":4532,"declared_lost":4653,"max_pto":2}
+{"session":1,"bytes_in_flight":63465,"stage":"server_quic_progress","carrier":"quic","duration_us":30001697,"ok":true,"packets_sent":17146,"packets_received":5345,"declared_lost":5516,"max_pto":2}
+{"session":1,"bytes_in_flight":65736,"stage":"server_quic_progress","carrier":"quic","duration_us":35001981,"ok":true,"packets_sent":19103,"packets_received":5989,"declared_lost":6170,"max_pto":2}
+{"session":1,"bytes_in_flight":7176,"stage":"server_quic_progress","carrier":"quic","duration_us":40002170,"ok":true,"packets_sent":20117,"packets_received":6359,"declared_lost":6546,"max_pto":2}
+{"session":1,"bytes_in_flight":7160,"smoothed_rtt_us":99564,"stage":"server_quic_progress","carrier":"quic","duration_us":45002600,"ok":true,"packets_sent":20653,"packets_received":6546,"declared_lost":6769,"max_pto":2}
+{"session":1,"cwnd_bytes":6148,"bytes_in_flight":7160,"stage":"server_quic_progress","carrier":"quic","duration_us":50001827,"ok":true,"packets_sent":20940,"packets_received":6661,"declared_lost":6872,"max_pto":2}
+{"session":1,"bytes_in_flight":7160,"stage":"server_quic_progress","carrier":"quic","duration_us":55002088,"ok":true,"packets_sent":21153,"packets_received":6725,"declared_lost":6975,"max_pto":2}
+{"session":1,"bytes_in_flight":10456,"stage":"server_quic_progress","carrier":"quic","duration_us":60002578,"ok":true,"packets_sent":21381,"packets_received":6812,"declared_lost":7062,"max_pto":2}
+{"session":1,"bytes_in_flight":10456,"stage":"server_quic_progress","carrier":"quic","duration_us":65002383,"ok":true,"packets_sent":21763,"packets_received":6957,"declared_lost":7206,"max_pto":2}
+{"session":1,"bytes_in_flight":11888,"stage":"server_quic_progress","carrier":"quic","duration_us":70002341,"ok":true,"packets_sent":22082,"packets_received":7071,"declared_lost":7333,"max_pto":2}
+{"session":1,"bytes_in_flight":8592,"smoothed_rtt_us":99363,"stage":"server_quic_progress","carrier":"quic","duration_us":75002514,"ok":true,"packets_sent":22354,"packets_received":7176,"declared_lost":7440,"max_pto":2}
+{"session":1,"bytes_in_flight":11456,"stage":"server_quic_progress","carrier":"quic","duration_us":80001669,"ok":true,"packets_sent":22616,"packets_received":7285,"declared_lost":7536,"max_pto":2}
+{"session":1,"bytes_in_flight":5759,"stage":"server_quic_progress","carrier":"quic","duration_us":85002287,"ok":true,"packets_sent":22784,"packets_received":7341,"declared_lost":7616,"max_pto":2}
+{"session":1,"bytes_in_flight":5728,"stage":"server_quic_end","carrier":"quic","duration_us":89998846,"ok":true,"packets_sent":23060,"packets_received":7454,"declared_lost":7717,"max_pto":2}
+Stopping fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config...
+fc-opt-next-1795277542.service: Deactivated successfully.
+Stopped fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config.
+fc-opt-next-1795277542.service: Consumed 4.667s CPU time, 10.1M memory peak.
+Starting fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config...
+Started fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config.
+{"session":1,"bytes_in_flight":50660,"stage":"server_quic_progress","carrier":"quic","duration_us":5001857,"ok":true,"packets_sent":1197,"packets_received":380,"declared_lost":404,"max_pto":2}
+{"session":1,"bytes_in_flight":49251,"smoothed_rtt_us":100109,"stage":"server_quic_progress","carrier":"quic","duration_us":10001560,"ok":true,"packets_sent":2769,"packets_received":935,"declared_lost":889,"max_pto":2}
+{"session":1,"bytes_in_flight":92666,"stage":"server_quic_progress","carrier":"quic","duration_us":15002043,"ok":true,"packets_sent":4613,"packets_received":1548,"declared_lost":1493,"max_pto":2}
+{"session":1,"cwnd_bytes":37685,"bytes_in_flight":24762,"smoothed_rtt_us":103925,"stage":"server_quic_progress","carrier":"quic","duration_us":20001932,"ok":true,"packets_sent":5995,"packets_received":2015,"declared_lost":1989,"max_pto":2}
+{"session":1,"bytes_in_flight":21646,"stage":"server_quic_progress","carrier":"quic","duration_us":25001336,"ok":true,"packets_sent":6766,"packets_received":2259,"declared_lost":2278,"max_pto":2}
+{"session":1,"bytes_in_flight":23281,"stage":"server_quic_progress","carrier":"quic","duration_us":30002337,"ok":true,"packets_sent":7265,"packets_received":2430,"declared_lost":2461,"max_pto":2}
+{"session":1,"bytes_in_flight":10119,"stage":"server_quic_progress","carrier":"quic","duration_us":35001478,"ok":true,"packets_sent":7667,"packets_received":2589,"declared_lost":2614,"max_pto":2}
+{"session":1,"bytes_in_flight":8878,"stage":"server_quic_progress","carrier":"quic","duration_us":40001990,"ok":true,"packets_sent":7972,"packets_received":2718,"declared_lost":2709,"max_pto":2}
+{"session":1,"bytes_in_flight":17517,"stage":"server_quic_progress","carrier":"quic","duration_us":45001611,"ok":true,"packets_sent":8379,"packets_received":2866,"declared_lost":2857,"max_pto":2}
+{"session":1,"bytes_in_flight":8646,"stage":"server_quic_progress","carrier":"quic","duration_us":50001762,"ok":true,"packets_sent":8685,"packets_received":2978,"declared_lost":2982,"max_pto":2}
+{"session":1,"bytes_in_flight":13194,"stage":"server_quic_progress","carrier":"quic","duration_us":55002135,"ok":true,"packets_sent":8988,"packets_received":3095,"declared_lost":3084,"max_pto":2}
+{"session":1,"bytes_in_flight":16108,"smoothed_rtt_us":109707,"stage":"server_quic_progress","carrier":"quic","duration_us":60001992,"ok":true,"packets_sent":9359,"packets_received":3247,"declared_lost":3225,"max_pto":2}
+{"session":1,"bytes_in_flight":7205,"stage":"server_quic_progress","carrier":"quic","duration_us":65002165,"ok":true,"packets_sent":9633,"packets_received":3349,"declared_lost":3349,"max_pto":2}
+{"session":1,"bytes_in_flight":6002,"smoothed_rtt_us":102276,"stage":"server_quic_progress","carrier":"quic","duration_us":70001958,"ok":true,"packets_sent":9883,"packets_received":3437,"declared_lost":3449,"max_pto":2}
+{"session":1,"bytes_in_flight":18758,"stage":"server_quic_progress","carrier":"quic","duration_us":75001973,"ok":true,"packets_sent":10136,"packets_received":3541,"declared_lost":3541,"max_pto":2}
+{"session":1,"bytes_in_flight":5764,"smoothed_rtt_us":104182,"stage":"server_quic_progress","carrier":"quic","duration_us":80001883,"ok":true,"packets_sent":10393,"packets_received":3648,"declared_lost":3646,"max_pto":2}
+{"session":1,"bytes_in_flight":7236,"smoothed_rtt_us":102167,"stage":"server_quic_progress","carrier":"quic","duration_us":85002019,"ok":true,"packets_sent":10697,"packets_received":3767,"declared_lost":3747,"max_pto":2}
+{"session":1,"bytes_in_flight":10087,"stage":"server_quic_end","carrier":"quic","duration_us":89997876,"ok":true,"packets_sent":10966,"packets_received":3882,"declared_lost":3846,"max_pto":2}
+Stopping fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config...
+fc-opt-next-1795277542.service: Deactivated successfully.
+Stopped fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config.
+fc-opt-next-1795277542.service: Consumed 2.942s CPU time, 10.1M memory peak.
+Starting fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config...
+Started fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config.
+{"session":1,"bytes_in_flight":129165,"stage":"server_quic_progress","carrier":"quic","duration_us":5001280,"ok":true,"packets_sent":3297,"packets_received":1052,"declared_lost":523}
+{"session":1,"bytes_in_flight":232472,"stage":"server_quic_progress","carrier":"quic","duration_us":10001323,"ok":true,"packets_sent":9919,"packets_received":2998,"declared_lost":1539}
+{"session":1,"bytes_in_flight":732725,"stage":"server_quic_progress","carrier":"quic","duration_us":15001210,"ok":true,"packets_sent":20071,"packets_received":5327,"declared_lost":3302}
+{"session":1,"bytes_in_flight":22,"blocked_sent":1,"stage":"server_quic_end","carrier":"quic","duration_us":19214009,"ok":true,"packets_sent":30539,"packets_received":7131,"declared_lost":5603,"max_pto":1}
+Stopping fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config...
+fc-opt-next-1795277542.service: Deactivated successfully.
+Stopped fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config.
+fc-opt-next-1795277542.service: Consumed 2.673s CPU time, 11.1M memory peak.
+Starting fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config...
+Started fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config.
+{"session":1,"bytes_in_flight":11960,"stage":"server_quic_progress","carrier":"quic","duration_us":5000781,"ok":true,"packets_sent":887,"packets_received":236,"declared_lost":394,"max_pto":1}
+{"session":1,"bytes_in_flight":10066,"stage":"server_quic_progress","carrier":"quic","duration_us":10001332,"ok":true,"packets_sent":1194,"packets_received":365,"declared_lost":504,"max_pto":1}
+{"session":1,"cwnd_bytes":16149,"bytes_in_flight":7184,"smoothed_rtt_us":100566,"stage":"server_quic_progress","carrier":"quic","duration_us":15001012,"ok":true,"packets_sent":1468,"packets_received":479,"declared_lost":601,"max_pto":1}
+{"session":1,"bytes_in_flight":8628,"stage":"server_quic_progress","carrier":"quic","duration_us":20001313,"ok":true,"packets_sent":1705,"packets_received":572,"declared_lost":698,"max_pto":1}
+{"session":1,"bytes_in_flight":8628,"stage":"server_quic_progress","carrier":"quic","duration_us":25001483,"ok":true,"packets_sent":1936,"packets_received":656,"declared_lost":789,"max_pto":1}
+{"session":1,"cwnd_bytes":5752,"bytes_in_flight":5777,"stage":"server_quic_progress","carrier":"quic","duration_us":30000729,"ok":true,"packets_sent":2108,"packets_received":703,"declared_lost":875,"max_pto":1}
+{"session":1,"bytes_in_flight":7190,"stage":"server_quic_progress","carrier":"quic","duration_us":35000572,"ok":true,"packets_sent":2377,"packets_received":797,"declared_lost":987,"max_pto":1}
+{"session":1,"bytes_in_flight":10066,"stage":"server_quic_progress","carrier":"quic","duration_us":40000676,"ok":true,"packets_sent":2617,"packets_received":898,"declared_lost":1072,"max_pto":2}
+{"session":1,"bytes_in_flight":12942,"stage":"server_quic_progress","carrier":"quic","duration_us":45000575,"ok":true,"packets_sent":2950,"packets_received":1035,"declared_lost":1184,"max_pto":2}
+{"session":1,"bytes_in_flight":7190,"smoothed_rtt_us":100011,"stage":"server_quic_progress","carrier":"quic","duration_us":50000510,"ok":true,"packets_sent":3271,"packets_received":1161,"declared_lost":1313,"max_pto":2}
+{"session":1,"bytes_in_flight":14380,"stage":"server_quic_progress","carrier":"quic","duration_us":55001476,"ok":true,"packets_sent":3616,"packets_received":1285,"declared_lost":1433,"max_pto":2}
+{"session":1,"bytes_in_flight":7190,"stage":"server_quic_progress","carrier":"quic","duration_us":60000854,"ok":true,"packets_sent":3919,"packets_received":1393,"declared_lost":1553,"max_pto":2}
+{"session":1,"bytes_in_flight":7484,"stage":"server_quic_progress","carrier":"quic","duration_us":65001386,"ok":true,"packets_sent":4211,"packets_received":1509,"declared_lost":1653,"max_pto":2}
+{"session":1,"bytes_in_flight":8628,"smoothed_rtt_us":101150,"stage":"server_quic_progress","carrier":"quic","duration_us":70001037,"ok":true,"packets_sent":4467,"packets_received":1601,"declared_lost":1760,"max_pto":2}
+{"session":1,"bytes_in_flight":11504,"stage":"server_quic_progress","carrier":"quic","duration_us":75001441,"ok":true,"packets_sent":4746,"packets_received":1719,"declared_lost":1867,"max_pto":2}
+{"session":1,"bytes_in_flight":13245,"stage":"server_quic_progress","carrier":"quic","duration_us":80001158,"ok":true,"packets_sent":5216,"packets_received":1903,"declared_lost":2003,"max_pto":2}
+{"session":1,"bytes_in_flight":7190,"smoothed_rtt_us":100635,"stage":"server_quic_progress","carrier":"quic","duration_us":85001487,"ok":true,"packets_sent":5534,"packets_received":2012,"declared_lost":2127,"max_pto":2}
+{"session":1,"bytes_in_flight":5752,"smoothed_rtt_us":102966,"stage":"server_quic_end","carrier":"quic","duration_us":89984555,"ok":true,"packets_sent":5816,"packets_received":2145,"declared_lost":2220,"max_pto":2}
+Stopping fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config...
+fc-opt-next-1795277542.service: Deactivated successfully.
+Stopped fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config.
+fc-opt-next-1795277542.service: Consumed 1.706s CPU time, 11.9M memory peak.
+Starting fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config...
+Started fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config.
+{"session":1,"bytes_in_flight":44855,"stage":"server_quic_progress","carrier":"quic","duration_us":5002568,"ok":true,"packets_sent":1576,"packets_received":529,"declared_lost":492,"max_pto":1}
+{"session":1,"bytes_in_flight":37706,"stage":"server_quic_progress","carrier":"quic","duration_us":10002531,"ok":true,"packets_sent":3023,"packets_received":1037,"declared_lost":921,"max_pto":1}
+{"session":1,"bytes_in_flight":40543,"smoothed_rtt_us":97400,"stage":"server_quic_progress","carrier":"quic","duration_us":15002675,"ok":true,"packets_sent":4496,"packets_received":1548,"declared_lost":1363,"max_pto":1}
+{"session":1,"bytes_in_flight":38074,"stage":"server_quic_progress","carrier":"quic","duration_us":20002475,"ok":true,"packets_sent":5884,"packets_received":2029,"declared_lost":1801,"max_pto":1}
+{"session":1,"cwnd_bytes":46646,"stage":"server_quic_progress","carrier":"quic","duration_us":25002479,"ok":true,"packets_sent":6902,"packets_received":2381,"declared_lost":2158,"max_pto":1}
+{"session":1,"bytes_in_flight":20453,"smoothed_rtt_us":97324,"stage":"server_quic_progress","carrier":"quic","duration_us":30001674,"ok":true,"packets_sent":7675,"packets_received":2644,"declared_lost":2427,"max_pto":1}
+{"session":1,"bytes_in_flight":16180,"stage":"server_quic_progress","carrier":"quic","duration_us":35002117,"ok":true,"packets_sent":8520,"packets_received":2934,"declared_lost":2714,"max_pto":1}
+{"session":1,"bytes_in_flight":14350,"stage":"server_quic_progress","carrier":"quic","duration_us":40001643,"ok":true,"packets_sent":8829,"packets_received":3054,"declared_lost":2829,"max_pto":1}
+{"session":1,"bytes_in_flight":14350,"stage":"server_quic_progress","carrier":"quic","duration_us":45002516,"ok":true,"packets_sent":9183,"packets_received":3206,"declared_lost":2926,"max_pto":1}
+{"session":1,"bytes_in_flight":7175,"stage":"server_quic_progress","carrier":"quic","duration_us":50002594,"ok":true,"packets_sent":9570,"packets_received":3347,"declared_lost":3066,"max_pto":1}
+{"session":1,"bytes_in_flight":14744,"stage":"server_quic_progress","carrier":"quic","duration_us":55002099,"ok":true,"packets_sent":9881,"packets_received":3461,"declared_lost":3176,"max_pto":1}
+{"session":1,"bytes_in_flight":7175,"stage":"server_quic_progress","carrier":"quic","duration_us":60002104,"ok":true,"packets_sent":10210,"packets_received":3604,"declared_lost":3286,"max_pto":1}
+{"session":1,"cwnd_bytes":10077,"bytes_in_flight":7207,"smoothed_rtt_us":99109,"stage":"server_quic_progress","carrier":"quic","duration_us":65002135,"ok":true,"packets_sent":10490,"packets_received":3713,"declared_lost":3396,"max_pto":1}
+{"session":1,"bytes_in_flight":11480,"stage":"server_quic_progress","carrier":"quic","duration_us":70002668,"ok":true,"packets_sent":10758,"packets_received":3812,"declared_lost":3494,"max_pto":1}
+{"session":1,"bytes_in_flight":12947,"stage":"server_quic_progress","carrier":"quic","duration_us":75001648,"ok":true,"packets_sent":11101,"packets_received":3962,"declared_lost":3603,"max_pto":1}
+{"session":1,"bytes_in_flight":10045,"stage":"server_quic_progress","carrier":"quic","duration_us":80001942,"ok":true,"packets_sent":11420,"packets_received":4097,"declared_lost":3706,"max_pto":1}
+{"session":1,"bytes_in_flight":11512,"stage":"server_quic_progress","carrier":"quic","duration_us":85002489,"ok":true,"packets_sent":11800,"packets_received":4220,"declared_lost":3855,"max_pto":1}
+{"session":1,"bytes_in_flight":10408,"stage":"server_quic_end","carrier":"quic","duration_us":89989801,"ok":true,"packets_sent":12173,"packets_received":4361,"declared_lost":3987,"max_pto":1}
+Stopping fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config...
+fc-opt-next-1795277542.service: Deactivated successfully.
+Stopped fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config.
+fc-opt-next-1795277542.service: Consumed 3.265s CPU time, 10.7M memory peak.
+Starting fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config...
+Started fc-opt-next-1795277542.service - [systemd-run] /usr/local/bin/fc-opt-next-1795277542 -config /run/credentials/fc-opt-next-1795277542.service/config.
+{"session":1,"bytes_in_flight":72846,"smoothed_rtt_us":102887,"stage":"server_quic_progress","carrier":"quic","duration_us":5001458,"ok":true,"packets_sent":1976,"packets_received":648,"declared_lost":567,"max_pto":1}
+{"session":1,"bytes_in_flight":82930,"stage":"server_quic_progress","carrier":"quic","duration_us":10002471,"ok":true,"packets_sent":4481,"packets_received":1515,"declared_lost":1297,"max_pto":1}
+{"session":1,"bytes_in_flight":104078,"stage":"server_quic_progress","carrier":"quic","duration_us":15002434,"ok":true,"packets_sent":7829,"packets_received":2566,"declared_lost":2362,"max_pto":1}
+{"session":1,"bytes_in_flight":157923,"stage":"server_quic_progress","carrier":"quic","duration_us":20001756,"ok":true,"packets_sent":12365,"packets_received":3883,"declared_lost":3812,"max_pto":1}
+{"session":1,"bytes_in_flight":124530,"stage":"server_quic_progress","carrier":"quic","duration_us":25001452,"ok":true,"packets_sent":17288,"packets_received":5233,"declared_lost":5456,"max_pto":1}
+{"session":1,"bytes_in_flight":125282,"smoothed_rtt_us":102887,"stage":"server_quic_progress","carrier":"quic","duration_us":30001598,"ok":true,"packets_sent":21849,"packets_received":6608,"declared_lost":6801,"max_pto":1}
+{"session":1,"bytes_in_flight":103362,"stage":"server_quic_progress","carrier":"quic","duration_us":35001752,"ok":true,"packets_sent":25731,"packets_received":7723,"declared_lost":8132,"max_pto":1}
+{"session":1,"bytes_in_flight":55283,"stage":"server_quic_progress","carrier":"quic","duration_us":40001500,"ok":true,"packets_sent":27465,"packets_received":8151,"declared_lost":9012,"max_pto":1}
+{"session":1,"bytes_in_flight":24758,"stage":"server_quic_progress","carrier":"quic","duration_us":45001474,"ok":true,"packets_sent":28625,"packets_received":8518,"declared_lost":9549,"max_pto":1}
+{"session":1,"bytes_in_flight":15817,"stage":"server_quic_progress","carrier":"quic","duration_us":50002124,"ok":true,"packets_sent":29056,"packets_received":8678,"declared_lost":9715,"max_pto":1}
+{"session":1,"bytes_in_flight":13278,"smoothed_rtt_us":104706,"stage":"server_quic_progress","carrier":"quic","duration_us":55001424,"ok":true,"packets_sent":29472,"packets_received":8844,"declared_lost":9852,"max_pto":1}
+{"session":1,"bytes_in_flight":12915,"stage":"server_quic_progress","carrier":"quic","duration_us":60002041,"ok":true,"packets_sent":29811,"packets_received":8972,"declared_lost":9971,"max_pto":1}
+{"session":1,"bytes_in_flight":8603,"stage":"server_quic_progress","carrier":"quic","duration_us":65002014,"ok":true,"packets_sent":30099,"packets_received":9086,"declared_lost":10084,"max_pto":1}
+{"session":1,"bytes_in_flight":7538,"stage":"server_quic_progress","carrier":"quic","duration_us":70002449,"ok":true,"packets_sent":30424,"packets_received":9206,"declared_lost":10198,"max_pto":1}
+{"session":1,"bytes_in_flight":5740,"stage":"server_quic_progress","carrier":"quic","duration_us":75001531,"ok":true,"packets_sent":30684,"packets_received":9319,"declared_lost":10295,"max_pto":1}
+{"session":1,"bytes_in_flight":19018,"stage":"server_quic_progress","carrier":"quic","duration_us":80001446,"ok":true,"packets_sent":31023,"packets_received":9457,"declared_lost":10394,"max_pto":1}
+{"session":1,"bytes_in_flight":14382,"stage":"server_quic_progress","carrier":"quic","duration_us":85001459,"ok":true,"packets_sent":31421,"packets_received":9593,"declared_lost":10536,"max_pto":1}
+{"session":1,"bytes_in_flight":12915,"stage":"server_quic_end","carrier":"quic","duration_us":89970791,"ok":true,"packets_sent":31892,"packets_received":9758,"declared_lost":10692,"max_pto":1}

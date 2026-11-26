@@ -1,0 +1,67 @@
+{
+  "summary": {
+    "example.com:443": {
+      "baseline": {
+        "foreground_total": 24,
+        "foreground_success": 24,
+        "loaded_total": 24,
+        "loaded_success": 24,
+        "loaded_p50_ms": 406.494,
+        "loaded_p95_ms": 613.835,
+        "background_total": 4,
+        "background_success": 4,
+        "errors": []
+      },
+      "selected": {
+        "foreground_total": 24,
+        "foreground_success": 24,
+        "loaded_total": 24,
+        "loaded_success": 24,
+        "loaded_p50_ms": 398.114,
+        "loaded_p95_ms": 620.405,
+        "background_total": 4,
+        "background_success": 4,
+        "errors": []
+      }
+    },
+    "www.google.com:443": {
+      "baseline": {
+        "foreground_total": 24,
+        "foreground_success": 24,
+        "loaded_total": 24,
+        "loaded_success": 24,
+        "loaded_p50_ms": 374.955,
+        "loaded_p95_ms": 674.396,
+        "background_total": 4,
+        "background_success": 4,
+        "errors": []
+      },
+      "selected": {
+        "foreground_total": 24,
+        "foreground_success": 24,
+        "loaded_total": 24,
+        "loaded_success": 24,
+        "loaded_p50_ms": 370.823,
+        "loaded_p95_ms": 622.991,
+        "background_total": 4,
+        "background_success": 4,
+        "errors": []
+      }
+    }
+  },
+  "checks": {
+    "example.com:443": {
+      "enough": true,
+      "foreground": true,
+      "background": true,
+      "loaded_p95": true
+    },
+    "www.google.com:443": {
+      "enough": true,
+      "foreground": true,
+      "background": true,
+      "loaded_p95": true
+    }
+  },
+  "passed": true
+}

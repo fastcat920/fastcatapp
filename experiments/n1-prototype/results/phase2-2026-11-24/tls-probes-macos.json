@@ -1,0 +1,52 @@
+{
+  "client": "Mac OpenSSL CLI, not Android",
+  "samples": [
+    {
+      "case": "plain-http",
+      "response_prefix": "HTTP/1.0 400 Bad Request\r\n\r\nClient sent an HTTP request to an HTTPS server.\n",
+      "elapsed_ms": 311.51970900000003
+    },
+    {
+      "case": "tls12-only",
+      "exit_code": 1,
+      "established": false,
+      "response_prefix": "",
+      "diagnostics": [
+        "C09860F501000000:error:0A00042E:SSL routines:ssl3_read_bytes:tlsv1 alert protocol version:ssl/record/rec_layer_s3.c:910:SSL alert number 70"
+      ],
+      "elapsed_ms": 762.0212909999999
+    },
+    {
+      "case": "unsupported-alpn",
+      "exit_code": 1,
+      "established": false,
+      "response_prefix": "",
+      "diagnostics": [
+        "C09860F501000000:error:0A000460:SSL routines:ssl3_read_bytes:tlsv1 alert no application protocol:ssl/record/rec_layer_s3.c:910:SSL alert number 120"
+      ],
+      "elapsed_ms": 287.2414170000002
+    },
+    {
+      "case": "no-alpn",
+      "exit_code": 0,
+      "established": true,
+      "response_prefix": "HTTP/1.1 200 OK",
+      "diagnostics": [
+        "Protocol version: TLSv1.3",
+        "Verification: OK"
+      ],
+      "elapsed_ms": 524.259666
+    },
+    {
+      "case": "valid-http1",
+      "exit_code": 0,
+      "established": true,
+      "response_prefix": "HTTP/1.1 200 OK",
+      "diagnostics": [
+        "Protocol version: TLSv1.3",
+        "Verification: OK"
+      ],
+      "elapsed_ms": 523.7298340000001
+    }
+  ]
+}

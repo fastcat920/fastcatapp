@@ -1,0 +1,2 @@
+{"bytes":8192,"cleanup_ms":0.152,"entry_ms":392.445,"error_category":"timeout","error_stage":"headers","headers_ms":45000.866,"phase":"cold","protocol":"hysteria2","sample":1,"start_unix_ms":1795538282138,"success":false,"total_ms":45000.882}
+{"count":1,"elapsed_ms":45003.489,"event":"batch-ended","failed":1,"phase":"cold","protocol":"hysteria2","workers":1}

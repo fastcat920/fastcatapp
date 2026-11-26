@@ -1,0 +1,7 @@
+# TCP-first security and lifecycle gate
+
+Keep UDP deferred. One independent TCP target per tunnel, no outer multiplexing or application replay. Browser inner HTTP/2 is compatible but is not outer multiplexing. Network recovery establishes new tunnels; TLS tickets are bounded memory-only, no 0-RTT, isolated by credential and network epoch. Current 2-minute prototype session ceiling remains explicit, unsuitable for unlimited production downloads.
+
+Private credential ring: 1–4 keys, monotonic revision, overlap rotation, inactive/expired/disabled credentials denied, SIGHUP reload without service restart, invalid updates retain last good revision. Revocation interrupts authenticated active sessions, closes upstream and client transport, and never replays business. No legacy fallback while ring configured. IDs are internal, existing exporter-bound authentication wire format unchanged. Private regular owner-only files; no symlinks. Validate actual resumed TLS cannot bypass revoked application credentials, registration/reload race, deny-all, expiry, rollback, and cache isolation.
+
+Internal code review, race tests, bounded parser fuzzing, Go vulnerability scan. Upgrade only isolated prototype toolchain if needed. New isolated public service only; original 18461 and production 443 untouched. Public and Android tests record raw failures, expected rejections separately. No claim of independent cryptographic audit or measured GFW detection reduction.

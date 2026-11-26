@@ -1,0 +1,236 @@
+[
+  {
+    "workload": "controlled",
+    "phase": "cold",
+    "reference": "v2-bbr/h3",
+    "rounds": 20,
+    "next_faster_rounds": 13,
+    "median_round_difference_ms": -129.1385,
+    "reference_bootstrap95_ms": [
+      -474.4105,
+      146.9129999999999
+    ],
+    "note": "success-paired rounds only; concurrency blocked by batch; these rounds are not independent evidence of long-term network superiority"
+  },
+  {
+    "workload": "controlled",
+    "phase": "cold",
+    "reference": "hysteria2/quic",
+    "rounds": 20,
+    "next_faster_rounds": 13,
+    "median_round_difference_ms": -270.94100000000003,
+    "reference_bootstrap95_ms": [
+      -722.9895,
+      345.08150000000006
+    ],
+    "note": "success-paired rounds only; concurrency blocked by batch; these rounds are not independent evidence of long-term network superiority"
+  },
+  {
+    "workload": "controlled",
+    "phase": "cold",
+    "reference": "tuic/quic",
+    "rounds": 20,
+    "next_faster_rounds": 11,
+    "median_round_difference_ms": -41.89950000000002,
+    "reference_bootstrap95_ms": [
+      -557.884,
+      385.87700000000007
+    ],
+    "note": "success-paired rounds only; concurrency blocked by batch; these rounds are not independent evidence of long-term network superiority"
+  },
+  {
+    "workload": "controlled",
+    "phase": "warm",
+    "reference": "v2-bbr/h3",
+    "rounds": 20,
+    "next_faster_rounds": 17,
+    "median_round_difference_ms": -368.37250000000006,
+    "reference_bootstrap95_ms": [
+      -678.6484999999999,
+      -183.62749999999994
+    ],
+    "note": "success-paired rounds only; concurrency blocked by batch; these rounds are not independent evidence of long-term network superiority"
+  },
+  {
+    "workload": "controlled",
+    "phase": "warm",
+    "reference": "hysteria2/quic",
+    "rounds": 20,
+    "next_faster_rounds": 10,
+    "median_round_difference_ms": -8.317000000000007,
+    "reference_bootstrap95_ms": [
+      -265.08500000000004,
+      144.7595
+    ],
+    "note": "success-paired rounds only; concurrency blocked by batch; these rounds are not independent evidence of long-term network superiority"
+  },
+  {
+    "workload": "controlled",
+    "phase": "warm",
+    "reference": "tuic/quic",
+    "rounds": 20,
+    "next_faster_rounds": 9,
+    "median_round_difference_ms": 53.99200000000002,
+    "reference_bootstrap95_ms": [
+      -192.63850000000002,
+      147.30650000000006
+    ],
+    "note": "success-paired rounds only; concurrency blocked by batch; these rounds are not independent evidence of long-term network superiority"
+  },
+  {
+    "workload": "controlled",
+    "phase": "batch",
+    "reference": "v2-bbr/h3",
+    "rounds": 5,
+    "next_faster_rounds": 5,
+    "median_round_difference_ms": -336.433,
+    "reference_bootstrap95_ms": [
+      -1668.971,
+      -263.30200000000013
+    ],
+    "note": "success-paired rounds only; concurrency blocked by batch; these rounds are not independent evidence of long-term network superiority"
+  },
+  {
+    "workload": "controlled",
+    "phase": "batch",
+    "reference": "hysteria2/quic",
+    "rounds": 5,
+    "next_faster_rounds": 1,
+    "median_round_difference_ms": 108.30150000000003,
+    "reference_bootstrap95_ms": [
+      -750.3,
+      276.7434999999999
+    ],
+    "note": "success-paired rounds only; concurrency blocked by batch; these rounds are not independent evidence of long-term network superiority"
+  },
+  {
+    "workload": "controlled",
+    "phase": "batch",
+    "reference": "tuic/quic",
+    "rounds": 5,
+    "next_faster_rounds": 2,
+    "median_round_difference_ms": 58.094999999999914,
+    "reference_bootstrap95_ms": [
+      -389.481,
+      297.2265000000001
+    ],
+    "note": "success-paired rounds only; concurrency blocked by batch; these rounds are not independent evidence of long-term network superiority"
+  },
+  {
+    "workload": "internet",
+    "phase": "cold",
+    "reference": "v2-bbr/h3",
+    "rounds": 20,
+    "next_faster_rounds": 13,
+    "median_round_difference_ms": -370.21349999999995,
+    "reference_bootstrap95_ms": [
+      -760.9645,
+      34.9634999999999
+    ],
+    "note": "success-paired rounds only; concurrency blocked by batch; these rounds are not independent evidence of long-term network superiority"
+  },
+  {
+    "workload": "internet",
+    "phase": "cold",
+    "reference": "hysteria2/quic",
+    "rounds": 20,
+    "next_faster_rounds": 14,
+    "median_round_difference_ms": -487.6410000000001,
+    "reference_bootstrap95_ms": [
+      -755.5849999999999,
+      -16.66500000000002
+    ],
+    "note": "success-paired rounds only; concurrency blocked by batch; these rounds are not independent evidence of long-term network superiority"
+  },
+  {
+    "workload": "internet",
+    "phase": "cold",
+    "reference": "tuic/quic",
+    "rounds": 20,
+    "next_faster_rounds": 11,
+    "median_round_difference_ms": -245.676,
+    "reference_bootstrap95_ms": [
+      -595.4485,
+      359.1145
+    ],
+    "note": "success-paired rounds only; concurrency blocked by batch; these rounds are not independent evidence of long-term network superiority"
+  },
+  {
+    "workload": "internet",
+    "phase": "warm",
+    "reference": "v2-bbr/h3",
+    "rounds": 20,
+    "next_faster_rounds": 14,
+    "median_round_difference_ms": -306.45750000000004,
+    "reference_bootstrap95_ms": [
+      -678.462,
+      -85.99600000000004
+    ],
+    "note": "success-paired rounds only; concurrency blocked by batch; these rounds are not independent evidence of long-term network superiority"
+  },
+  {
+    "workload": "internet",
+    "phase": "warm",
+    "reference": "hysteria2/quic",
+    "rounds": 20,
+    "next_faster_rounds": 12,
+    "median_round_difference_ms": -47.882999999999925,
+    "reference_bootstrap95_ms": [
+      -121.96999999999997,
+      33.51250000000002
+    ],
+    "note": "success-paired rounds only; concurrency blocked by batch; these rounds are not independent evidence of long-term network superiority"
+  },
+  {
+    "workload": "internet",
+    "phase": "warm",
+    "reference": "tuic/quic",
+    "rounds": 20,
+    "next_faster_rounds": 7,
+    "median_round_difference_ms": 73.70949999999999,
+    "reference_bootstrap95_ms": [
+      -42.04600000000002,
+      248.78350000000003
+    ],
+    "note": "success-paired rounds only; concurrency blocked by batch; these rounds are not independent evidence of long-term network superiority"
+  },
+  {
+    "workload": "internet",
+    "phase": "batch",
+    "reference": "v2-bbr/h3",
+    "rounds": 5,
+    "next_faster_rounds": 5,
+    "median_round_difference_ms": -311.87400000000014,
+    "reference_bootstrap95_ms": [
+      -2171.3505000000005,
+      -263.4699999999999
+    ],
+    "note": "success-paired rounds only; concurrency blocked by batch; these rounds are not independent evidence of long-term network superiority"
+  },
+  {
+    "workload": "internet",
+    "phase": "batch",
+    "reference": "hysteria2/quic",
+    "rounds": 5,
+    "next_faster_rounds": 2,
+    "median_round_difference_ms": 307.2695,
+    "reference_bootstrap95_ms": [
+      -180.19900000000007,
+      363.20650000000006
+    ],
+    "note": "success-paired rounds only; concurrency blocked by batch; these rounds are not independent evidence of long-term network superiority"
+  },
+  {
+    "workload": "internet",
+    "phase": "batch",
+    "reference": "tuic/quic",
+    "rounds": 5,
+    "next_faster_rounds": 1,
+    "median_round_difference_ms": 360.47700000000003,
+    "reference_bootstrap95_ms": [
+      -121.9305,
+      636.056
+    ],
+    "note": "success-paired rounds only; concurrency blocked by batch; these rounds are not independent evidence of long-term network superiority"
+  }
+]

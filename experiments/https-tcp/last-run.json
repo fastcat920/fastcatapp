@@ -1,0 +1,12 @@
+{
+  "connections": 256,
+  "concurrency": 16,
+  "payload_bytes_each_direction": 16777216,
+  "batch_seconds": 0.368,
+  "connection_p50_ms": 17.758,
+  "connection_p95_ms": 52.34,
+  "sustained_seconds": 15.048,
+  "sustained_rounds": 278,
+  "sustained_payload_bytes_each_direction": 2277376,
+  "payload_mismatches": 0
+}

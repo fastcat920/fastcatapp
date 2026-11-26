@@ -1,0 +1,12 @@
+{
+  "lab_ports_still_listening": [],
+  "production_listeners": [
+    "udp UNCONN 0      0            *:443         *:*",
+    "udp UNCONN 0      0            *:18447       *:*",
+    "tcp LISTEN 0      4096         *:18447       *:*",
+    "tcp LISTEN 0      4096         *:443         *:*"
+  ],
+  "lab_run_dirs": [],
+  "lab_binaries": [],
+  "lab_active_units": ""
+}

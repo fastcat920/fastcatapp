@@ -17,6 +17,153 @@ private struct NoticeContentHeightPreferenceKey: PreferenceKey {
   }
 }
 
+// Catboard stores rich notices as HTML fragments. Render the formatting using
+// native SwiftUI text so the existing TV focus and link controls still work.
+private final class TVNoticeMarkup: NSObject, XMLParserDelegate {
+  private struct Format {
+    var intent: InlinePresentationIntent = []
+    var underline = false
+    var color: Color?
+  }
+
+  private struct ListState {
+    let ordered: Bool
+    var next = 1
+  }
+
+  private var formats = [Format()]
+  private var lists: [ListState] = []
+  private var pendingNewline = false
+  private var ignoredDepth = 0
+  private var output = AttributedString()
+
+  static func parse(_ source: String) -> AttributedString? {
+    guard source.range(
+      of: #"(?i)<(?:p|div|span|h[1-6]|ul|ol|li|br|hr|strong|b|em|i|u|s|a|img|font|table|blockquote|pre|code)(?=[\s/>])"#,
+      options: .regularExpression
+    ) != nil else { return nil }
+
+    let fragment = source
+      .replacingOccurrences(
+        of: #"(?i)<(br|hr|img)(\b[^>]*?)(?<!/)>"#,
+        with: "<$1$2/>", options: .regularExpression
+      )
+      .replacingOccurrences(of: "&nbsp;", with: "&#160;")
+      .replacingOccurrences(
+        of: #"&(?!amp;|lt;|gt;|quot;|apos;|#\d+;|#x[\da-fA-F]+;)"#,
+        with: "&amp;", options: .regularExpression
+      )
+    let delegate = TVNoticeMarkup()
+    let parser = XMLParser(data: Data("<notice>\(fragment)</notice>".utf8))
+    parser.shouldResolveExternalEntities = false
+    parser.delegate = delegate
+    return parser.parse() ? delegate.output : nil
+  }
+
+  func parser(
+    _ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?,
+    qualifiedName: String?, attributes: [String: String]
+  ) {
+    let tag = elementName.lowercased()
+    var format = formats.last ?? Format()
+    if ignoredDepth > 0 || ["script", "style", "iframe", "object", "template"].contains(tag) {
+      ignoredDepth += 1
+      formats.append(format)
+      return
+    }
+    if ["strong", "b", "h1", "h2", "h3", "h4", "h5", "h6"].contains(tag) {
+      format.intent.insert(.stronglyEmphasized)
+    }
+    if ["em", "i"].contains(tag) { format.intent.insert(.emphasized) }
+    if ["s", "del"].contains(tag) { format.intent.insert(.strikethrough) }
+    if tag == "u" { format.underline = true }
+
+    if let style = attributes["style"],
+      let range = style.range(of: #"(?i)(?:^|;)\s*color\s*:\s*[^;]+"#, options: .regularExpression),
+      let value = style[range].split(separator: ":", maxSplits: 1).last
+    {
+      let color = value.trimmingCharacters(in: .whitespacesAndNewlines)
+      if color.lowercased() != "inherit", let parsed = Self.color(color) {
+        format.color = parsed
+      }
+    }
+    formats.append(format)
+    switch tag {
+    case "p", "div", "h1", "h2", "h3", "h4", "h5", "h6", "blockquote", "pre", "tr":
+      pendingNewline = true
+    case "br", "hr":
+      output += AttributedString("\n")
+      pendingNewline = false
+    case "ol", "ul":
+      lists.append(ListState(ordered: tag == "ol", next: Int(attributes["start"] ?? "") ?? 1))
+    case "li":
+      pendingNewline = true
+      let marker: String
+      if let last = lists.indices.last, lists[last].ordered {
+        marker = "\(lists[last].next). "
+        lists[last].next += 1
+      } else {
+        marker = "• "
+      }
+      append(String(repeating: "\u{00a0}", count: max(0, lists.count - 1) * 2) + marker)
+    default:
+      break
+    }
+  }
+
+  func parser(
+    _ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?,
+    qualifiedName: String?
+  ) {
+    _ = formats.popLast()
+    if ignoredDepth > 0 {
+      ignoredDepth -= 1
+      return
+    }
+    switch elementName.lowercased() {
+    case "ul", "ol":
+      _ = lists.popLast()
+      pendingNewline = true
+    case "p", "div", "h1", "h2", "h3", "h4", "h5", "h6", "li", "blockquote", "pre", "tr":
+      pendingNewline = true
+    case "td", "th":
+      append(" ")
+    default:
+      break
+    }
+  }
+
+  func parser(_ parser: XMLParser, foundCharacters string: String) {
+    guard ignoredDepth == 0 else { return }
+    if pendingNewline && string.unicodeScalars.allSatisfy({ " \t\r\n".unicodeScalars.contains($0) }) { return }
+    append(string)
+  }
+
+  private func append(_ text: String) {
+    if pendingNewline && !output.characters.isEmpty && output.characters.last != "\n" {
+      output += AttributedString("\n")
+    }
+    pendingNewline = false
+    let format = formats.last ?? Format()
+    var run = AttributedString(text)
+    if !format.intent.isEmpty { run.inlinePresentationIntent = format.intent }
+    if format.underline { run.underlineStyle = .single }
+    if let color = format.color { run.foregroundColor = color }
+    output += run
+  }
+
+  private static func color(_ source: String) -> Color? {
+    if source.hasPrefix("#"), source.count == 7, let hex = UInt32(source.dropFirst(), radix: 16) {
+      return Color(red: Double(hex >> 16) / 255, green: Double((hex >> 8) & 255) / 255, blue: Double(hex & 255) / 255)
+    }
+    guard source.lowercased().hasPrefix("rgb("), source.hasSuffix(")") else { return nil }
+    let components = source.dropFirst(4).dropLast().split(separator: ",", omittingEmptySubsequences: false)
+    let channels = components.compactMap { UInt8($0.trimmingCharacters(in: .whitespaces)) }
+    guard components.count == 3, channels.count == 3 else { return nil }
+    return Color(red: Double(channels[0]) / 255, green: Double(channels[1]) / 255, blue: Double(channels[2]) / 255)
+  }
+}
+
 struct TVHomeView: View {
   @EnvironmentObject private var session: SessionStore
   @EnvironmentObject private var connectivity: TVServiceConnectivityMonitor
@@ -44,6 +191,9 @@ struct TVHomeView: View {
   @State private var initialLatencyTask:Task<Void,Never>?
   @State private var initialLatencyGeneration=UUID()
   @State private var selectionLatencyTask: Task<Void, Never>?
+  @State private var foregroundLatencyTask: Task<Void, Never>?
+  @State private var periodicLatencyTask: Task<Void, Never>?
+  @State private var latencyLifecycleGeneration = 0
   @State private var preparingConnection = false
   @State private var connectionPhase: String?
   @State private var latencyDates: [String: Date] = [:]
@@ -74,6 +224,7 @@ struct TVHomeView: View {
   @State private var subscriptionSummary: TVSubscriptionSummary?
   @State private var isLoadingHomeInfo = false
   @State private var isRefreshingSubscription = false
+  @State private var subscriptionForegroundGeneration = 0
   @State private var homeInfoError: String?
   @State private var showNoticeDetail = false
   @State private var noticeLinkURL: URL?
@@ -188,13 +339,17 @@ struct TVHomeView: View {
   private var homeWithLifecycle: some View {
     homeCanvas
       .onAppear {
-        if initialHomeReady {scheduleAutoConnect();scheduleInitialLatency()}
+        if initialHomeReady {
+          scheduleAutoConnect()
+          scheduleInitialLatency()
+          startPeriodicLatency()
+        }
         guard !hasAssignedInitialHomeFocus else { return }
         hasAssignedInitialHomeFocus = true
         focusModalButton { connectButtonFocused = true }
       }
       .task(id: session.token) {
-        initialLatencyTask?.cancel()
+        pauseLatency()
         initialLatencyFinished = false
         initialHomeReady = false
         guard session.token != nil else { return }
@@ -204,6 +359,7 @@ struct TVHomeView: View {
         initialHomeReady = true
         scheduleAutoConnect()
         scheduleInitialLatency()
+        startPeriodicLatency()
       }
       .task(id: language) {
         #if DEBUG
@@ -236,20 +392,23 @@ struct TVHomeView: View {
       .onReceive(NotificationCenter.default.publisher(for: .tvUpdateAvailability)) { event in
         hasTVUpdate = event.object as? Bool ?? false
       }
-      .onDisappear {selectionLatencyTask?.cancel();initialLatencyTask?.cancel()}
+      .onDisappear { pauseLatency() }
       .onReceive(NotificationCenter.default.publisher(for: VPNManager.statusDidChangeNotification))
     { notification in
       syncVPNStatus(notification.object as? String)
     }
       .onChange(of: connected) { _, _ in updateConnectivityProxy() }
       .onChange(of: scenePhase) { _, phase in
+        subscriptionForegroundGeneration += 1
         if phase == .active {
           if autoConnectBackgrounded {didCheckAutoConnect=false;autoConnectBackgrounded=false}
-          syncVPNStatus();scheduleAutoConnect();scheduleInitialLatency()
-        }
-        else {
+          syncVPNStatus(refreshPlanOnResume: subscriptionForegroundGeneration)
+          scheduleAutoConnect()
+          resumeLatency()
+        } else {
           if phase == .background {autoConnectBackgrounded=true}
-          autoConnectTask?.cancel();selectionLatencyTask?.cancel();initialLatencyTask?.cancel()
+          autoConnectTask?.cancel()
+          pauseLatency()
         }
       }
       .onChange(of: selectedNodeName) { _,_ in updateConnectivityProxy();scheduleInitialLatency() }
@@ -1298,7 +1457,11 @@ struct TVHomeView: View {
 
   private var announcementSubtitle: String {
     if let notice = currentNotice {
-      let text = plainText(notice.content)
+      let text = TVNoticeMarkup.parse(notice.content).map {
+        String($0.characters)
+          .replacingOccurrences(of: #"[\s\u00a0]+"#, with: " ", options: .regularExpression)
+          .trimmingCharacters(in: .whitespacesAndNewlines)
+      } ?? plainText(notice.content)
       return text.isEmpty
         ? tvText("按确认键查看公告详情", "Press Select to view details", language: language) : text
     }
@@ -1452,6 +1615,7 @@ struct TVHomeView: View {
   }
 
   private func noticeRichText(_ source: String) -> AttributedString {
+    if let richText = TVNoticeMarkup.parse(source) { return richText }
     let formatted =
       source
       .replacingOccurrences(
@@ -1611,9 +1775,12 @@ struct TVHomeView: View {
     defer { isRefreshingSubscription = false }
     do {
       let client = try await GatewayClient.configured()
-      subscriptionSummary = try await client.fetchSubscriptionSummary(token: token)
+      let summary = try await client.fetchSubscriptionSummary(token: token)
+      guard session.token == token else { return }
+      subscriptionSummary = summary
       homeInfoError = nil
     } catch {
+      guard session.token == token else { return }
       if handleExpiredSession(error) { return }
       homeInfoError = error.localizedDescription
     }
@@ -1706,8 +1873,91 @@ struct TVHomeView: View {
     }
   }
 
-  @MainActor private func scheduleInitialLatency() {
+  @MainActor
+  private func pauseLatency() {
+    latencyLifecycleGeneration += 1
+    foregroundLatencyTask?.cancel()
+    foregroundLatencyTask = nil
+    periodicLatencyTask?.cancel()
+    periodicLatencyTask = nil
+    selectionLatencyTask?.cancel()
+    initialLatencyTask?.cancel()
+    testingNodeNames.removeAll()
+  }
+
+  @MainActor
+  private func resumeLatency() {
+    guard initialHomeReady, let owner = session.token else { return }
+    foregroundLatencyTask?.cancel()
+    let generation = latencyLifecycleGeneration
+    foregroundLatencyTask = Task { @MainActor in
+      defer {
+        if latencyLifecycleGeneration == generation { foregroundLatencyTask = nil }
+      }
+      do { try await Task.sleep(for: .milliseconds(500)) } catch { return }
+      while !Task.isCancelled && scenePhase == .active && session.token == owner {
+        for attempt in 0..<4 {
+          guard !Task.isCancelled, scenePhase == .active, session.token == owner else { return }
+          let statusBeforeProbe = VPNManager.shared.statusString
+          let ready: Bool
+          if isConnecting || preparingConnection || isApplyingRouting || isRefreshingNodes {
+            ready = false
+          } else if statusBeforeProbe == "disconnected" && !connected {
+            ready = true // Disconnected tests use the isolated core.
+          } else if VPNManager.shared.isTunnelRunning {
+            let response = await liveProxies(timeout: 3)
+            ready = response.flatMap {
+              TVSubscriptionNodes.liveSnapshot(from: $0, mode: routeMode.rawValue)
+            }?.nodes.isEmpty == false
+          } else {
+            ready = false
+          }
+          guard !Task.isCancelled, scenePhase == .active, session.token == owner else { return }
+          if ready {
+            startPeriodicLatency()
+            if !initialLatencyFinished {
+              scheduleInitialLatency(forceCurrent: true)
+              return
+            }
+            while isTestingNodes {
+              if let target = TVInitialLatencyPolicy.target(selected: selectedNodeName, names: nodes.map(\.name)),
+                testingNodeNames.contains(target) { return }
+              do { try await Task.sleep(for: .milliseconds(100)) } catch { return }
+            }
+            guard !Task.isCancelled, scenePhase == .active, session.token == owner,
+              let name = TVInitialLatencyPolicy.target(selected: selectedNodeName, names: nodes.map(\.name))
+            else { return }
+            await runLatencyTest(only: name)
+            return
+          }
+          if attempt < 3 {
+            do { try await Task.sleep(for: .milliseconds(500)) } catch { return }
+          }
+        }
+        do { try await Task.sleep(for: .seconds(15)) } catch { return }
+      }
+    }
+  }
+
+  @MainActor
+  private func startPeriodicLatency() {
+    guard scenePhase == .active, periodicLatencyTask == nil, let owner = session.token else { return }
+    periodicLatencyTask = Task { @MainActor in
+      while !Task.isCancelled {
+        do { try await Task.sleep(for: .seconds(600)) } catch { return }
+        guard scenePhase == .active, session.token == owner else { return }
+        if connected, let name = TVInitialLatencyPolicy.target(selected: selectedNodeName, names: nodes.map(\.name)),
+          latencyDates[name].map({ Date().timeIntervalSince($0) >= 120 }) ?? true
+        {
+          await runLatencyTest(only: name)
+        }
+      }
+    }
+  }
+
+  @MainActor private func scheduleInitialLatency(forceCurrent: Bool = false) {
     guard initialHomeReady,!initialLatencyFinished,scenePhase == .active,
+      foregroundLatencyTask == nil || forceCurrent,
       initialLatencyTask==nil || initialLatencyTask!.isCancelled else {return}
     let generation=UUID();initialLatencyGeneration=generation
     guard let owner=session.token,!owner.isEmpty else {return}
@@ -1733,7 +1983,7 @@ struct TVHomeView: View {
           continue
         }
         let measured: Bool
-        if let date = latencyDates[current], Date().timeIntervalSince(date) < 5 {
+        if !forceCurrent, let date = latencyDates[current], Date().timeIntervalSince(date) < 5 {
           measured = true
         } else {
           NSLog("[TVLatency] initial selected-node probe starting attempt=%ld", attempt + 1)
@@ -1753,11 +2003,13 @@ struct TVHomeView: View {
   private func scheduleSelectedLatency(_ name: String, force: Bool = false) {
     selectionLatencyTask?.cancel()
     selectionLatencyTask = Task { @MainActor in
-      while isTestingNodes && !Task.isCancelled {
-        try? await Task.sleep(for: .milliseconds(100))
+      do { try await Task.sleep(for: force ? .seconds(2) : .milliseconds(800)) } catch { return }
+      while isTestingNodes {
+        if testingNodeNames.contains(name) { return }
+        do { try await Task.sleep(for: .milliseconds(100)) } catch { return }
       }
       guard !Task.isCancelled, scenePhase == .active, selectedNodeName == name else { return }
-      if !force, let last = latencyDates[name], Date().timeIntervalSince(last) < 5 { return }
+      if !force, let last = latencyDates[name], Date().timeIntervalSince(last) < 120 { return }
       await runLatencyTest(only: name)
     }
   }
@@ -1781,21 +2033,27 @@ struct TVHomeView: View {
       NSLog("[TVLatency] probe deferred: testing=%d refreshing=%d nodes=%ld", isTestingNodes, isRefreshingNodes, nodes.count)
       return false
     }
+    let generation = latencyLifecycleGeneration
+    let testedNames = nodes.map(\.name).filter {
+      !excluding.contains($0) && (nodeName == nil || $0 == nodeName)
+    }
+    guard !testedNames.isEmpty else { return false }
+    let targets = Set(testedNames)
     isTestingNodes = true
+    testingNodeNames = targets
     defer {
       testingNodeNames.removeAll()
       isTestingNodes = false
     }
 
     if isDebugPreviewSession {
-      isTestingNodes = true
-      testingNodeNames = Set(nodes.map(\.name))
-      try? await Task.sleep(for: .milliseconds(450))
+      do { try await Task.sleep(for: .milliseconds(450)) } catch { return false }
+      guard generation == latencyLifecycleGeneration else { return false }
       nodes = nodes.enumerated().map { index, node in
-        TVProxyNode(node.name, type: node.type, delayMS: 82 + index * 37)
+        guard targets.contains(node.name) else { return node }
+        latencyDates[node.name] = Date()
+        return TVProxyNode(node.name, type: node.type, delayMS: 82 + index * 37)
       }
-      testingNodeNames.removeAll()
-      isTestingNodes = false
       return true
     }
 
@@ -1810,7 +2068,7 @@ struct TVHomeView: View {
           let client = try await GatewayClient.configured()
           stored = try await client.downloadSubscription(token: owner)
         }
-        guard !Task.isCancelled, session.token == owner else { return false }
+        guard !Task.isCancelled, session.token == owner, generation == latencyLifecycleGeneration else { return false }
         if let stored { cachedSubscription = stored; source = stored }
       } catch {
         if !useRunningTunnel {
@@ -1836,14 +2094,7 @@ struct TVHomeView: View {
     }
     NSLog("[TVLatency] probe path=%@", useRunningTunnel ? "running-tunnel" : "isolated-core")
 
-    isTestingNodes = true
     nodeLoadError = nil
-    let testedNames = nodes.map(\.name).filter {
-      !excluding.contains($0) && (nodeName == nil || $0 == nodeName)
-    }
-    guard !testedNames.isEmpty else {NSLog("[TVLatency] probe deferred: target missing"); return false}
-    testingNodeNames = Set(testedNames)
-    let startedAt = ContinuousClock.now
     var receivedValidResult = false
 
     let testGroupName = selectedGroupName
@@ -1852,7 +2103,7 @@ struct TVHomeView: View {
     // Bound both IPC and core work; queued requests must not expire before
     // the provider has started measuring them.
     for start in stride(from: 0, to: testedNames.count, by: 4) {
-      guard !Task.isCancelled, scenePhase == .active, session.token == owner else { break }
+      guard !Task.isCancelled, scenePhase == .active, session.token == owner, generation == latencyLifecycleGeneration else { break }
       let batch = testedNames[start..<min(start + 4, testedNames.count)]
       await withTaskGroup(of: (String, Int?, Bool).self) { group in
         for nodeName in batch {
@@ -1877,7 +2128,7 @@ struct TVHomeView: View {
           }
         }
         for await (nodeName, value, valid) in group {
-          guard !Task.isCancelled, scenePhase == .active, session.token == owner else { continue }
+          guard !Task.isCancelled, scenePhase == .active, session.token == owner, generation == latencyLifecycleGeneration else { continue }
           if valid {
             receivedValidResult = true
             NSLog("[TVLatency] probe response received success=%d", (value ?? -1) > 0)
@@ -1896,13 +2147,8 @@ struct TVHomeView: View {
       }
     }
 
-    let elapsed = startedAt.duration(to: .now)
-    if elapsed < .milliseconds(200) {
-      try? await Task.sleep(for: .milliseconds(200) - elapsed)
-    }
-    testingNodeNames.removeAll()
-    isTestingNodes = false
-    return receivedValidResult && !Task.isCancelled && scenePhase == .active && session.token==owner
+    return receivedValidResult && !Task.isCancelled && scenePhase == .active
+      && session.token == owner && generation == latencyLifecycleGeneration
   }
 
   private func changeRouteMode(to mode: TVRouteMode) {
@@ -1945,7 +2191,10 @@ struct TVHomeView: View {
     }
   }
 
-  private func syncVPNStatus(_ deliveredStatus: String? = nil) {
+  private func syncVPNStatus(
+    _ deliveredStatus: String? = nil,
+    refreshPlanOnResume generation: Int? = nil
+  ) {
     if let deliveredStatus {
       connected = deliveredStatus == "connected"
       isConnecting =
@@ -1954,12 +2203,23 @@ struct TVHomeView: View {
       if connected { Task { await refreshLiveNodes() } }
       return
     }
+    let owner = session.token
     VPNManager.shared.refreshStatus { status in
       Task { @MainActor in
         connected = status == "connected"
         isConnecting = preparingConnection || status == "connecting" || status == "disconnecting"
         updateConnectivityProxy()
-        if connected { await refreshLiveNodes() }
+        guard connected else { return }
+        if let generation, generation == subscriptionForegroundGeneration,
+          scenePhase == .active, let owner, session.token == owner
+        {
+          Task { @MainActor in
+            guard generation == subscriptionForegroundGeneration, scenePhase == .active,
+              session.token == owner, VPNManager.shared.statusString == "connected" else { return }
+            await refreshSubscriptionSummary()
+          }
+        }
+        await refreshLiveNodes()
       }
     }
   }
@@ -2249,9 +2509,9 @@ struct TVHomeView: View {
     }
   }
 
-  private func liveProxies() async -> String? {
+  private func liveProxies(timeout: TimeInterval? = nil) async -> String? {
     await withCheckedContinuation { continuation in
-      VPNManager.shared.getProxies { continuation.resume(returning: $0) }
+      VPNManager.shared.getProxies(timeout: timeout) { continuation.resume(returning: $0) }
     }
   }
 

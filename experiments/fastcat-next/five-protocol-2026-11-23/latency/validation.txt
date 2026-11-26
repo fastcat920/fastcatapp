@@ -1,0 +1,5 @@
+PASS: all planned cases and expected request/stream rows present; port/order schedule checked. Payloadprefix independentlySHA256verified, no checksum failure.
+Speed: VLESS fullfiles intentionally NOT called successful; partial transfers/timeouts retained. Valid latency: VLESS warm57/60, request failures are retained and counted, includingGoogleVLESS23/24; no outcome-based reruns.
+Measurement coverage defect archived in latency/superseded-mixed; invalid oldmixed NOT ranked as failures. Entire5-way loaded/web rerun with regression pilots. Two comparatorrevisions, protocol/servers unchanged. Race/vet passed.
+Cleanup: own listeners/units/files/keys/hosts gone, originalserver20501 retained; phoneVPN restored and keepawake0. Networkaudit confirmsWiFi andVPNoff at940 valid case boundaries.
+Limits: nativeAndroidWiFi, noApp/TUN/UDPbusiness/energy/privacytest; ten rounds and shared resources are not universal protocol proof.

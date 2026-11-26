@@ -1,0 +1,4167 @@
+{
+  "flows": 48,
+  "stage_totals": {
+    "n1/response-headers": {
+      "writes": 24,
+      "small_records": 24,
+      "records": 24,
+      "small_whole_write_records": 24,
+      "small_fragment_records": 0,
+      "over_16k_writes": 0,
+      "over_16k_small_records": 0,
+      "fragment_examples": [],
+      "plaintext_range": [
+        124,
+        124
+      ]
+    },
+    "n1/target-http-prefix": {
+      "writes": 24,
+      "small_records": 0,
+      "records": 50,
+      "small_whole_write_records": 0,
+      "small_fragment_records": 0,
+      "over_16k_writes": 3,
+      "over_16k_small_records": 0,
+      "fragment_examples": [],
+      "plaintext_range": [
+        2209,
+        16416
+      ]
+    },
+    "n1/n1-fin": {
+      "writes": 24,
+      "small_records": 24,
+      "records": 24,
+      "small_whole_write_records": 24,
+      "small_fragment_records": 0,
+      "over_16k_writes": 0,
+      "over_16k_small_records": 0,
+      "fragment_examples": [],
+      "plaintext_range": [
+        18,
+        50
+      ]
+    },
+    "rpc/response-headers": {
+      "writes": 24,
+      "small_records": 24,
+      "records": 24,
+      "small_whole_write_records": 24,
+      "small_fragment_records": 0,
+      "over_16k_writes": 0,
+      "over_16k_small_records": 0,
+      "fragment_examples": [],
+      "plaintext_range": [
+        124,
+        124
+      ]
+    },
+    "rpc/rpc-data": {
+      "writes": 198,
+      "small_records": 10,
+      "records": 268,
+      "small_whole_write_records": 0,
+      "small_fragment_records": 10,
+      "over_16k_writes": 36,
+      "over_16k_small_records": 10,
+      "fragment_examples": [
+        {
+          "plaintext_bytes": 16392,
+          "encrypted_lengths": [
+            16401,
+            25
+          ]
+        },
+        {
+          "plaintext_bytes": 16392,
+          "encrypted_lengths": [
+            16401,
+            25
+          ]
+        },
+        {
+          "plaintext_bytes": 16392,
+          "encrypted_lengths": [
+            16401,
+            25
+          ]
+        },
+        {
+          "plaintext_bytes": 16392,
+          "encrypted_lengths": [
+            16401,
+            25
+          ]
+        },
+        {
+          "plaintext_bytes": 16392,
+          "encrypted_lengths": [
+            16401,
+            25
+          ]
+        },
+        {
+          "plaintext_bytes": 16392,
+          "encrypted_lengths": [
+            16401,
+            25
+          ]
+        }
+      ],
+      "plaintext_range": [
+        2055,
+        16392
+      ]
+    },
+    "rpc/rpc-end": {
+      "writes": 24,
+      "small_records": 24,
+      "records": 24,
+      "small_whole_write_records": 24,
+      "small_fragment_records": 0,
+      "over_16k_writes": 0,
+      "over_16k_small_records": 0,
+      "fragment_examples": [],
+      "plaintext_range": [
+        5,
+        5
+      ]
+    },
+    "n1/n1-data": {
+      "writes": 168,
+      "small_records": 24,
+      "records": 213,
+      "small_whole_write_records": 9,
+      "small_fragment_records": 15,
+      "over_16k_writes": 36,
+      "over_16k_small_records": 15,
+      "fragment_examples": [
+        {
+          "plaintext_bytes": 16411,
+          "encrypted_lengths": [
+            16401,
+            44
+          ]
+        },
+        {
+          "plaintext_bytes": 16407,
+          "encrypted_lengths": [
+            16401,
+            40
+          ]
+        },
+        {
+          "plaintext_bytes": 16414,
+          "encrypted_lengths": [
+            16401,
+            47
+          ]
+        },
+        {
+          "plaintext_bytes": 16426,
+          "encrypted_lengths": [
+            16401,
+            59
+          ]
+        },
+        {
+          "plaintext_bytes": 16412,
+          "encrypted_lengths": [
+            16401,
+            45
+          ]
+        },
+        {
+          "plaintext_bytes": 16429,
+          "encrypted_lengths": [
+            16401,
+            62
+          ]
+        }
+      ],
+      "plaintext_range": [
+        153,
+        16431
+      ]
+    }
+  },
+  "attribution_scope": "Validated Go TLS1.3 laboratory fixture and +17 byte overhead; no decryption, not a general traffic parser",
+  "flows_detail": [
+    {
+      "index": 0,
+      "pair": 0,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 2214,
+          "encrypted_lengths": [
+            2231
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 34,
+          "encrypted_lengths": [
+            51
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 1,
+      "pair": 0,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 2055,
+          "encrypted_lengths": [
+            2072
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 2,
+      "pair": 1,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4268,
+          "encrypted_lengths": [
+            2389,
+            1913
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4120,
+          "encrypted_lengths": [
+            4137
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4113,
+          "encrypted_lengths": [
+            4130
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4128,
+          "encrypted_lengths": [
+            4145
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4133,
+          "encrypted_lengths": [
+            4150
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4132,
+          "encrypted_lengths": [
+            4149
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4120,
+          "encrypted_lengths": [
+            4137
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4142,
+          "encrypted_lengths": [
+            4159
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4143,
+          "encrypted_lengths": [
+            4160
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4116,
+          "encrypted_lengths": [
+            4133
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4132,
+          "encrypted_lengths": [
+            4149
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4129,
+          "encrypted_lengths": [
+            4146
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4122,
+          "encrypted_lengths": [
+            4139
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4143,
+          "encrypted_lengths": [
+            4160
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4125,
+          "encrypted_lengths": [
+            4142
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4115,
+          "encrypted_lengths": [
+            4132
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4115,
+          "encrypted_lengths": [
+            4132
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4114,
+          "encrypted_lengths": [
+            4131
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4121,
+          "encrypted_lengths": [
+            4138
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4116,
+          "encrypted_lengths": [
+            4133
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 48,
+          "encrypted_lengths": [
+            65
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 3,
+      "pair": 1,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            2389,
+            1749
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 4,
+      "pair": 2,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4120,
+          "encrypted_lengths": [
+            2389,
+            1765
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16428,
+          "encrypted_lengths": [
+            4761,
+            5947,
+            5771
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16400,
+          "encrypted_lengths": [
+            8319,
+            8115
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16404,
+          "encrypted_lengths": [
+            10691,
+            5747
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16413,
+          "encrypted_lengths": [
+            13063,
+            3384
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 12446,
+          "encrypted_lengths": [
+            12463
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 36,
+          "encrypted_lengths": [
+            53
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 5,
+      "pair": 2,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            2389,
+            3575,
+            4761,
+            5735
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            7133,
+            8319,
+            991
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            10691,
+            5735
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            13063,
+            3363
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            15435,
+            991
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 6,
+      "pair": 3,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4119,
+          "encrypted_lengths": [
+            2389,
+            1764
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 166,
+          "encrypted_lengths": [
+            183
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4124,
+          "encrypted_lengths": [
+            4141
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4122,
+          "encrypted_lengths": [
+            4139
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4126,
+          "encrypted_lengths": [
+            4143
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4116,
+          "encrypted_lengths": [
+            4133
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 44,
+          "encrypted_lengths": [
+            61
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 7,
+      "pair": 3,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            2389,
+            1749
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 8,
+      "pair": 4,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 16416,
+          "encrypted_lengths": [
+            2389,
+            3575,
+            4761,
+            5759
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16431,
+          "encrypted_lengths": [
+            7133,
+            8319,
+            1030
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16421,
+          "encrypted_lengths": [
+            10691,
+            5764
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16402,
+          "encrypted_lengths": [
+            13063,
+            3373
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16411,
+          "encrypted_lengths": [
+            15435,
+            1010
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 165,
+          "encrypted_lengths": [
+            182
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 35,
+          "encrypted_lengths": [
+            52
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 9,
+      "pair": 4,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            2389,
+            3575,
+            4761,
+            5735
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            7133,
+            8319,
+            991
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            10691,
+            5735
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            13063,
+            3363
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            15435,
+            991
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 10,
+      "pair": 5,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4141,
+          "encrypted_lengths": [
+            2389,
+            1786
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16424,
+          "encrypted_lengths": [
+            4761,
+            5947,
+            5767
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 156,
+          "encrypted_lengths": [
+            173
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 45,
+          "encrypted_lengths": [
+            62
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 11,
+      "pair": 5,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            2389,
+            3575,
+            4761,
+            5735
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 12,
+      "pair": 6,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 2222,
+          "encrypted_lengths": [
+            2239
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 45,
+          "encrypted_lengths": [
+            62
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 13,
+      "pair": 6,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 2055,
+          "encrypted_lengths": [
+            2072
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 14,
+      "pair": 7,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4125,
+          "encrypted_lengths": [
+            2389,
+            1770
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16412,
+          "encrypted_lengths": [
+            4761,
+            5947,
+            5755
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 154,
+          "encrypted_lengths": [
+            171
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 48,
+          "encrypted_lengths": [
+            65
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 15,
+      "pair": 7,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            2389,
+            3575,
+            4761,
+            5735
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 16,
+      "pair": 8,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 2227,
+          "encrypted_lengths": [
+            2244
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 29,
+          "encrypted_lengths": [
+            46
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 17,
+      "pair": 8,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 2055,
+          "encrypted_lengths": [
+            2072
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 18,
+      "pair": 9,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 2209,
+          "encrypted_lengths": [
+            2226
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 39,
+          "encrypted_lengths": [
+            56
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 19,
+      "pair": 9,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 2055,
+          "encrypted_lengths": [
+            2072
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 20,
+      "pair": 10,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4253,
+          "encrypted_lengths": [
+            2389,
+            1898
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4142,
+          "encrypted_lengths": [
+            4159
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4130,
+          "encrypted_lengths": [
+            4147
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4115,
+          "encrypted_lengths": [
+            4132
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4125,
+          "encrypted_lengths": [
+            4142
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4143,
+          "encrypted_lengths": [
+            4160
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4141,
+          "encrypted_lengths": [
+            4158
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4123,
+          "encrypted_lengths": [
+            4140
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4124,
+          "encrypted_lengths": [
+            4141
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4139,
+          "encrypted_lengths": [
+            4156
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4127,
+          "encrypted_lengths": [
+            4144
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4133,
+          "encrypted_lengths": [
+            4150
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4131,
+          "encrypted_lengths": [
+            4148
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4123,
+          "encrypted_lengths": [
+            4140
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4114,
+          "encrypted_lengths": [
+            4131
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4112,
+          "encrypted_lengths": [
+            4129
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4126,
+          "encrypted_lengths": [
+            4143
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4137,
+          "encrypted_lengths": [
+            4154
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4116,
+          "encrypted_lengths": [
+            4133
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4127,
+          "encrypted_lengths": [
+            4144
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 37,
+          "encrypted_lengths": [
+            54
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 21,
+      "pair": 10,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            2389,
+            1749
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 22,
+      "pair": 11,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4266,
+          "encrypted_lengths": [
+            2389,
+            1911
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4138,
+          "encrypted_lengths": [
+            4155
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4122,
+          "encrypted_lengths": [
+            4139
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4143,
+          "encrypted_lengths": [
+            4160
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4141,
+          "encrypted_lengths": [
+            4158
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 36,
+          "encrypted_lengths": [
+            53
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 23,
+      "pair": 11,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            2389,
+            1749
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 24,
+      "pair": 12,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 16400,
+          "encrypted_lengths": [
+            2389,
+            3575,
+            4761,
+            5743
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16431,
+          "encrypted_lengths": [
+            7133,
+            8319,
+            1030
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 8367,
+          "encrypted_lengths": [
+            8384
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 31,
+          "encrypted_lengths": [
+            48
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 25,
+      "pair": 12,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            2389,
+            3575,
+            4761,
+            5735
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            7133,
+            8319,
+            991
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 8200,
+          "encrypted_lengths": [
+            8217
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 26,
+      "pair": 13,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4256,
+          "encrypted_lengths": [
+            2389,
+            1901
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4125,
+          "encrypted_lengths": [
+            4142
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4123,
+          "encrypted_lengths": [
+            4140
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4138,
+          "encrypted_lengths": [
+            4155
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4129,
+          "encrypted_lengths": [
+            4146
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4135,
+          "encrypted_lengths": [
+            4152
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4134,
+          "encrypted_lengths": [
+            4151
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4129,
+          "encrypted_lengths": [
+            4146
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4129,
+          "encrypted_lengths": [
+            4146
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4142,
+          "encrypted_lengths": [
+            4159
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4121,
+          "encrypted_lengths": [
+            4138
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4125,
+          "encrypted_lengths": [
+            4142
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4129,
+          "encrypted_lengths": [
+            4146
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4137,
+          "encrypted_lengths": [
+            4154
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4139,
+          "encrypted_lengths": [
+            4156
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4117,
+          "encrypted_lengths": [
+            4134
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4138,
+          "encrypted_lengths": [
+            4155
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4124,
+          "encrypted_lengths": [
+            4141
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4114,
+          "encrypted_lengths": [
+            4131
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4138,
+          "encrypted_lengths": [
+            4155
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4137,
+          "encrypted_lengths": [
+            4154
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4140,
+          "encrypted_lengths": [
+            4157
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4130,
+          "encrypted_lengths": [
+            4147
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4113,
+          "encrypted_lengths": [
+            4130
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4140,
+          "encrypted_lengths": [
+            4157
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16411,
+          "encrypted_lengths": [
+            16401,
+            44
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16407,
+          "encrypted_lengths": [
+            16401,
+            40
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16414,
+          "encrypted_lengths": [
+            16401,
+            47
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 12325,
+          "encrypted_lengths": [
+            12342
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 37,
+          "encrypted_lengths": [
+            54
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 27,
+      "pair": 13,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            2389,
+            1749
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 28,
+      "pair": 14,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4121,
+          "encrypted_lengths": [
+            2389,
+            1766
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 12463,
+          "encrypted_lengths": [
+            4761,
+            5947,
+            1806
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16418,
+          "encrypted_lengths": [
+            8319,
+            8133
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16429,
+          "encrypted_lengths": [
+            10691,
+            5772
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16418,
+          "encrypted_lengths": [
+            13063,
+            3389
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16431,
+          "encrypted_lengths": [
+            15435,
+            1030
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16426,
+          "encrypted_lengths": [
+            16401,
+            59
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16412,
+          "encrypted_lengths": [
+            16401,
+            45
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16429,
+          "encrypted_lengths": [
+            16401,
+            62
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16427,
+          "encrypted_lengths": [
+            16401,
+            60
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16420,
+          "encrypted_lengths": [
+            16401,
+            53
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 49,
+          "encrypted_lengths": [
+            66
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 29,
+      "pair": 14,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            2389,
+            3575,
+            4761,
+            5735
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            7133,
+            8319,
+            991
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            10691,
+            5735
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            13063,
+            3363
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            15435,
+            991
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            16401,
+            25
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            16401,
+            25
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            16401,
+            25
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            16401,
+            25
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            16401,
+            25
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 30,
+      "pair": 15,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4279,
+          "encrypted_lengths": [
+            2389,
+            1924
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4112,
+          "encrypted_lengths": [
+            4129
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4127,
+          "encrypted_lengths": [
+            4144
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4143,
+          "encrypted_lengths": [
+            4160
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4143,
+          "encrypted_lengths": [
+            4160
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4135,
+          "encrypted_lengths": [
+            4152
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4116,
+          "encrypted_lengths": [
+            4133
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4131,
+          "encrypted_lengths": [
+            4148
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4123,
+          "encrypted_lengths": [
+            4140
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4130,
+          "encrypted_lengths": [
+            4147
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 46,
+          "encrypted_lengths": [
+            63
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 31,
+      "pair": 15,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            2389,
+            1749
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 32,
+      "pair": 16,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4125,
+          "encrypted_lengths": [
+            2389,
+            1770
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 153,
+          "encrypted_lengths": [
+            170
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 35,
+          "encrypted_lengths": [
+            52
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 33,
+      "pair": 16,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            2389,
+            1749
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 34,
+      "pair": 17,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4117,
+          "encrypted_lengths": [
+            2389,
+            1762
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 157,
+          "encrypted_lengths": [
+            174
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4141,
+          "encrypted_lengths": [
+            4158
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4119,
+          "encrypted_lengths": [
+            4136
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4118,
+          "encrypted_lengths": [
+            4135
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4137,
+          "encrypted_lengths": [
+            4154
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4139,
+          "encrypted_lengths": [
+            4156
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4114,
+          "encrypted_lengths": [
+            4131
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4128,
+          "encrypted_lengths": [
+            4145
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4124,
+          "encrypted_lengths": [
+            4141
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4131,
+          "encrypted_lengths": [
+            4148
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 50,
+          "encrypted_lengths": [
+            67
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 35,
+      "pair": 17,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            2389,
+            1749
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 36,
+      "pair": 18,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4115,
+          "encrypted_lengths": [
+            2389,
+            1760
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 158,
+          "encrypted_lengths": [
+            175
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 40,
+          "encrypted_lengths": [
+            57
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 37,
+      "pair": 18,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            2389,
+            1749
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 38,
+      "pair": 19,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4249,
+          "encrypted_lengths": [
+            2389,
+            1894
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 25,
+          "encrypted_lengths": [
+            42
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 39,
+      "pair": 19,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            2389,
+            1749
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 40,
+      "pair": 20,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4121,
+          "encrypted_lengths": [
+            2389,
+            1766
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 158,
+          "encrypted_lengths": [
+            175
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4137,
+          "encrypted_lengths": [
+            4154
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4119,
+          "encrypted_lengths": [
+            4136
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4137,
+          "encrypted_lengths": [
+            4154
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4127,
+          "encrypted_lengths": [
+            4144
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4137,
+          "encrypted_lengths": [
+            4154
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4142,
+          "encrypted_lengths": [
+            4159
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4134,
+          "encrypted_lengths": [
+            4151
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4117,
+          "encrypted_lengths": [
+            4134
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4137,
+          "encrypted_lengths": [
+            4154
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4131,
+          "encrypted_lengths": [
+            4148
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4125,
+          "encrypted_lengths": [
+            4142
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4125,
+          "encrypted_lengths": [
+            4142
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4112,
+          "encrypted_lengths": [
+            4129
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4126,
+          "encrypted_lengths": [
+            4143
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4124,
+          "encrypted_lengths": [
+            4141
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4141,
+          "encrypted_lengths": [
+            4158
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4142,
+          "encrypted_lengths": [
+            4159
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4128,
+          "encrypted_lengths": [
+            4145
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4142,
+          "encrypted_lengths": [
+            4159
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4127,
+          "encrypted_lengths": [
+            4144
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4117,
+          "encrypted_lengths": [
+            4134
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4130,
+          "encrypted_lengths": [
+            4147
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4131,
+          "encrypted_lengths": [
+            4148
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4132,
+          "encrypted_lengths": [
+            4149
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4134,
+          "encrypted_lengths": [
+            4151
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4138,
+          "encrypted_lengths": [
+            4155
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4135,
+          "encrypted_lengths": [
+            4152
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4140,
+          "encrypted_lengths": [
+            4157
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4121,
+          "encrypted_lengths": [
+            4138
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16421,
+          "encrypted_lengths": [
+            16401,
+            54
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16415,
+          "encrypted_lengths": [
+            16401,
+            48
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 8221,
+          "encrypted_lengths": [
+            8238
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 18,
+          "encrypted_lengths": [
+            35
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 41,
+      "pair": 20,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            2389,
+            1749
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            4121
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 42,
+      "pair": 21,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4132,
+          "encrypted_lengths": [
+            2389,
+            1777
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16415,
+          "encrypted_lengths": [
+            4761,
+            5947,
+            5758
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16405,
+          "encrypted_lengths": [
+            8319,
+            8120
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 4255,
+          "encrypted_lengths": [
+            4272
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 41,
+          "encrypted_lengths": [
+            58
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 43,
+      "pair": 21,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            2389,
+            3575,
+            4761,
+            5735
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            7133,
+            8319,
+            991
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 8200,
+          "encrypted_lengths": [
+            8217
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 44,
+      "pair": 22,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 16401,
+          "encrypted_lengths": [
+            2389,
+            3575,
+            4761,
+            5744
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16406,
+          "encrypted_lengths": [
+            7133,
+            8319,
+            1005
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16411,
+          "encrypted_lengths": [
+            10691,
+            5754
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16412,
+          "encrypted_lengths": [
+            13063,
+            3383
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16423,
+          "encrypted_lengths": [
+            15435,
+            1022
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16406,
+          "encrypted_lengths": [
+            16401,
+            39
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16427,
+          "encrypted_lengths": [
+            16401,
+            60
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 153,
+          "encrypted_lengths": [
+            170
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16418,
+          "encrypted_lengths": [
+            16401,
+            51
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16411,
+          "encrypted_lengths": [
+            16401,
+            44
+          ]
+        },
+        {
+          "stage": "n1-data",
+          "plain_bytes": 16427,
+          "encrypted_lengths": [
+            16401,
+            60
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 48,
+          "encrypted_lengths": [
+            65
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 45,
+      "pair": 22,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            2389,
+            3575,
+            4761,
+            5735
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            7133,
+            8319,
+            991
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            10691,
+            5735
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            13063,
+            3363
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            15435,
+            991
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            16401,
+            25
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            16401,
+            25
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            16401,
+            25
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            16401,
+            25
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 16392,
+          "encrypted_lengths": [
+            16401,
+            25
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 46,
+      "pair": 23,
+      "kind": "n1",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "target-http-prefix",
+          "plain_bytes": 4251,
+          "encrypted_lengths": [
+            2389,
+            1896
+          ]
+        },
+        {
+          "stage": "n1-fin",
+          "plain_bytes": 24,
+          "encrypted_lengths": [
+            41
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    },
+    {
+      "index": 47,
+      "pair": 23,
+      "kind": "rpc",
+      "stages": [
+        {
+          "stage": "response-headers",
+          "plain_bytes": 124,
+          "encrypted_lengths": [
+            141
+          ]
+        },
+        {
+          "stage": "rpc-data",
+          "plain_bytes": 4104,
+          "encrypted_lengths": [
+            2389,
+            1749
+          ]
+        },
+        {
+          "stage": "rpc-end",
+          "plain_bytes": 5,
+          "encrypted_lengths": [
+            22
+          ]
+        }
+      ],
+      "handshake_small_records": 3,
+      "closing_small_records": 1
+    }
+  ]
+}

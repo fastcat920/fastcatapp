@@ -1,0 +1,23 @@
+{
+  "phase": "mechanism",
+  "variants": {
+    "baseline": "original",
+    "recovery": "new streams avoid ready lanes with recent transport loss or inflated RTT; 500ms override switch bound"
+  },
+  "sha256": {
+    "compare": "2b8f33dc756e58e85f29099e7212f0873ace1f3569c7f0fb4aaed356a8c257c0",
+    "next-diagnostic": "e4994dffacdd455559bbd3cb53c6d5a72ea18742383522447ccf1ab2180452de"
+  },
+  "client_policy": "original next-opt; GSO and PMTU defaults unchanged",
+  "trace": true,
+  "gate": {
+    "loaded_p95_ratio_max": 0.8,
+    "warm_p95_ratio_max": 1.1,
+    "throughput_ratio_min": 0.9,
+    "completion_not_lower": true,
+    "min_loaded_samples": 48
+  },
+  "metrics": [
+    "3 paired mixed-load diagnostics: 2x8MiB +12HEAD per variant"
+  ]
+}

@@ -1,0 +1,21 @@
+Final verification 2026-11-23
+
+Go race tests: core/fastcatnext, tools/fastcat-v3-compare PASS; fastcat-next builds PASS.
+Go vet: all three packages PASS.
+Final tests include peer-tag privacy/consistency and valid/invalid fixed UDP port configuration with distinct lane ports.
+Frozen artifact SHA256 matches per-cohort plan.json; binaries unchanged during test runs.
+Current core runtime and test source matches archived source-final snapshot.
+Client: Go1.26.2, Android arm64; Mac supplementary comparator Go1.26.2.
+Server: Go1.27.3, Linux amd64.
+No production App build installed in this task.
+Performance cohorts: packet/prefix diagnostics OFF, same lightweight lane diagnostics on both variants.
+Reply coalescing acceptance FAILED: loaded P95, background completion, warm P95.
+Server ECN-disable acceptance FAILED: loaded P95 improvement threshold and warm P95.
+Defaults remain unchanged. Neither experiment promoted.
+
+Server cleanup: no active fc-opt transient units, no lab listening ports, no /run/fc-opt directories or fc-opt binaries.
+Production TCP+UDP 443 and 18447 still listening.
+Android: VPN CONNECTED, wifi_on=1, stay_on_while_plugged_in restored to 0.
+Local temporary account/config files removed. No credentials or packet payloads included in report.
+
+Completed case counts: {"wire-diagnostic": 16, "mechanism": 6, "performance": 42, "cross-network": 7, "ecn-device": 16, "ecn-fixed": 12, "ecn-performance/performance": 42}

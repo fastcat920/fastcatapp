@@ -1,5 +1,8 @@
+import 'dart:convert';
 import 'dart:ffi';
 import 'dart:io';
+
+import 'package:path/path.dart' as p;
 
 /// 订阅URL辅助工具
 ///
@@ -98,15 +101,63 @@ class SubscriptionUrlHelper {
         'fastCatSupportsV2')();
   }
 
-  static bool _supportsFCNPinning() {
-    if (!_hasCoreSymbol('fastCatSupportsFCN')) return false;
+  static int _nativeFCNVersion() {
+    if (!_hasCoreSymbol('fastCatSupportsFCN')) return 0;
     final core = Platform.isAndroid
-        ? DynamicLibrary.open('libclash.so') : DynamicLibrary.process();
+        ? DynamicLibrary.open('libclash.so')
+        : DynamicLibrary.process();
     return core.lookupFunction<Int32 Function(), int Function()>(
-        'fastCatSupportsFCN')() >= 2;
+        'fastCatSupportsFCN')();
   }
 
-  static String ensureFastCatFlag(String url, {bool? supportsAuto, bool? supportsV2, bool? supportsTransportModes, bool? supportsFCN, bool? supportsFCNPinning}) {
+  static final Future<int> _desktopFCNVersion = _probeDesktopFCNVersion();
+
+  static Future<int> _probeDesktopFCNVersion() async {
+    Process? process;
+    try {
+      final core = p.join(
+        p.dirname(Platform.resolvedExecutable),
+        Platform.isWindows ? 'fastcatCore.exe' : 'fastcatCore',
+      );
+      final helper = await Process.start(
+        core,
+        ['--supports-fcn-v3'],
+        mode: Platform.isWindows
+            ? ProcessStartMode.detachedWithStdio
+            : ProcessStartMode.normal,
+      );
+      process = helper;
+      final output = helper.stdout.transform(utf8.decoder).join();
+      final errors = helper.stderr.drain<void>();
+      return await (() async {
+        // Windows uses a detached process to avoid opening a console window.
+        final status = Platform.isWindows ? 0 : await helper.exitCode;
+        await errors;
+        return status == 0 && (await output).trim() == 'fcn-v3' ? 3 : 0;
+      })().timeout(const Duration(seconds: 2));
+    } catch (_) {
+      process?.kill();
+      return 0;
+    }
+  }
+
+  static Future<String> ensureFastCatFlagForCore(String url) async {
+    final desktop = Platform.isMacOS || Platform.isWindows || Platform.isLinux;
+    final fcnVersion = desktop && shouldUseEncryptedService(url)
+        ? await _desktopFCNVersion
+        : null;
+    return ensureFastCatFlag(url, fcnVersion: fcnVersion);
+  }
+
+  static String ensureFastCatFlag(
+    String url, {
+    bool? supportsAuto,
+    bool? supportsV2,
+    bool? supportsTransportModes,
+    bool? supportsFCN,
+    bool? supportsFCNPinning,
+    int? fcnVersion,
+  }) {
     const flag = String.fromEnvironment(
       'FASTCAT_SUBSCRIPTION_FLAG',
       defaultValue: 'fastcat-v1',
@@ -119,9 +170,14 @@ class SubscriptionUrlHelper {
       query.remove('fc_transport');
       query.remove('fc_fcn');
       query.remove('fc_fcn_pin');
+      query.remove('fc_fcn3');
+      if (shouldUseEncryptedService(url) &&
+          (fcnVersion ?? _nativeFCNVersion()) >= 3) {
+        query['fc_fcn3'] = '1';
+      }
       if (supportsFCN ?? _hasCoreSymbol('fastCatSupportsFCN')) {
         query['fc_fcn'] = '1';
-        if (supportsFCNPinning ?? _supportsFCNPinning()) {
+        if (supportsFCNPinning ?? (_nativeFCNVersion() >= 2)) {
           query['fc_fcn_pin'] = '1';
         }
       }

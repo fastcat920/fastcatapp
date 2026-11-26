@@ -1,0 +1,14 @@
+[
+  {
+    "config_profile": "phase5-coalesced.json",
+    "exit_code": 0,
+    "stdout": "{\"bytes\":8192,\"chunk\":16384,\"first_payload_ms\":2855.043,\"first_response_headers_ms\":2854.885,\"full_request_ms\":3571.983,\"gap_ms\":0,\"header_kind\":\"application-response\",\"kind\":\"matched-n1\",\"payload_read_mbps\":116.19858156028369,\"payload_read_ms\":0.564,\"payload_verified\":true,\"request_writes\":[{\"bytes\":267,\"shape\":\"request-headers\"},{\"bytes\":120,\"shape\":\"http-chunk\",\"body_bytes\":114},{\"bytes\":24,\"shape\":\"http-chunk\",\"body_bytes\":14}],\"shutdown_eof_observed\":true}\n",
+    "stderr": ""
+  },
+  {
+    "config_profile": "phase7-capped.json",
+    "exit_code": 0,
+    "stdout": "{\"bytes\":8192,\"chunk\":16384,\"first_payload_ms\":849.161,\"first_response_headers_ms\":849.025,\"full_request_ms\":948.902,\"gap_ms\":0,\"header_kind\":\"application-response\",\"kind\":\"matched-n1\",\"payload_read_mbps\":103.04402515723271,\"payload_read_ms\":0.636,\"payload_verified\":true,\"request_writes\":[{\"bytes\":267,\"shape\":\"request-headers\"},{\"bytes\":120,\"shape\":\"http-chunk\",\"body_bytes\":114},{\"bytes\":30,\"shape\":\"http-chunk\",\"body_bytes\":19}],\"shutdown_eof_observed\":true}\n",
+    "stderr": ""
+  }
+]

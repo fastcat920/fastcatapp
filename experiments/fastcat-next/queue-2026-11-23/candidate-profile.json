@@ -1,0 +1,26 @@
+{
+  "status": "Android Wi-Fi lab candidate; main gate, remote non-regression and fixed-local-port cold confirmation passed; original cold regression retained",
+  "formal_app_installed": false,
+  "production_defaults_changed": false,
+  "core_client": {
+    "QUICLanes": 2,
+    "AdaptiveLanes": true,
+    "RecoveryAware": true,
+    "LatencyAware": false,
+    "PrimaryPreferred": false,
+    "PrefixRedundancy": false
+  },
+  "standalone_server": {
+    "DownstreamBudget": false,
+    "PrefixRedundancy": false,
+    "ReplyCoalesceMillis": 0,
+    "DisableECN": false,
+    "DisableGSO": false,
+    "FixedPacketSize": 0
+  },
+  "limitations": [
+    "no direct server downlink recovery feedback",
+    "not all networks / devices / lockscreen / energy tested",
+    "original random-port cold P95 worsened; fixed-local-port confirmation did not reproduce large difference"
+  ]
+}

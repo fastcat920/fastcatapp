@@ -1,0 +1,4 @@
+﻿body_ms,complete,connect_ms,deadline_seconds,download_mbps,end_to_end_mbps,error,expected_bytes,first_byte_ms,phase,protocol,received_bytes,round,target_tls_ms,total_ms,version,checksum_ok
+87573,False,1054,90,0.23947387558474342,0.23301352710693887,http2: response body closed,10485760,2427,download,h2,2621440,1,1140,90001,next,
+10190,True,1169,90,8.231659569073328,6.8442623293765035,,10485760,2008,download,h3,10485760,1,737,12256,v2-bbr,True
+6324,True,308,90,13.262696185320513,11.946203737904286,,10485760,640,download,quic,10485760,1,169,7021,next,True

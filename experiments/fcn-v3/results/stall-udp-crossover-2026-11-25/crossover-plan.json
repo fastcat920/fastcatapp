@@ -1,0 +1,64 @@
+{
+  "blocks": [
+    {
+      "round": 1,
+      "mapping": "a"
+    },
+    {
+      "round": 1,
+      "mapping": "b"
+    },
+    {
+      "round": 2,
+      "mapping": "b"
+    },
+    {
+      "round": 2,
+      "mapping": "a"
+    },
+    {
+      "round": 3,
+      "mapping": "a"
+    },
+    {
+      "round": 3,
+      "mapping": "b"
+    },
+    {
+      "round": 4,
+      "mapping": "b"
+    },
+    {
+      "round": 4,
+      "mapping": "a"
+    },
+    {
+      "round": 5,
+      "mapping": "a"
+    },
+    {
+      "round": 5,
+      "mapping": "b"
+    },
+    {
+      "round": 6,
+      "mapping": "b"
+    },
+    {
+      "round": 6,
+      "mapping": "a"
+    }
+  ],
+  "ports": {
+    "a": {
+      "current": 18532,
+      "adaptive": 18534,
+      "tuic": 18533
+    },
+    "b": {
+      "current": 18534,
+      "adaptive": 18532,
+      "tuic": 18533
+    }
+  }
+}

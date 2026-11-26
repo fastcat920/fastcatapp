@@ -1,0 +1,38 @@
+[
+  {
+    "case": "wifi-direct",
+    "success": 8,
+    "total": 8,
+    "via_node": false,
+    "protocol": "HTTP/2.0",
+    "median_fetch_first_byte_ms": 703.2,
+    "one_mib_total_ms": 13042.6
+  },
+  {
+    "case": "wifi-proxy",
+    "success": 8,
+    "total": 8,
+    "via_node": true,
+    "protocol": "HTTP/2.0",
+    "median_fetch_first_byte_ms": 330.3,
+    "one_mib_total_ms": 3661.7
+  },
+  {
+    "case": "cellular-direct",
+    "success": 8,
+    "total": 8,
+    "via_node": false,
+    "protocol": "HTTP/2.0",
+    "median_fetch_first_byte_ms": 179.5,
+    "one_mib_total_ms": 540.6
+  },
+  {
+    "case": "cellular-proxy",
+    "success": 8,
+    "total": 8,
+    "via_node": true,
+    "protocol": "HTTP/2.0",
+    "median_fetch_first_byte_ms": 473.7,
+    "one_mib_total_ms": 4050
+  }
+]

@@ -1,0 +1,2 @@
+First active-transfer attempt was rejected by the diagnostic workload duration bound before networking; it is INVALID evidence for active revocation. Repeat requires payload-ready event from actual client before revoking. Earlier resumed-TLS revocation test remains valid.
+Second attempt used a valid paced 1MiB transfer, but it completed before the SSH control update arrived. Full completion retained; not evidence of revocation failure or success. Final test uses verified loopback echo, keeps session open while updating, records server revision and client closure.

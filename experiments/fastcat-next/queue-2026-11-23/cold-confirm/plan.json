@@ -1,0 +1,20 @@
+{
+  "purpose": "confirm observed cold P95 regression; original stage3 results retained",
+  "local_udp_port": 30880,
+  "limits": "fixed local source port does not prove identical public mapping or intermediate route; no packet tracing",
+  "samples": 8,
+  "paired_blocks": 6,
+  "variants": [
+    "baseline",
+    "recovery"
+  ],
+  "gate": {
+    "cold_success_not_lower": true,
+    "cold_p95_ratio_max": 1.1,
+    "min_cold": 48
+  },
+  "sha256": {
+    "compare": "9f5ba4ec4da235d94a7d44bd9b2dada41c2bc577cd7f827c7b07d01ca7c0f5fe",
+    "next-diagnostic": "5140bce7edf5934c9b12b4519921b35e7c571f22df6f0c930b0e62e7c1c43f7f"
+  }
+}

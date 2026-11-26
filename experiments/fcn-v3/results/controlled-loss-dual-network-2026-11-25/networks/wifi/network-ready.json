@@ -1,0 +1,10 @@
+{
+  "default_net_id": 359,
+  "validated": true,
+  "transports": [
+    "WIFI"
+  ],
+  "observed_unix_ms": 1795597263011,
+  "exit_code": 0,
+  "probe_error": null
+}

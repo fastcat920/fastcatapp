@@ -1,0 +1,173 @@
+{
+  "capture": "browser2.pcap",
+  "ipv4_entry_packets": 50,
+  "client_hellos": [
+    {
+      "hello_bytes": 512,
+      "cipher_suites": [
+        35466,
+        4865,
+        4866,
+        4867,
+        49195,
+        49199,
+        49196,
+        49200,
+        52393,
+        52392,
+        49171,
+        49172,
+        156,
+        157,
+        47,
+        53
+      ],
+      "extension_order": [
+        19018,
+        43,
+        10,
+        13,
+        0,
+        18,
+        16,
+        17513,
+        23,
+        45,
+        27,
+        11,
+        5,
+        65281,
+        35,
+        51,
+        47802,
+        21,
+        41
+      ],
+      "versions": [
+        64250,
+        772,
+        771,
+        770,
+        769
+      ],
+      "groups": [
+        14906,
+        29,
+        23,
+        24
+      ],
+      "signature_algorithms": [
+        1027,
+        2052,
+        1025,
+        1283,
+        2053,
+        1281,
+        2054,
+        1537
+      ],
+      "sni": "zlhk.fastcat.ink",
+      "alpn": [
+        "h2",
+        "http/1.1"
+      ],
+      "key_shares": [
+        {
+          "group": 14906,
+          "bytes": 1
+        },
+        {
+          "group": 29,
+          "bytes": 32
+        }
+      ],
+      "normalized_feature_hash": "1609a8a6589c23602b732d38c2cf55701e0bffdccf7b6f410c01dc383329d311",
+      "client_packets": 14,
+      "client_wire_bytes": 2848
+    },
+    {
+      "hello_bytes": 512,
+      "cipher_suites": [
+        27242,
+        4865,
+        4866,
+        4867,
+        49195,
+        49199,
+        49196,
+        49200,
+        52393,
+        52392,
+        49171,
+        49172,
+        156,
+        157,
+        47,
+        53
+      ],
+      "extension_order": [
+        60138,
+        10,
+        51,
+        27,
+        11,
+        65281,
+        23,
+        45,
+        17513,
+        35,
+        0,
+        13,
+        43,
+        18,
+        16,
+        5,
+        51914,
+        21,
+        41
+      ],
+      "groups": [
+        64250,
+        29,
+        23,
+        24
+      ],
+      "key_shares": [
+        {
+          "group": 64250,
+          "bytes": 1
+        },
+        {
+          "group": 29,
+          "bytes": 32
+        }
+      ],
+      "sni": "zlhk.fastcat.ink",
+      "signature_algorithms": [
+        1027,
+        2052,
+        1025,
+        1283,
+        2053,
+        1281,
+        2054,
+        1537
+      ],
+      "versions": [
+        64250,
+        772,
+        771,
+        770,
+        769
+      ],
+      "alpn": [
+        "h2",
+        "http/1.1"
+      ],
+      "normalized_feature_hash": "1609a8a6589c23602b732d38c2cf55701e0bffdccf7b6f410c01dc383329d311",
+      "client_packets": 8,
+      "client_wire_bytes": 1694
+    }
+  ],
+  "limitations": "IPv4 TCP only; no encrypted content decryption; no detection-probability estimate"
+}

@@ -1,0 +1,40 @@
+Starting fc-opt-next-1795278367.service - [systemd-run] /usr/local/bin/fc-opt-next-1795278367 -config /run/credentials/fc-opt-next-1795278367.service/config...
+Started fc-opt-next-1795278367.service - [systemd-run] /usr/local/bin/fc-opt-next-1795278367 -config /run/credentials/fc-opt-next-1795278367.service/config.
+Stopping fc-opt-next-1795278367.service - [systemd-run] /usr/local/bin/fc-opt-next-1795278367 -config /run/credentials/fc-opt-next-1795278367.service/config...
+fc-opt-next-1795278367.service: Deactivated successfully.
+Stopped fc-opt-next-1795278367.service - [systemd-run] /usr/local/bin/fc-opt-next-1795278367 -config /run/credentials/fc-opt-next-1795278367.service/config.
+Starting fc-opt-next-1795278367.service - [systemd-run] /usr/local/bin/fc-opt-next-1795278367 -config /run/credentials/fc-opt-next-1795278367.service/config...
+Started fc-opt-next-1795278367.service - [systemd-run] /usr/local/bin/fc-opt-next-1795278367 -config /run/credentials/fc-opt-next-1795278367.service/config.
+{"session":1,"cwnd_bytes":14380000,"bytes_in_flight":254959,"smoothed_rtt_us":103630,"blocked_sent":16,"stage":"server_quic_progress","carrier":"quic","duration_us":5001697,"ok":true,"packets_sent":14903,"packets_received":514,"declared_lost":10306,"max_pto":1}
+{"session":1,"cwnd_bytes":14380000,"bytes_in_flight":850759,"smoothed_rtt_us":104174,"blocked_sent":34,"stage":"server_quic_progress","carrier":"quic","duration_us":10001734,"ok":true,"packets_sent":29377,"packets_received":1043,"declared_lost":20411,"max_pto":1}
+{"session":1,"cwnd_bytes":14380000,"bytes_in_flight":23308,"smoothed_rtt_us":113760,"blocked_sent":50,"stage":"server_quic_progress","carrier":"quic","duration_us":15001552,"ok":true,"packets_sent":42814,"packets_received":1556,"declared_lost":30650,"max_pto":1}
+{"session":1,"cwnd_bytes":14380000,"bytes_in_flight":1978262,"smoothed_rtt_us":107685,"blocked_sent":67,"stage":"server_quic_progress","carrier":"quic","duration_us":20001396,"ok":true,"packets_sent":56883,"packets_received":2055,"declared_lost":39680,"max_pto":1}
+{"session":1,"cwnd_bytes":14380000,"bytes_in_flight":1704430,"smoothed_rtt_us":156712,"blocked_sent":85,"stage":"server_quic_progress","carrier":"quic","duration_us":25002398,"ok":true,"packets_sent":86394,"packets_received":2843,"declared_lost":63042,"max_pto":1}
+{"session":1,"cwnd_bytes":14380000,"bytes_in_flight":31,"smoothed_rtt_us":104751,"blocked_sent":92,"stage":"server_quic_end","carrier":"quic","duration_us":28261298,"ok":true,"packets_sent":98286,"packets_received":3202,"declared_lost":73163,"max_pto":1}
+Stopping fc-opt-next-1795278367.service - [systemd-run] /usr/local/bin/fc-opt-next-1795278367 -config /run/credentials/fc-opt-next-1795278367.service/config...
+fc-opt-next-1795278367.service: Deactivated successfully.
+Stopped fc-opt-next-1795278367.service - [systemd-run] /usr/local/bin/fc-opt-next-1795278367 -config /run/credentials/fc-opt-next-1795278367.service/config.
+fc-opt-next-1795278367.service: Consumed 1.518s CPU time, 23.4M memory peak.
+Starting fc-opt-next-1795278367.service - [systemd-run] /usr/local/bin/fc-opt-next-1795278367 -config /run/credentials/fc-opt-next-1795278367.service/config...
+Started fc-opt-next-1795278367.service - [systemd-run] /usr/local/bin/fc-opt-next-1795278367 -config /run/credentials/fc-opt-next-1795278367.service/config.
+{"session":1,"cwnd_bytes":148775,"bytes_in_flight":83150,"smoothed_rtt_us":123021,"stage":"server_quic_progress","carrier":"quic","duration_us":5002555,"ok":true,"packets_sent":1858,"packets_received":610,"declared_lost":538}
+{"session":1,"cwnd_bytes":198958,"bytes_in_flight":100166,"smoothed_rtt_us":119417,"stage":"server_quic_progress","carrier":"quic","duration_us":10001568,"ok":true,"packets_sent":4293,"packets_received":1401,"declared_lost":1256}
+{"session":1,"cwnd_bytes":282416,"bytes_in_flight":136978,"smoothed_rtt_us":125382,"stage":"server_quic_progress","carrier":"quic","duration_us":15001779,"ok":true,"packets_sent":7209,"packets_received":2231,"declared_lost":2171,"max_pto":1}
+{"session":1,"cwnd_bytes":275239,"bytes_in_flight":109365,"smoothed_rtt_us":109332,"stage":"server_quic_progress","carrier":"quic","duration_us":20002016,"ok":true,"packets_sent":11285,"packets_received":3407,"declared_lost":3334,"max_pto":1}
+{"session":1,"cwnd_bytes":262069,"bytes_in_flight":146995,"smoothed_rtt_us":119808,"stage":"server_quic_progress","carrier":"quic","duration_us":25001660,"ok":true,"packets_sent":15317,"packets_received":4671,"declared_lost":4470,"max_pto":1}
+{"session":1,"cwnd_bytes":331598,"bytes_in_flight":167683,"smoothed_rtt_us":135138,"stage":"server_quic_progress","carrier":"quic","duration_us":30002224,"ok":true,"packets_sent":19203,"packets_received":5859,"declared_lost":5504,"max_pto":1}
+{"session":1,"cwnd_bytes":400545,"bytes_in_flight":196016,"smoothed_rtt_us":119752,"stage":"server_quic_progress","carrier":"quic","duration_us":35001695,"ok":true,"packets_sent":23689,"packets_received":7084,"declared_lost":6770,"max_pto":1}
+{"session":1,"cwnd_bytes":497927,"bytes_in_flight":226658,"smoothed_rtt_us":119978,"stage":"server_quic_progress","carrier":"quic","duration_us":40002040,"ok":true,"packets_sent":29947,"packets_received":8765,"declared_lost":8586,"max_pto":1}
+{"session":1,"cwnd_bytes":483558,"bytes_in_flight":1418,"smoothed_rtt_us":126459,"stage":"server_quic_end","carrier":"quic","duration_us":44990892,"ok":true,"packets_sent":35617,"packets_received":10247,"declared_lost":10562,"max_pto":1}
+Stopping fc-opt-next-1795278367.service - [systemd-run] /usr/local/bin/fc-opt-next-1795278367 -config /run/credentials/fc-opt-next-1795278367.service/config...
+fc-opt-next-1795278367.service: Deactivated successfully.
+Stopped fc-opt-next-1795278367.service - [systemd-run] /usr/local/bin/fc-opt-next-1795278367 -config /run/credentials/fc-opt-next-1795278367.service/config.
+fc-opt-next-1795278367.service: Consumed 5.184s CPU time, 11.1M memory peak.
+Starting fc-opt-next-1795278367.service - [systemd-run] /usr/local/bin/fc-opt-next-1795278367 -config /run/credentials/fc-opt-next-1795278367.service/config...
+Started fc-opt-next-1795278367.service - [systemd-run] /usr/local/bin/fc-opt-next-1795278367 -config /run/credentials/fc-opt-next-1795278367.service/config.
+{"session":1,"cwnd_bytes":14410000,"bytes_in_flight":461879,"smoothed_rtt_us":114876,"blocked_sent":10,"stage":"server_quic_progress","carrier":"quic","duration_us":5002276,"ok":true,"packets_sent":13155,"packets_received":441,"declared_lost":9191,"max_pto":1}
+{"session":1,"cwnd_bytes":14410000,"bytes_in_flight":76404,"smoothed_rtt_us":105023,"blocked_sent":27,"stage":"server_quic_progress","carrier":"quic","duration_us":10001968,"ok":true,"packets_sent":26104,"packets_received":906,"declared_lost":18764,"max_pto":1}
+{"session":1,"cwnd_bytes":14410000,"bytes_in_flight":840258,"smoothed_rtt_us":129334,"blocked_sent":48,"stage":"server_quic_progress","carrier":"quic","duration_us":15001579,"ok":true,"packets_sent":41331,"packets_received":1374,"declared_lost":29569,"max_pto":1}
+{"session":1,"cwnd_bytes":14410000,"bytes_in_flight":85501,"smoothed_rtt_us":106702,"blocked_sent":66,"stage":"server_quic_progress","carrier":"quic","duration_us":20002057,"ok":true,"packets_sent":53778,"packets_received":1760,"declared_lost":39121,"max_pto":1}
+{"session":1,"cwnd_bytes":14410000,"bytes_in_flight":3306662,"smoothed_rtt_us":114210,"blocked_sent":86,"stage":"server_quic_progress","carrier":"quic","duration_us":25001532,"ok":true,"packets_sent":88644,"packets_received":2458,"declared_lost":66233,"max_pto":1}
+{"session":1,"cwnd_bytes":14410000,"bytes_in_flight":22,"smoothed_rtt_us":104771,"blocked_sent":91,"stage":"server_quic_end","carrier":"quic","duration_us":29813438,"ok":true,"packets_sent":108622,"packets_received":3005,"declared_lost":83709,"max_pto":1}

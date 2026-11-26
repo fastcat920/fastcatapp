@@ -1,0 +1,42 @@
+[
+  {
+    "worker": 0,
+    "exit_code": 0,
+    "bytes_each": 32768,
+    "failed": 0,
+    "p50_ms": 743.317,
+    "p95_ms": 3039.201,
+    "scope": "fresh TCP + TLS + authenticated tunnel + verified payload + N1 FIN + HTTP EOF + TLS shutdown; speed includes setup, verification and shutdown",
+    "success": 5
+  },
+  {
+    "worker": 1,
+    "exit_code": 0,
+    "bytes_each": 32768,
+    "failed": 0,
+    "p50_ms": 1871.095,
+    "p95_ms": 3239.785,
+    "scope": "fresh TCP + TLS + authenticated tunnel + verified payload + N1 FIN + HTTP EOF + TLS shutdown; speed includes setup, verification and shutdown",
+    "success": 5
+  },
+  {
+    "worker": 2,
+    "exit_code": 0,
+    "bytes_each": 32768,
+    "failed": 0,
+    "p50_ms": 880.045,
+    "p95_ms": 1793.303,
+    "scope": "fresh TCP + TLS + authenticated tunnel + verified payload + N1 FIN + HTTP EOF + TLS shutdown; speed includes setup, verification and shutdown",
+    "success": 5
+  },
+  {
+    "worker": 3,
+    "exit_code": 0,
+    "bytes_each": 32768,
+    "failed": 0,
+    "p50_ms": 915.806,
+    "p95_ms": 1070.424,
+    "scope": "fresh TCP + TLS + authenticated tunnel + verified payload + N1 FIN + HTTP EOF + TLS shutdown; speed includes setup, verification and shutdown",
+    "success": 5
+  }
+]

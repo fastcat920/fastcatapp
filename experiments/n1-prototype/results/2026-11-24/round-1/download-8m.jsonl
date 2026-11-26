@@ -1,0 +1,6 @@
+{"sample":1,"first_response_headers_ms":474.511,"full_request_ms":9061.466,"bytes":8388608,"end_to_end_mbps":7.406}
+{"sample":2,"first_response_headers_ms":771.648,"full_request_ms":3327.051,"bytes":8388608,"end_to_end_mbps":20.171}
+{"sample":3,"first_response_headers_ms":593.753,"full_request_ms":3437.652,"bytes":8388608,"end_to_end_mbps":19.522}
+{"sample":4,"first_response_headers_ms":2412.599,"full_request_ms":9037.457,"bytes":8388608,"end_to_end_mbps":7.426}
+{"sample":5,"first_response_headers_ms":656.998,"full_request_ms":3920.020,"bytes":8388608,"end_to_end_mbps":17.120}
+{"bytes_each":8388608,"failed":0,"p50_ms":3920.02,"p95_ms":9061.466,"scope":"fresh TCP + TLS + authenticated tunnel + complete verified HTTP response; speed includes setup and verification","success":5}

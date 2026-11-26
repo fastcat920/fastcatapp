@@ -1,0 +1,9 @@
+[
+  {
+    "source": "web-google-b2-p1-vless-vision",
+    "metric": "web-google",
+    "version": "vless-vision",
+    "phase": "mixed",
+    "error": "target TLS: EOF"
+  }
+]

@@ -1,0 +1,2 @@
+0e5ed17e6e94ac775d8d52b0a65f26e5db57fd2c1efd57ab0144d7b8707c2d8e  /opt/fastcat-n1-lab/n1
+ExecStart={ path=/opt/fastcat-n1-lab/n1 ; argv[]=/opt/fastcat-n1-lab/n1 -mode server -listen 0.0.0.0:18461 -config /opt/fastcat-n1-lab/config.json -cert /etc/letsencrypt/live/zlhk.fastcat.ink/fullchain.pem -cert-key /etc/letsencrypt/live/zlhk.fastcat.ink/privkey.pem -target 127.0.0.1:18462 -emission coalesced -workload-controls ; ignore_errors=no ; start_time=[Tue 2026-11-24 19:43:34 CST] ; stop_time=[n/a] ; pid=690493 ; code=(null) ; status=0/0 }

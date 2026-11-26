@@ -1,0 +1,26 @@
+{
+  "selected": "recovery",
+  "selection_rule": "stage3 passed; add prefix only if stage4 full gate passed",
+  "targets": [
+    "example.com:443",
+    "www.google.com:443"
+  ],
+  "background": "2 x 16MiB from fixed local HTTPS backend; shared same client",
+  "samples": 12,
+  "paired_blocks_per_target": 2,
+  "trace": false,
+  "variants": [
+    "baseline-original",
+    "selected"
+  ],
+  "gate": {
+    "foreground_completion_not_lower": true,
+    "background_completion_not_lower": true,
+    "loaded_p95_ratio_max": 1.1,
+    "min_loaded_samples_per_condition_per_target": 12
+  },
+  "sha256": {
+    "compare": "9f5ba4ec4da235d94a7d44bd9b2dada41c2bc577cd7f827c7b07d01ca7c0f5fe",
+    "next-diagnostic": "5140bce7edf5934c9b12b4519921b35e7c571f22df6f0c930b0e62e7c1c43f7f"
+  }
+}

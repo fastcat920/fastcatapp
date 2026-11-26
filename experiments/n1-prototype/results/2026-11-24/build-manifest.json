@@ -1,0 +1,8 @@
+{
+  "main.go": "668dd924c6a16aebecb86f22258cf5d115afe7c15b0790cca77c1e49ae5c9f9c",
+  "go.mod": "692fdc80dfffcca8ce03282acdc360c9537f01759c277dd59df68a50ab4b4cca",
+  "SPEC-0.1.md": "d7794af6bede5aa28ff836a551e3e97ae6694562d8d393204b9199cc1a4a279c",
+  "artifacts/n1-linux-amd64": "868604aec10602cf71709c2dcbd242aeca7af5a765046b7013d0c447e694b3c9",
+  "artifacts/n1-android-systemdns-arm64": "2d92cd86b85e6909e642070e4b197166efdfa5968c5b60abc4b10b47add5a435",
+  "artifacts/n1-macos-arm64": "15a78dc6613790d4badff5c025e7bc723cca9de2e8e56b1d629fd447947e5572"
+}

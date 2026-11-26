@@ -1,0 +1,342 @@
+{"ms": 8.47, "pid": 708458, "rss_kib": 12608, "threads": 4, "fds": 6, "cpu_ticks": 9, "load1": 0.0546875, "tcp": []}
+{"ms": 528.75, "pid": 708458, "rss_kib": 12608, "threads": 4, "fds": 6, "cpu_ticks": 9, "load1": 0.0546875, "tcp": []}
+{"ms": 1050.08, "pid": 708458, "rss_kib": 12608, "threads": 4, "fds": 6, "cpu_ticks": 9, "load1": 0.0546875, "tcp": []}
+{"ms": 1558.44, "pid": 708458, "rss_kib": 12608, "threads": 4, "fds": 6, "cpu_ticks": 9, "load1": 0.0546875, "tcp": []}
+{"ms": 2065.3, "pid": 708458, "rss_kib": 12608, "threads": 4, "fds": 6, "cpu_ticks": 9, "load1": 0.0546875, "tcp": []}
+{"ms": 2572.9, "pid": 708458, "rss_kib": 12608, "threads": 4, "fds": 6, "cpu_ticks": 9, "load1": 0.0546875, "tcp": []}
+{"ms": 3080.61, "pid": 708458, "rss_kib": 11792, "threads": 4, "fds": 7, "cpu_ticks": 9, "load1": 0.0546875, "tcp": [{"cwnd": 10, "rto": 408, "segs_out": 6, "data_segs_out": 4, "unacked": 4, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 135.088, "rttvar_ms": 67.544}]}
+{"ms": 3588.23, "pid": 708458, "rss_kib": 11860, "threads": 4, "fds": 6, "cpu_ticks": 10, "load1": 0.0546875, "tcp": [{"cwnd": 35, "rto": 364, "bytes_acked": 32660, "segs_out": 34, "data_segs_out": 31, "unacked": 5, "rcv_space": 14480, "snd_wnd": 155136, "rtt_ms": 124.33, "rttvar_ms": 13.312}]}
+{"ms": 4094.2, "pid": 708458, "rss_kib": 11860, "threads": 4, "fds": 6, "cpu_ticks": 10, "load1": 0.05029296875, "tcp": []}
+{"ms": 4602.87, "pid": 708458, "rss_kib": 11860, "threads": 4, "fds": 6, "cpu_ticks": 10, "load1": 0.05029296875, "tcp": []}
+{"ms": 5110.97, "pid": 708458, "rss_kib": 11860, "threads": 4, "fds": 6, "cpu_ticks": 10, "load1": 0.05029296875, "tcp": []}
+{"ms": 5618.75, "pid": 708458, "rss_kib": 11884, "threads": 4, "fds": 7, "cpu_ticks": 10, "load1": 0.05029296875, "tcp": [{"cwnd": 1, "rto": 520, "segs_out": 3, "data_segs_out": 1, "unacked": 1, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 173.0, "rttvar_ms": 86.5}]}
+{"ms": 6126.64, "pid": 708458, "rss_kib": 11884, "threads": 4, "fds": 7, "cpu_ticks": 10, "load1": 0.05029296875, "tcp": [{"cwnd": 1, "rto": 520, "segs_out": 4, "data_segs_out": 2, "unacked": 2, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 173.0, "rttvar_ms": 86.5}]}
+{"ms": 6633.93, "pid": 708458, "rss_kib": 11884, "threads": 4, "fds": 7, "cpu_ticks": 10, "load1": 0.05029296875, "tcp": [{"cwnd": 4, "rto": 504, "bytes_acked": 2696, "bytes_retrans": 2165, "segs_out": 8, "data_segs_out": 6, "unacked": 2, "rcv_space": 14480, "snd_wnd": 89088, "rtt_ms": 156.95, "rttvar_ms": 76.512}]}
+{"ms": 7140.78, "pid": 708458, "rss_kib": 11892, "threads": 4, "fds": 8, "cpu_ticks": 10, "load1": 0.05029296875, "tcp": [{"cwnd": 6, "rto": 488, "bytes_acked": 4861, "bytes_retrans": 2165, "segs_out": 10, "data_segs_out": 7, "unacked": 1, "rcv_space": 14480, "snd_wnd": 94720, "rtt_ms": 161.081, "rttvar_ms": 65.647}]}
+{"ms": 7647.97, "pid": 708458, "rss_kib": 11984, "threads": 4, "fds": 8, "cpu_ticks": 10, "load1": 0.05029296875, "tcp": [{"cwnd": 7, "rto": 460, "bytes_acked": 5007, "bytes_retrans": 2311, "segs_out": 16, "data_segs_out": 13, "unacked": 5, "rcv_space": 14480, "snd_wnd": 97280, "rtt_ms": 155.696, "rttvar_ms": 60.005}]}
+{"ms": 8155.01, "pid": 708458, "rss_kib": 11984, "threads": 4, "fds": 8, "cpu_ticks": 10, "load1": 0.05029296875, "tcp": [{"cwnd": 11, "rto": 376, "bytes_acked": 24925, "bytes_retrans": 6355, "segs_out": 39, "data_segs_out": 36, "unacked": 10, "rcv_space": 14480, "snd_wnd": 138752, "rtt_ms": 114.727, "rttvar_ms": 18.966}]}
+{"ms": 8664.26, "pid": 708458, "rss_kib": 11984, "threads": 4, "fds": 6, "cpu_ticks": 10, "load1": 0.0458984375, "tcp": [{"cwnd": 21, "rto": 364, "bytes_acked": 38279, "bytes_retrans": 7727, "segs_out": 44, "data_segs_out": 39, "unacked": 2, "rcv_space": 14480, "snd_wnd": 166400, "rtt_ms": 118.131, "rttvar_ms": 18.997}]}
+{"ms": 9169.62, "pid": 708458, "rss_kib": 11984, "threads": 4, "fds": 6, "cpu_ticks": 10, "load1": 0.0458984375, "tcp": []}
+{"ms": 9677.38, "pid": 708458, "rss_kib": 12032, "threads": 4, "fds": 7, "cpu_ticks": 10, "load1": 0.0458984375, "tcp": [{"cwnd": 10, "rto": 440, "segs_out": 6, "data_segs_out": 4, "unacked": 4, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 145.452, "rttvar_ms": 72.726}]}
+{"ms": 10185.95, "pid": 708458, "rss_kib": 12136, "threads": 4, "fds": 8, "cpu_ticks": 11, "load1": 0.0458984375, "tcp": [{"cwnd": 29, "rto": 400, "bytes_acked": 22032, "segs_out": 34, "data_segs_out": 31, "unacked": 12, "rcv_space": 14480, "snd_wnd": 135168, "rtt_ms": 148.214, "rttvar_ms": 17.795}]}
+{"ms": 10693.68, "pid": 708458, "rss_kib": 12136, "threads": 4, "fds": 6, "cpu_ticks": 11, "load1": 0.0458984375, "tcp": []}
+{"ms": 11200.97, "pid": 708458, "rss_kib": 12192, "threads": 4, "fds": 7, "cpu_ticks": 11, "load1": 0.0458984375, "tcp": [{"cwnd": 10, "rto": 424, "segs_out": 4, "data_segs_out": 3, "unacked": 3, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 140.559, "rttvar_ms": 70.279}]}
+{"ms": 11707.96, "pid": 708458, "rss_kib": 12296, "threads": 4, "fds": 8, "cpu_ticks": 11, "load1": 0.0458984375, "tcp": [{"cwnd": 14, "rto": 412, "bytes_acked": 3920, "segs_out": 20, "data_segs_out": 18, "unacked": 14, "rcv_space": 14480, "snd_wnd": 94720, "rtt_ms": 149.241, "rttvar_ms": 45.516}]}
+{"ms": 12215.28, "pid": 708458, "rss_kib": 12296, "threads": 4, "fds": 6, "cpu_ticks": 11, "load1": 0.0458984375, "tcp": []}
+{"ms": 12723.28, "pid": 708458, "rss_kib": 12296, "threads": 4, "fds": 6, "cpu_ticks": 11, "load1": 0.0458984375, "tcp": []}
+{"ms": 13229.56, "pid": 708458, "rss_kib": 12296, "threads": 4, "fds": 6, "cpu_ticks": 11, "load1": 0.0458984375, "tcp": []}
+{"ms": 13736.56, "pid": 708458, "rss_kib": 12296, "threads": 4, "fds": 6, "cpu_ticks": 11, "load1": 0.0419921875, "tcp": []}
+{"ms": 14243.67, "pid": 708458, "rss_kib": 12536, "threads": 4, "fds": 8, "cpu_ticks": 11, "load1": 0.0419921875, "tcp": [{"cwnd": 15, "rto": 304, "bytes_acked": 5007, "segs_out": 23, "data_segs_out": 20, "unacked": 15, "rcv_space": 14480, "snd_wnd": 97280, "rtt_ms": 101.529, "rttvar_ms": 14.396}]}
+{"ms": 14751.48, "pid": 708458, "rss_kib": 14760, "threads": 4, "fds": 8, "cpu_ticks": 12, "load1": 0.0419921875, "tcp": [{"cwnd": 219, "rto": 312, "bytes_acked": 284890, "segs_out": 436, "data_segs_out": 432, "unacked": 218, "rcv_space": 14480, "snd_wnd": 667136, "rtt_ms": 108.93, "rttvar_ms": 3.067}]}
+{"ms": 15264.79, "pid": 708458, "rss_kib": 14760, "threads": 4, "fds": 6, "cpu_ticks": 12, "load1": 0.0419921875, "tcp": []}
+{"ms": 15771.52, "pid": 708458, "rss_kib": 14760, "threads": 4, "fds": 6, "cpu_ticks": 12, "load1": 0.0419921875, "tcp": []}
+{"ms": 16279.76, "pid": 708458, "rss_kib": 14760, "threads": 4, "fds": 6, "cpu_ticks": 12, "load1": 0.0419921875, "tcp": []}
+{"ms": 16787.47, "pid": 708458, "rss_kib": 14812, "threads": 4, "fds": 6, "cpu_ticks": 12, "load1": 0.0419921875, "tcp": [{"cwnd": 14, "rto": 728, "bytes_acked": 4860, "segs_out": 21, "data_segs_out": 18, "unacked": 14, "rcv_space": 14480, "snd_wnd": 94720, "rtt_ms": 213.969, "rttvar_ms": 116.095}]}
+{"ms": 17294.94, "pid": 708458, "rss_kib": 14812, "threads": 4, "fds": 6, "cpu_ticks": 12, "load1": 0.0419921875, "tcp": []}
+{"ms": 17802.39, "pid": 708458, "rss_kib": 14820, "threads": 4, "fds": 7, "cpu_ticks": 13, "load1": 0.0419921875, "tcp": [{"cwnd": 14, "rto": 372, "bytes_acked": 4861, "segs_out": 6, "data_segs_out": 4, "rcv_space": 14480, "snd_wnd": 93696, "rtt_ms": 126.486, "rttvar_ms": 43.782}]}
+{"ms": 18310.24, "pid": 708458, "rss_kib": 14828, "threads": 4, "fds": 7, "cpu_ticks": 13, "load1": 0.0419921875, "tcp": [{"cwnd": 58, "rto": 340, "bytes_acked": 79841, "segs_out": 108, "data_segs_out": 104, "unacked": 44, "rcv_space": 14480, "snd_wnd": 245760, "rtt_ms": 118.433, "rttvar_ms": 6.971}]}
+{"ms": 18817.84, "pid": 708458, "rss_kib": 14828, "threads": 4, "fds": 6, "cpu_ticks": 13, "load1": 0.03857421875, "tcp": [{"cwnd": 382, "rto": 372, "bytes_acked": 670265, "segs_out": 791, "data_segs_out": 786, "unacked": 288, "rcv_space": 14480, "snd_wnd": 1444352, "rtt_ms": 164.128, "rttvar_ms": 3.378}]}
+{"ms": 19324.67, "pid": 708458, "rss_kib": 14828, "threads": 4, "fds": 6, "cpu_ticks": 13, "load1": 0.03857421875, "tcp": []}
+{"ms": 19831.72, "pid": 708458, "rss_kib": 14828, "threads": 4, "fds": 6, "cpu_ticks": 13, "load1": 0.03857421875, "tcp": []}
+{"ms": 20339.37, "pid": 708458, "rss_kib": 14828, "threads": 4, "fds": 6, "cpu_ticks": 13, "load1": 0.03857421875, "tcp": []}
+{"ms": 20846.7, "pid": 708458, "rss_kib": 14840, "threads": 4, "fds": 7, "cpu_ticks": 13, "load1": 0.03857421875, "tcp": [{"cwnd": 14, "rto": 716, "bytes_acked": 4860, "segs_out": 6, "data_segs_out": 4, "rcv_space": 14480, "snd_wnd": 94720, "rtt_ms": 221.725, "rttvar_ms": 110.255}]}
+{"ms": 21353.94, "pid": 708458, "rss_kib": 14892, "threads": 4, "fds": 8, "cpu_ticks": 13, "load1": 0.03857421875, "tcp": [{"cwnd": 32, "rto": 548, "bytes_acked": 35708, "segs_out": 33, "data_segs_out": 30, "unacked": 2, "rcv_space": 14480, "snd_wnd": 160256, "rtt_ms": 133.573, "rttvar_ms": 39.469}]}
+{"ms": 21861.6, "pid": 708458, "rss_kib": 14892, "threads": 4, "fds": 6, "cpu_ticks": 13, "load1": 0.03857421875, "tcp": []}
+{"ms": 22369.46, "pid": 708458, "rss_kib": 14904, "threads": 4, "fds": 7, "cpu_ticks": 13, "load1": 0.03857421875, "tcp": [{"cwnd": 10, "rto": 396, "segs_out": 6, "data_segs_out": 4, "unacked": 4, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 110.378, "rttvar_ms": 55.189}]}
+{"ms": 22876.28, "pid": 708458, "rss_kib": 14908, "threads": 4, "fds": 8, "cpu_ticks": 13, "load1": 0.03857421875, "tcp": [{"cwnd": 15, "rto": 356, "bytes_acked": 5006, "segs_out": 23, "data_segs_out": 20, "unacked": 15, "rcv_space": 14480, "snd_wnd": 97280, "rtt_ms": 131.794, "rttvar_ms": 43.291}]}
+{"ms": 23388.06, "pid": 708458, "rss_kib": 14908, "threads": 4, "fds": 6, "cpu_ticks": 13, "load1": 0.03857421875, "tcp": []}
+{"ms": 23895.53, "pid": 708458, "rss_kib": 14916, "threads": 4, "fds": 7, "cpu_ticks": 13, "load1": 0.03515625, "tcp": [{"cwnd": 10, "rto": 572, "segs_out": 6, "data_segs_out": 4, "unacked": 4, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 189.738, "rttvar_ms": 94.869}]}
+{"ms": 24402.24, "pid": 708458, "rss_kib": 14916, "threads": 4, "fds": 6, "cpu_ticks": 13, "load1": 0.03515625, "tcp": []}
+{"ms": 24911.7, "pid": 708458, "rss_kib": 14916, "threads": 4, "fds": 7, "cpu_ticks": 13, "load1": 0.03515625, "tcp": [{"cwnd": 10, "rto": 500, "segs_out": 6, "data_segs_out": 4, "unacked": 4, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 165.724, "rttvar_ms": 82.862}]}
+{"ms": 25418.47, "pid": 708458, "rss_kib": 14916, "threads": 4, "fds": 6, "cpu_ticks": 13, "load1": 0.03515625, "tcp": [{"cwnd": 22, "rto": 524, "bytes_acked": 16485, "segs_out": 34, "data_segs_out": 31, "unacked": 17, "rcv_space": 14480, "snd_wnd": 121856, "rtt_ms": 210.341, "rttvar_ms": 39.218}]}
+{"ms": 25925.05, "pid": 708458, "rss_kib": 14916, "threads": 4, "fds": 6, "cpu_ticks": 13, "load1": 0.03515625, "tcp": []}
+{"ms": 26431.75, "pid": 708458, "rss_kib": 14916, "threads": 4, "fds": 6, "cpu_ticks": 13, "load1": 0.03515625, "tcp": []}
+{"ms": 26938.38, "pid": 708458, "rss_kib": 14924, "threads": 4, "fds": 8, "cpu_ticks": 14, "load1": 0.03515625, "tcp": [{"cwnd": 14, "rto": 452, "bytes_acked": 4861, "segs_out": 8, "data_segs_out": 5, "unacked": 1, "rcv_space": 14480, "snd_wnd": 93696, "rtt_ms": 148.422, "rttvar_ms": 35.416}]}
+{"ms": 27445.45, "pid": 708458, "rss_kib": 14956, "threads": 4, "fds": 8, "cpu_ticks": 15, "load1": 0.03515625, "tcp": [{"cwnd": 77, "rto": 344, "bytes_acked": 104274, "segs_out": 153, "data_segs_out": 150, "unacked": 70, "rcv_space": 14480, "snd_wnd": 299008, "rtt_ms": 108.717, "rttvar_ms": 3.024}]}
+{"ms": 27953.9, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 6, "cpu_ticks": 15, "load1": 0.03515625, "tcp": [{"cwnd": 753, "rto": 332, "bytes_acked": 1058678, "segs_out": 796, "data_segs_out": 790, "unacked": 2, "rcv_space": 14480, "snd_wnd": 2240000, "rtt_ms": 118.824, "rttvar_ms": 1.453}]}
+{"ms": 28461.04, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 6, "cpu_ticks": 15, "load1": 0.03515625, "tcp": []}
+{"ms": 28974.37, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.0322265625, "tcp": [{"cwnd": 2, "rto": 504, "bytes_acked": 4044, "bytes_retrans": 1348, "segs_out": 7, "data_segs_out": 5, "unacked": 1, "rcv_space": 14480, "snd_wnd": 92160, "rtt_ms": 160.661, "rttvar_ms": 51.777}]}
+{"ms": 29481.63, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.0322265625, "tcp": [{"cwnd": 1, "rto": 1008, "bytes_acked": 4044, "bytes_retrans": 2165, "segs_out": 8, "data_segs_out": 6, "unacked": 1, "rcv_space": 14480, "snd_wnd": 92160, "rtt_ms": 160.661, "rttvar_ms": 51.777}]}
+{"ms": 29989.11, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.0322265625, "tcp": [{"cwnd": 11, "rto": 456, "bytes_acked": 9023, "bytes_retrans": 4861, "segs_out": 33, "data_segs_out": 30, "unacked": 18, "rcv_space": 14480, "snd_wnd": 123904, "rtt_ms": 140.865, "rttvar_ms": 19.901}]}
+{"ms": 30497.11, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.0322265625, "tcp": [{"cwnd": 21, "rto": 396, "bytes_acked": 44793, "bytes_retrans": 27777, "segs_out": 85, "data_segs_out": 82, "unacked": 26, "rcv_space": 14480, "snd_wnd": 209408, "rtt_ms": 130.096, "rttvar_ms": 9.825}]}
+{"ms": 31004.75, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.0322265625, "tcp": [{"cwnd": 34, "rto": 368, "bytes_acked": 90625, "bytes_retrans": 38561, "segs_out": 129, "data_segs_out": 126, "unacked": 28, "rcv_space": 14480, "snd_wnd": 305664, "rtt_ms": 117.142, "rttvar_ms": 8.937}]}
+{"ms": 31511.5, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.0322265625, "tcp": [{"cwnd": 30, "rto": 348, "bytes_acked": 136457, "bytes_retrans": 56085, "segs_out": 180, "data_segs_out": 177, "unacked": 32, "rcv_space": 14480, "snd_wnd": 413184, "rtt_ms": 110.737, "rttvar_ms": 3.613}]}
+{"ms": 32022.09, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.0322265625, "tcp": [{"cwnd": 30, "rto": 336, "bytes_acked": 190377, "bytes_retrans": 69565, "segs_out": 236, "data_segs_out": 233, "unacked": 38, "rcv_space": 14480, "snd_wnd": 545280, "rtt_ms": 108.658, "rttvar_ms": 1.867}]}
+{"ms": 32530.71, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.0322265625, "tcp": [{"cwnd": 11, "rto": 324, "bytes_acked": 275301, "bytes_retrans": 79001, "segs_out": 282, "data_segs_out": 279, "unacked": 14, "rcv_space": 14480, "snd_wnd": 658432, "rtt_ms": 110.132, "rttvar_ms": 5.661}]}
+{"ms": 33038.36, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.0322265625, "tcp": [{"cwnd": 28, "rto": 316, "bytes_acked": 331917, "bytes_retrans": 85741, "segs_out": 326, "data_segs_out": 323, "unacked": 11, "rcv_space": 14480, "snd_wnd": 766464, "rtt_ms": 107.811, "rttvar_ms": 1.52}]}
+{"ms": 33546.25, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.0322265625, "tcp": [{"cwnd": 30, "rto": 316, "bytes_acked": 387185, "bytes_retrans": 88437, "segs_out": 371, "data_segs_out": 367, "unacked": 12, "rcv_space": 14480, "snd_wnd": 879616, "rtt_ms": 111.554, "rttvar_ms": 5.019}]}
+{"ms": 34052.98, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.029296875, "tcp": [{"cwnd": 22, "rto": 316, "bytes_acked": 402013, "bytes_retrans": 101917, "segs_out": 414, "data_segs_out": 410, "unacked": 34, "rcv_space": 14480, "snd_wnd": 973312, "rtt_ms": 110.801, "rttvar_ms": 3.798}]}
+{"ms": 34560.47, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.029296875, "tcp": [{"cwnd": 26, "rto": 312, "bytes_acked": 470761, "bytes_retrans": 108657, "segs_out": 457, "data_segs_out": 453, "unacked": 21, "rcv_space": 14480, "snd_wnd": 1078272, "rtt_ms": 109.831, "rttvar_ms": 3.881}]}
+{"ms": 35068.46, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.029296875, "tcp": [{"cwnd": 14, "rto": 320, "bytes_acked": 521985, "bytes_retrans": 115397, "segs_out": 499, "data_segs_out": 495, "unacked": 20, "rcv_space": 14480, "snd_wnd": 1171968, "rtt_ms": 117.354, "rttvar_ms": 8.582}]}
+{"ms": 35577.74, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.029296875, "tcp": [{"cwnd": 26, "rto": 316, "bytes_acked": 567817, "bytes_retrans": 130225, "segs_out": 543, "data_segs_out": 539, "unacked": 19, "rcv_space": 14480, "snd_wnd": 1271296, "rtt_ms": 113.229, "rttvar_ms": 8.666}]}
+{"ms": 36085.74, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.029296875, "tcp": [{"cwnd": 10, "rto": 320, "bytes_acked": 620389, "bytes_retrans": 138313, "segs_out": 585, "data_segs_out": 581, "unacked": 16, "rcv_space": 14480, "snd_wnd": 1373696, "rtt_ms": 116.244, "rttvar_ms": 10.082}]}
+{"ms": 36594.37, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.029296875, "tcp": [{"cwnd": 26, "rto": 312, "bytes_acked": 664873, "bytes_retrans": 150445, "segs_out": 629, "data_segs_out": 625, "unacked": 18, "rcv_space": 14480, "snd_wnd": 1464832, "rtt_ms": 111.619, "rttvar_ms": 4.338}]}
+{"ms": 37102.82, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.029296875, "tcp": [{"cwnd": 26, "rto": 312, "bytes_acked": 712053, "bytes_retrans": 161229, "segs_out": 672, "data_segs_out": 668, "unacked": 18, "rcv_space": 14480, "snd_wnd": 1564160, "rtt_ms": 109.602, "rttvar_ms": 4.075}]}
+{"ms": 37609.63, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.029296875, "tcp": [{"cwnd": 11, "rto": 316, "bytes_acked": 757885, "bytes_retrans": 166621, "segs_out": 715, "data_segs_out": 711, "unacked": 23, "rcv_space": 14480, "snd_wnd": 1671680, "rtt_ms": 112.253, "rttvar_ms": 4.967}]}
+{"ms": 38116.88, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.029296875, "tcp": [{"cwnd": 27, "rto": 312, "bytes_acked": 796977, "bytes_retrans": 184145, "segs_out": 759, "data_segs_out": 755, "unacked": 25, "rcv_space": 14480, "snd_wnd": 1754624, "rtt_ms": 111.524, "rttvar_ms": 4.231}]}
+{"ms": 38624.89, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 6, "cpu_ticks": 15, "load1": 0.029296875, "tcp": [{"cwnd": 12, "rto": 316, "bytes_acked": 860333, "bytes_retrans": 190885, "segs_out": 802, "data_segs_out": 797, "unacked": 15, "rcv_space": 14480, "snd_wnd": 1856512, "rtt_ms": 113.851, "rttvar_ms": 4.031}]}
+{"ms": 39132.71, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 6, "cpu_ticks": 15, "load1": 0.02685546875, "tcp": [{"cwnd": 15, "rto": 316, "bytes_acked": 906165, "bytes_retrans": 203017, "segs_out": 846, "data_segs_out": 841, "unacked": 16, "rcv_space": 14480, "snd_wnd": 1955840, "rtt_ms": 113.203, "rttvar_ms": 7.052}]}
+{"ms": 39640.3, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 6, "cpu_ticks": 15, "load1": 0.02685546875, "tcp": [{"cwnd": 11, "rto": 312, "bytes_acked": 964129, "bytes_retrans": 205713, "segs_out": 889, "data_segs_out": 884, "unacked": 14, "rcv_space": 14480, "snd_wnd": 2068992, "rtt_ms": 108.754, "rttvar_ms": 3.308}]}
+{"ms": 40147.43, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 6, "cpu_ticks": 15, "load1": 0.02685546875, "tcp": [{"cwnd": 15, "rto": 312, "bytes_acked": 1000525, "bytes_retrans": 216497, "segs_out": 930, "data_segs_out": 925, "unacked": 20, "rcv_space": 14480, "snd_wnd": 2160128, "rtt_ms": 108.537, "rttvar_ms": 2.798}]}
+{"ms": 40655.48, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 6, "cpu_ticks": 15, "load1": 0.02685546875, "tcp": []}
+{"ms": 41162.22, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 6, "cpu_ticks": 15, "load1": 0.02685546875, "tcp": []}
+{"ms": 41669.74, "pid": 708458, "rss_kib": 15016, "threads": 4, "fds": 7, "cpu_ticks": 15, "load1": 0.02685546875, "tcp": [{"cwnd": 10, "rto": 452, "segs_out": 6, "data_segs_out": 4, "unacked": 4, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 150.54, "rttvar_ms": 75.27}]}
+{"ms": 42176.6, "pid": 708458, "rss_kib": 15032, "threads": 4, "fds": 8, "cpu_ticks": 16, "load1": 0.02685546875, "tcp": [{"cwnd": 29, "rto": 400, "bytes_acked": 22030, "segs_out": 36, "data_segs_out": 32, "unacked": 13, "rcv_space": 14480, "snd_wnd": 135168, "rtt_ms": 140.083, "rttvar_ms": 29.081}]}
+{"ms": 42684.64, "pid": 708458, "rss_kib": 15032, "threads": 4, "fds": 6, "cpu_ticks": 16, "load1": 0.02685546875, "tcp": []}
+{"ms": 43193.04, "pid": 708458, "rss_kib": 15032, "threads": 4, "fds": 6, "cpu_ticks": 16, "load1": 0.02685546875, "tcp": []}
+{"ms": 43699.72, "pid": 708458, "rss_kib": 15032, "threads": 4, "fds": 7, "cpu_ticks": 16, "load1": 0.0244140625, "tcp": [{"cwnd": 13, "rto": 580, "bytes_acked": 2696, "bytes_retrans": 1348, "segs_out": 7, "data_segs_out": 5, "unacked": 2, "rcv_space": 14480, "snd_wnd": 91648, "rtt_ms": 187.551, "rttvar_ms": 67.322}]}
+{"ms": 44207.44, "pid": 708458, "rss_kib": 15032, "threads": 4, "fds": 7, "cpu_ticks": 16, "load1": 0.0244140625, "tcp": [{"cwnd": 13, "rto": 580, "bytes_acked": 2696, "bytes_retrans": 1348, "segs_out": 7, "data_segs_out": 5, "unacked": 2, "rcv_space": 14480, "snd_wnd": 91648, "rtt_ms": 187.551, "rttvar_ms": 67.322}]}
+{"ms": 44715.13, "pid": 708458, "rss_kib": 15036, "threads": 4, "fds": 8, "cpu_ticks": 16, "load1": 0.0244140625, "tcp": [{"cwnd": 14, "rto": 572, "bytes_acked": 4861, "bytes_retrans": 2696, "segs_out": 10, "data_segs_out": 7, "unacked": 1, "rcv_space": 14480, "snd_wnd": 94720, "rtt_ms": 179.857, "rttvar_ms": 65.879}]}
+{"ms": 45221.67, "pid": 708458, "rss_kib": 15036, "threads": 4, "fds": 8, "cpu_ticks": 16, "load1": 0.0244140625, "tcp": [{"cwnd": 41, "rto": 412, "bytes_acked": 51696, "bytes_retrans": 9436, "segs_out": 118, "data_segs_out": 115, "unacked": 67, "rcv_space": 14480, "snd_wnd": 265216, "rtt_ms": 120.515, "rttvar_ms": 5.608}]}
+{"ms": 45730.27, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 8, "cpu_ticks": 16, "load1": 0.0244140625, "tcp": [{"cwnd": 213, "rto": 372, "bytes_acked": 253896, "bytes_retrans": 122668, "segs_out": 630, "data_segs_out": 626, "unacked": 344, "rcv_space": 14480, "snd_wnd": 966144, "rtt_ms": 118.162, "rttvar_ms": 9.961}]}
+{"ms": 46237.78, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 8, "cpu_ticks": 16, "load1": 0.0244140625, "tcp": [{"cwnd": 452, "rto": 392, "bytes_acked": 263332, "bytes_retrans": 350480, "segs_out": 1053, "data_segs_out": 1049, "unacked": 591, "rcv_space": 14480, "snd_wnd": 2193920, "rtt_ms": 139.113, "rttvar_ms": 10.532}]}
+{"ms": 46745.03, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 6, "cpu_ticks": 16, "load1": 0.0244140625, "tcp": []}
+{"ms": 47250.96, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 6, "cpu_ticks": 16, "load1": 0.0244140625, "tcp": []}
+{"ms": 47758.54, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 16, "load1": 0.0244140625, "tcp": [{"cwnd": 11, "rto": 568, "bytes_retrans": 2696, "segs_out": 8, "data_segs_out": 6, "unacked": 4, "rcv_space": 14480, "snd_wnd": 86528, "rtt_ms": 186.375, "rttvar_ms": 77.471}]}
+{"ms": 48265.88, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 16, "load1": 0.0244140625, "tcp": [{"cwnd": 3, "rto": 556, "bytes_acked": 4044, "bytes_retrans": 2696, "segs_out": 8, "data_segs_out": 6, "unacked": 1, "rcv_space": 14480, "snd_wnd": 92160, "rtt_ms": 176.078, "rttvar_ms": 77.624}]}
+{"ms": 48775.67, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 8, "cpu_ticks": 16, "load1": 0.02197265625, "tcp": [{"cwnd": 13, "rto": 540, "bytes_acked": 5006, "bytes_retrans": 3512, "segs_out": 23, "data_segs_out": 20, "unacked": 12, "rcv_space": 14480, "snd_wnd": 97280, "rtt_ms": 178.119, "rttvar_ms": 71.047}]}
+{"ms": 49284.22, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 8, "cpu_ticks": 16, "load1": 0.02197265625, "tcp": [{"cwnd": 20, "rto": 424, "bytes_acked": 33456, "bytes_retrans": 17436, "segs_out": 48, "data_segs_out": 45, "unacked": 4, "rcv_space": 14480, "snd_wnd": 157696, "rtt_ms": 118.165, "rttvar_ms": 22.75}]}
+{"ms": 49791.63, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 6, "cpu_ticks": 16, "load1": 0.02197265625, "tcp": []}
+{"ms": 50298.95, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 6, "cpu_ticks": 16, "load1": 0.02197265625, "tcp": []}
+{"ms": 50806.79, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 17, "load1": 0.02197265625, "tcp": [{"cwnd": 10, "rto": 736, "segs_out": 6, "data_segs_out": 4, "unacked": 4, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 244.736, "rttvar_ms": 122.368}]}
+{"ms": 51314.59, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 8, "cpu_ticks": 17, "load1": 0.02197265625, "tcp": [{"cwnd": 29, "rto": 588, "bytes_acked": 22026, "segs_out": 33, "data_segs_out": 30, "unacked": 11, "rcv_space": 14480, "snd_wnd": 135168, "rtt_ms": 166.035, "rttvar_ms": 65.944}]}
+{"ms": 51822.42, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 6, "cpu_ticks": 17, "load1": 0.02197265625, "tcp": []}
+{"ms": 52329.7, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 17, "load1": 0.02197265625, "tcp": [{"cwnd": 10, "rto": 500, "segs_out": 6, "data_segs_out": 4, "unacked": 4, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 165.543, "rttvar_ms": 82.771}]}
+{"ms": 52838.9, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 8, "cpu_ticks": 17, "load1": 0.02197265625, "tcp": [{"cwnd": 15, "rto": 464, "bytes_acked": 5006, "segs_out": 23, "data_segs_out": 20, "unacked": 15, "rcv_space": 14480, "snd_wnd": 97280, "rtt_ms": 162.478, "rttvar_ms": 23.06}]}
+{"ms": 53355.37, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 6, "cpu_ticks": 17, "load1": 0.02197265625, "tcp": []}
+{"ms": 53862.4, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 17, "load1": 0.02001953125, "tcp": [{"cwnd": 10, "rto": 396, "segs_out": 6, "data_segs_out": 4, "unacked": 4, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 124.861, "rttvar_ms": 62.43}]}
+{"ms": 54369.75, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 17, "load1": 0.02001953125, "tcp": [{"cwnd": 1, "rto": 396, "bytes_retrans": 2166, "segs_out": 9, "data_segs_out": 6, "unacked": 4, "rcv_space": 14480, "snd_wnd": 85504, "rtt_ms": 124.861, "rttvar_ms": 62.43}]}
+{"ms": 54880.53, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 17, "load1": 0.02001953125, "tcp": [{"cwnd": 11, "rto": 372, "bytes_acked": 4862, "bytes_retrans": 6210, "segs_out": 12, "data_segs_out": 9, "rcv_space": 14480, "snd_wnd": 93696, "rtt_ms": 120.557, "rttvar_ms": 33.413}]}
+{"ms": 55389.12, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 8, "cpu_ticks": 17, "load1": 0.02001953125, "tcp": [{"cwnd": 19, "rto": 372, "bytes_acked": 14562, "bytes_retrans": 10254, "segs_out": 44, "data_segs_out": 39, "unacked": 18, "rcv_space": 14480, "snd_wnd": 121344, "rtt_ms": 143.846, "rttvar_ms": 25.066}]}
+{"ms": 55905.92, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 6, "cpu_ticks": 17, "load1": 0.02001953125, "tcp": []}
+{"ms": 56413.39, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 6, "cpu_ticks": 17, "load1": 0.02001953125, "tcp": []}
+{"ms": 56920.88, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 17, "load1": 0.02001953125, "tcp": [{"cwnd": 13, "rto": 508, "bytes_acked": 3772, "bytes_retrans": 1076, "segs_out": 5, "data_segs_out": 4, "rcv_space": 14480, "snd_wnd": 92160, "rtt_ms": 149.683, "rttvar_ms": 89.424}]}
+{"ms": 57428.64, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 8, "cpu_ticks": 17, "load1": 0.02001953125, "tcp": [{"cwnd": 28, "rto": 488, "bytes_acked": 21398, "bytes_retrans": 1076, "segs_out": 33, "data_segs_out": 31, "unacked": 12, "rcv_space": 14480, "snd_wnd": 133120, "rtt_ms": 144.184, "rttvar_ms": 44.111}]}
+{"ms": 57936.3, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 6, "cpu_ticks": 18, "load1": 0.02001953125, "tcp": []}
+{"ms": 58449.37, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 6, "cpu_ticks": 18, "load1": 0.02001953125, "tcp": []}
+{"ms": 58956.88, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 6, "cpu_ticks": 18, "load1": 0.01806640625, "tcp": []}
+{"ms": 59463.64, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 6, "cpu_ticks": 18, "load1": 0.01806640625, "tcp": []}
+{"ms": 59972.57, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 18, "load1": 0.01806640625, "tcp": [{"cwnd": 1, "rto": 480, "segs_out": 2, "data_segs_out": 1, "unacked": 1, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 160.0, "rttvar_ms": 80.0}]}
+{"ms": 60479.72, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 18, "load1": 0.01806640625, "tcp": [{"cwnd": 1, "rto": 480, "segs_out": 3, "data_segs_out": 2, "unacked": 2, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 160.0, "rttvar_ms": 80.0}]}
+{"ms": 60986.51, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 18, "load1": 0.01806640625, "tcp": [{"cwnd": 1, "rto": 960, "bytes_retrans": 1348, "segs_out": 4, "data_segs_out": 3, "unacked": 2, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 160.0, "rttvar_ms": 80.0}]}
+{"ms": 61492.3, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 18, "load1": 0.01806640625, "tcp": [{"cwnd": 1, "rto": 960, "bytes_retrans": 1348, "segs_out": 4, "data_segs_out": 3, "unacked": 2, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 160.0, "rttvar_ms": 80.0}]}
+{"ms": 61998.04, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 18, "load1": 0.01806640625, "tcp": [{"cwnd": 1, "rto": 1920, "bytes_retrans": 2696, "segs_out": 5, "data_segs_out": 4, "unacked": 2, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 160.0, "rttvar_ms": 80.0}]}
+{"ms": 62505.89, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 18, "load1": 0.01806640625, "tcp": [{"cwnd": 1, "rto": 1920, "bytes_retrans": 2696, "segs_out": 6, "data_segs_out": 4, "unacked": 2, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 160.0, "rttvar_ms": 80.0}]}
+{"ms": 63013.59, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 18, "load1": 0.01806640625, "tcp": [{"cwnd": 1, "rto": 1920, "bytes_retrans": 2696, "segs_out": 6, "data_segs_out": 4, "unacked": 2, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 160.0, "rttvar_ms": 80.0}]}
+{"ms": 63521.53, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 18, "load1": 0.01806640625, "tcp": [{"cwnd": 1, "rto": 1920, "bytes_retrans": 2696, "segs_out": 6, "data_segs_out": 4, "unacked": 2, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 160.0, "rttvar_ms": 80.0}]}
+{"ms": 64029.49, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 18, "load1": 0.0166015625, "tcp": [{"cwnd": 1, "rto": 3840, "bytes_retrans": 4044, "segs_out": 7, "data_segs_out": 5, "unacked": 2, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 160.0, "rttvar_ms": 80.0}]}
+{"ms": 64536.63, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 18, "load1": 0.0166015625, "tcp": [{"cwnd": 1, "rto": 3840, "bytes_retrans": 4044, "segs_out": 7, "data_segs_out": 5, "unacked": 2, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 160.0, "rttvar_ms": 80.0}]}
+{"ms": 65044.13, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 18, "load1": 0.0166015625, "tcp": [{"cwnd": 1, "rto": 3840, "bytes_retrans": 4044, "segs_out": 7, "data_segs_out": 5, "unacked": 2, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 160.0, "rttvar_ms": 80.0}]}
+{"ms": 65551.18, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 18, "load1": 0.0166015625, "tcp": [{"cwnd": 1, "rto": 3840, "bytes_retrans": 4044, "segs_out": 7, "data_segs_out": 5, "unacked": 2, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 160.0, "rttvar_ms": 80.0}]}
+{"ms": 66059.27, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 18, "load1": 0.0166015625, "tcp": [{"cwnd": 1, "rto": 3840, "bytes_retrans": 4044, "segs_out": 7, "data_segs_out": 5, "unacked": 2, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 160.0, "rttvar_ms": 80.0}]}
+{"ms": 66567.46, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 18, "load1": 0.0166015625, "tcp": [{"cwnd": 1, "rto": 3840, "bytes_retrans": 4044, "segs_out": 7, "data_segs_out": 5, "unacked": 2, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 160.0, "rttvar_ms": 80.0}]}
+{"ms": 67074.28, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 18, "load1": 0.0166015625, "tcp": [{"cwnd": 1, "rto": 3840, "bytes_retrans": 4044, "segs_out": 7, "data_segs_out": 5, "unacked": 2, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 160.0, "rttvar_ms": 80.0}]}
+{"ms": 67581.63, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 18, "load1": 0.0166015625, "tcp": [{"cwnd": 1, "rto": 3840, "bytes_retrans": 4044, "segs_out": 7, "data_segs_out": 5, "unacked": 2, "rcv_space": 14480, "snd_wnd": 83968, "rtt_ms": 160.0, "rttvar_ms": 80.0}]}
+{"ms": 68088.29, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 7, "cpu_ticks": 18, "load1": 0.0166015625, "tcp": [{"cwnd": 5, "rto": 488, "bytes_acked": 1348, "bytes_retrans": 6740, "segs_out": 10, "data_segs_out": 8, "unacked": 2, "rcv_space": 14480, "snd_wnd": 89088, "rtt_ms": 166.99, "rttvar_ms": 59.02}]}
+{"ms": 68596.86, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 8, "cpu_ticks": 18, "load1": 0.0166015625, "tcp": [{"cwnd": 7, "rto": 440, "bytes_acked": 3919, "bytes_retrans": 6740, "segs_out": 17, "data_segs_out": 13, "unacked": 4, "rcv_space": 14480, "snd_wnd": 94720, "rtt_ms": 165.376, "rttvar_ms": 35.988}]}
+{"ms": 69104.61, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 8, "cpu_ticks": 18, "load1": 0.01513671875, "tcp": [{"cwnd": 6, "rto": 408, "bytes_acked": 9009, "bytes_retrans": 9436, "segs_out": 27, "data_segs_out": 23, "unacked": 8, "rcv_space": 14480, "snd_wnd": 114176, "rtt_ms": 149.668, "rttvar_ms": 40.962}]}
+{"ms": 69614.1, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 8, "cpu_ticks": 18, "load1": 0.01513671875, "tcp": [{"cwnd": 19, "rto": 348, "bytes_acked": 35969, "bytes_retrans": 15981, "segs_out": 45, "data_segs_out": 41, "unacked": 1, "rcv_space": 14480, "snd_wnd": 160768, "rtt_ms": 114.402, "rttvar_ms": 11.661}]}
+{"ms": 70121.76, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 6, "cpu_ticks": 18, "load1": 0.01513671875, "tcp": [{"cwnd": 21, "rto": 348, "bytes_acked": 37146, "bytes_retrans": 15981, "segs_out": 49, "data_segs_out": 42, "unacked": 1, "rcv_space": 14480, "snd_wnd": 163840, "rtt_ms": 123.301, "rttvar_ms": 28.907}]}
+{"ms": 70628.99, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 6, "cpu_ticks": 18, "load1": 0.01513671875, "tcp": []}
+{"ms": 71136.34, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 8, "cpu_ticks": 19, "load1": 0.01513671875, "tcp": [{"cwnd": 13, "rto": 384, "bytes_acked": 3773, "segs_out": 6, "data_segs_out": 4, "unacked": 1, "rcv_space": 14480, "snd_wnd": 92160, "rtt_ms": 130.706, "rttvar_ms": 45.219}]}
+{"ms": 71645.64, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 8, "cpu_ticks": 19, "load1": 0.01513671875, "tcp": [{"cwnd": 9, "rto": 384, "bytes_acked": 19793, "bytes_retrans": 5392, "segs_out": 35, "data_segs_out": 33, "unacked": 13, "rcv_space": 14480, "snd_wnd": 152064, "rtt_ms": 144.199, "rttvar_ms": 11.065}]}
+{"ms": 72152.3, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 6, "cpu_ticks": 19, "load1": 0.01513671875, "tcp": []}
+{"ms": 72660.45, "pid": 708458, "rss_kib": 15056, "threads": 4, "fds": 6, "cpu_ticks": 19, "load1": 0.01513671875, "tcp": []}
+{"ms": 73167.86, "pid": 708458, "rss_kib": 15060, "threads": 4, "fds": 7, "cpu_ticks": 19, "load1": 0.01513671875, "tcp": [{"cwnd": 12, "rto": 440, "bytes_acked": 2696, "segs_out": 6, "data_segs_out": 4, "unacked": 2, "rcv_space": 14480, "snd_wnd": 89088, "rtt_ms": 145.537, "rttvar_ms": 41.491}]}
+{"ms": 73674.93, "pid": 708458, "rss_kib": 15060, "threads": 4, "fds": 7, "cpu_ticks": 19, "load1": 0.01513671875, "tcp": [{"cwnd": 1, "rto": 880, "bytes_acked": 2696, "bytes_retrans": 2165, "segs_out": 8, "data_segs_out": 6, "unacked": 2, "rcv_space": 14480, "snd_wnd": 89088, "rtt_ms": 145.537, "rttvar_ms": 41.491}]}
+{"ms": 74180.8, "pid": 708458, "rss_kib": 15060, "threads": 4, "fds": 8, "cpu_ticks": 19, "load1": 0.17431640625, "tcp": [{"cwnd": 13, "rto": 448, "bytes_acked": 4861, "bytes_retrans": 2982, "segs_out": 11, "data_segs_out": 8, "unacked": 1, "rcv_space": 14480, "snd_wnd": 94720, "rtt_ms": 152.755, "rttvar_ms": 34.683}]}
+{"ms": 74690.11, "pid": 708458, "rss_kib": 15060, "threads": 4, "fds": 8, "cpu_ticks": 19, "load1": 0.17431640625, "tcp": [{"cwnd": 5, "rto": 404, "bytes_acked": 10097, "bytes_retrans": 10768, "segs_out": 35, "data_segs_out": 32, "unacked": 14, "rcv_space": 14480, "snd_wnd": 119296, "rtt_ms": 148.545, "rttvar_ms": 12.741}]}
+{"ms": 75197.45, "pid": 708458, "rss_kib": 15060, "threads": 4, "fds": 8, "cpu_ticks": 19, "load1": 0.17431640625, "tcp": [{"cwnd": 14, "rto": 400, "bytes_acked": 22229, "bytes_retrans": 24248, "segs_out": 52, "data_segs_out": 49, "unacked": 12, "rcv_space": 14480, "snd_wnd": 158208, "rtt_ms": 147.324, "rttvar_ms": 6.348}]}
+{"ms": 75704.36, "pid": 708458, "rss_kib": 15060, "threads": 4, "fds": 6, "cpu_ticks": 19, "load1": 0.17431640625, "tcp": []}
+{"ms": 76211.78, "pid": 708458, "rss_kib": 15060, "threads": 4, "fds": 6, "cpu_ticks": 19, "load1": 0.17431640625, "tcp": []}
+{"ms": 76720.35, "pid": 708458, "rss_kib": 15060, "threads": 4, "fds": 6, "cpu_ticks": 19, "load1": 0.17431640625, "tcp": []}
+{"ms": 77227.23, "pid": 708458, "rss_kib": 15060, "threads": 4, "fds": 6, "cpu_ticks": 19, "load1": 0.17431640625, "tcp": []}
+{"ms": 77734.88, "pid": 708458, "rss_kib": 15060, "threads": 4, "fds": 8, "cpu_ticks": 19, "load1": 0.17431640625, "tcp": [{"cwnd": 15, "rto": 372, "bytes_acked": 5007, "segs_out": 23, "data_segs_out": 20, "unacked": 15, "rcv_space": 14480, "snd_wnd": 97280, "rtt_ms": 123.35, "rttvar_ms": 34.232}]}
+{"ms": 78242.83, "pid": 708458, "rss_kib": 15060, "threads": 4, "fds": 8, "cpu_ticks": 19, "load1": 0.17431640625, "tcp": [{"cwnd": 13, "rto": 388, "bytes_acked": 5007, "bytes_retrans": 16618, "segs_out": 46, "data_segs_out": 43, "unacked": 25, "rcv_space": 14480, "snd_wnd": 155136, "rtt_ms": 139.021, "rttvar_ms": 16.005}]}
+{"ms": 78749.83, "pid": 708458, "rss_kib": 15060, "threads": 4, "fds": 6, "cpu_ticks": 19, "load1": 0.16015625, "tcp": []}
+{"ms": 79257.56, "pid": 708458, "rss_kib": 15060, "threads": 4, "fds": 6, "cpu_ticks": 19, "load1": 0.16015625, "tcp": []}
+{"ms": 79764.69, "pid": 708458, "rss_kib": 15068, "threads": 4, "fds": 8, "cpu_ticks": 19, "load1": 0.16015625, "tcp": [{"cwnd": 14, "rto": 664, "bytes_acked": 4860, "segs_out": 8, "data_segs_out": 5, "unacked": 1, "rcv_space": 14480, "snd_wnd": 93696, "rtt_ms": 204.136, "rttvar_ms": 86.683}]}
+{"ms": 80271.89, "pid": 708458, "rss_kib": 15068, "threads": 4, "fds": 6, "cpu_ticks": 19, "load1": 0.16015625, "tcp": [{"cwnd": 36, "rto": 484, "bytes_acked": 38247, "segs_out": 35, "data_segs_out": 31, "unacked": 2, "rcv_space": 14480, "snd_wnd": 164864, "rtt_ms": 128.917, "rttvar_ms": 29.667}]}
+{"ms": 80779.67, "pid": 708458, "rss_kib": 15068, "threads": 4, "fds": 6, "cpu_ticks": 19, "load1": 0.16015625, "tcp": []}
+{"ms": 81288.63, "pid": 708458, "rss_kib": 15068, "threads": 4, "fds": 6, "cpu_ticks": 19, "load1": 0.16015625, "tcp": []}
+{"ms": 81797.4, "pid": 708458, "rss_kib": 15084, "threads": 4, "fds": 8, "cpu_ticks": 19, "load1": 0.16015625, "tcp": [{"cwnd": 14, "rto": 492, "bytes_acked": 4861, "segs_out": 8, "data_segs_out": 5, "unacked": 1, "rcv_space": 14480, "snd_wnd": 94720, "rtt_ms": 159.765, "rttvar_ms": 42.553}]}
+{"ms": 82305.59, "pid": 708458, "rss_kib": 15096, "threads": 4, "fds": 8, "cpu_ticks": 19, "load1": 0.16015625, "tcp": [{"cwnd": 36, "rto": 388, "bytes_acked": 33013, "segs_out": 65, "data_segs_out": 62, "unacked": 36, "rcv_space": 14480, "snd_wnd": 154112, "rtt_ms": 129.182, "rttvar_ms": 31.718}]}
+{"ms": 82812.31, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 8, "cpu_ticks": 20, "load1": 0.16015625, "tcp": [{"cwnd": 407, "rto": 348, "bytes_acked": 545253, "segs_out": 792, "data_segs_out": 788, "unacked": 382, "rcv_space": 14480, "snd_wnd": 1193984, "rtt_ms": 126.166, "rttvar_ms": 10.456}]}
+{"ms": 83319.73, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.16015625, "tcp": []}
+{"ms": 83826.27, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.14697265625, "tcp": []}
+{"ms": 84333.57, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.14697265625, "tcp": []}
+{"ms": 84840.56, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.14697265625, "tcp": []}
+{"ms": 85347.85, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.14697265625, "tcp": []}
+{"ms": 85854.06, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.14697265625, "tcp": []}
+{"ms": 86359.74, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.14697265625, "tcp": []}
+{"ms": 86865.96, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.14697265625, "tcp": []}
+{"ms": 87372.84, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.14697265625, "tcp": []}
+{"ms": 87879.44, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.14697265625, "tcp": []}
+{"ms": 88386.82, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.14697265625, "tcp": []}
+{"ms": 88894.91, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.134765625, "tcp": []}
+{"ms": 89401.97, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.134765625, "tcp": []}
+{"ms": 89915.07, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.134765625, "tcp": []}
+{"ms": 90422.13, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.134765625, "tcp": []}
+{"ms": 90930.15, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.134765625, "tcp": []}
+{"ms": 91436.53, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.134765625, "tcp": []}
+{"ms": 91945.38, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.134765625, "tcp": []}
+{"ms": 92452.34, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.134765625, "tcp": []}
+{"ms": 92959.12, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.134765625, "tcp": []}
+{"ms": 93466.17, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.134765625, "tcp": []}
+{"ms": 93976.7, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.12353515625, "tcp": []}
+{"ms": 94484.28, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.12353515625, "tcp": []}
+{"ms": 94990.93, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.12353515625, "tcp": []}
+{"ms": 95498.66, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.12353515625, "tcp": []}
+{"ms": 96007.64, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.12353515625, "tcp": []}
+{"ms": 96514.77, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.12353515625, "tcp": []}
+{"ms": 97021.36, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.12353515625, "tcp": []}
+{"ms": 97527.84, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.12353515625, "tcp": []}
+{"ms": 98035.47, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.12353515625, "tcp": []}
+{"ms": 98545.11, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.12353515625, "tcp": []}
+{"ms": 99051.59, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.11328125, "tcp": []}
+{"ms": 99558.58, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.11328125, "tcp": []}
+{"ms": 100066.33, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.11328125, "tcp": []}
+{"ms": 100574.91, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.11328125, "tcp": []}
+{"ms": 101083.12, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.11328125, "tcp": []}
+{"ms": 101590.5, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.11328125, "tcp": []}
+{"ms": 102097.0, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.11328125, "tcp": []}
+{"ms": 102605.09, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.11328125, "tcp": []}
+{"ms": 103112.29, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.11328125, "tcp": []}
+{"ms": 103619.16, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.11328125, "tcp": []}
+{"ms": 104125.89, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.10400390625, "tcp": []}
+{"ms": 104632.79, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.10400390625, "tcp": []}
+{"ms": 105140.1, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.10400390625, "tcp": []}
+{"ms": 105647.21, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.10400390625, "tcp": []}
+{"ms": 106155.11, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.10400390625, "tcp": []}
+{"ms": 106663.14, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.10400390625, "tcp": []}
+{"ms": 107169.92, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.10400390625, "tcp": []}
+{"ms": 107677.33, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.10400390625, "tcp": []}
+{"ms": 108184.52, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.10400390625, "tcp": []}
+{"ms": 108692.45, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.10400390625, "tcp": []}
+{"ms": 109199.97, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.09521484375, "tcp": []}
+{"ms": 109707.71, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.09521484375, "tcp": []}
+{"ms": 110215.31, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.09521484375, "tcp": []}
+{"ms": 110721.76, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.09521484375, "tcp": []}
+{"ms": 111228.2, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.09521484375, "tcp": []}
+{"ms": 111734.74, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.09521484375, "tcp": []}
+{"ms": 112241.95, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.09521484375, "tcp": []}
+{"ms": 112748.4, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.09521484375, "tcp": []}
+{"ms": 113255.95, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.09521484375, "tcp": []}
+{"ms": 113762.47, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.08740234375, "tcp": []}
+{"ms": 114269.59, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.08740234375, "tcp": []}
+{"ms": 114776.97, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.08740234375, "tcp": []}
+{"ms": 115283.53, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.08740234375, "tcp": []}
+{"ms": 115790.93, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.08740234375, "tcp": []}
+{"ms": 116297.77, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.08740234375, "tcp": []}
+{"ms": 116804.16, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.08740234375, "tcp": []}
+{"ms": 117310.86, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.08740234375, "tcp": []}
+{"ms": 117817.63, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.08740234375, "tcp": []}
+{"ms": 118324.84, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.08740234375, "tcp": []}
+{"ms": 118831.68, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.080078125, "tcp": []}
+{"ms": 119338.5, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.080078125, "tcp": []}
+{"ms": 119854.58, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.080078125, "tcp": []}
+{"ms": 120362.21, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.080078125, "tcp": []}
+{"ms": 120869.2, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.080078125, "tcp": []}
+{"ms": 121377.55, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.080078125, "tcp": []}
+{"ms": 121885.33, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.080078125, "tcp": []}
+{"ms": 122392.19, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.080078125, "tcp": []}
+{"ms": 122898.29, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.080078125, "tcp": []}
+{"ms": 123405.14, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.080078125, "tcp": []}
+{"ms": 123912.1, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0732421875, "tcp": []}
+{"ms": 124417.6, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0732421875, "tcp": []}
+{"ms": 124925.06, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0732421875, "tcp": []}
+{"ms": 125432.8, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0732421875, "tcp": []}
+{"ms": 125940.29, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0732421875, "tcp": []}
+{"ms": 126448.02, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0732421875, "tcp": []}
+{"ms": 126955.1, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0732421875, "tcp": []}
+{"ms": 127461.9, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0732421875, "tcp": []}
+{"ms": 127971.47, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0732421875, "tcp": []}
+{"ms": 128478.33, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0732421875, "tcp": []}
+{"ms": 128984.99, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.06689453125, "tcp": []}
+{"ms": 129492.14, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.06689453125, "tcp": []}
+{"ms": 129999.33, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.06689453125, "tcp": []}
+{"ms": 130506.95, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.06689453125, "tcp": []}
+{"ms": 131014.4, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.06689453125, "tcp": []}
+{"ms": 131521.32, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.06689453125, "tcp": []}
+{"ms": 132028.11, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.06689453125, "tcp": []}
+{"ms": 132534.78, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.06689453125, "tcp": []}
+{"ms": 133041.75, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.06689453125, "tcp": []}
+{"ms": 133549.11, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.06689453125, "tcp": []}
+{"ms": 134056.06, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0615234375, "tcp": []}
+{"ms": 134561.99, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0615234375, "tcp": []}
+{"ms": 135067.84, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0615234375, "tcp": []}
+{"ms": 135577.02, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0615234375, "tcp": []}
+{"ms": 136084.01, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0615234375, "tcp": []}
+{"ms": 136591.77, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0615234375, "tcp": []}
+{"ms": 137099.22, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0615234375, "tcp": []}
+{"ms": 137606.8, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0615234375, "tcp": []}
+{"ms": 138113.31, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0615234375, "tcp": []}
+{"ms": 138620.31, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0615234375, "tcp": []}
+{"ms": 139127.86, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05615234375, "tcp": []}
+{"ms": 139634.99, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05615234375, "tcp": []}
+{"ms": 140142.95, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05615234375, "tcp": []}
+{"ms": 140651.46, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05615234375, "tcp": []}
+{"ms": 141159.42, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05615234375, "tcp": []}
+{"ms": 141666.49, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05615234375, "tcp": []}
+{"ms": 142175.2, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05615234375, "tcp": []}
+{"ms": 142682.52, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05615234375, "tcp": []}
+{"ms": 143189.3, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05615234375, "tcp": []}
+{"ms": 143696.35, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05615234375, "tcp": []}
+{"ms": 144203.3, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05126953125, "tcp": []}
+{"ms": 144709.7, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05126953125, "tcp": []}
+{"ms": 145216.65, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05126953125, "tcp": []}
+{"ms": 145724.94, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05126953125, "tcp": []}
+{"ms": 146232.23, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05126953125, "tcp": []}
+{"ms": 146737.94, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05126953125, "tcp": []}
+{"ms": 147244.21, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05126953125, "tcp": []}
+{"ms": 147751.07, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05126953125, "tcp": []}
+{"ms": 148259.85, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05126953125, "tcp": []}
+{"ms": 148766.71, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.05126953125, "tcp": []}
+{"ms": 149273.33, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.046875, "tcp": []}
+{"ms": 149780.52, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.046875, "tcp": []}
+{"ms": 150287.42, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.046875, "tcp": []}
+{"ms": 150796.36, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.046875, "tcp": []}
+{"ms": 151303.36, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.046875, "tcp": []}
+{"ms": 151810.09, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.046875, "tcp": []}
+{"ms": 152316.77, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.046875, "tcp": []}
+{"ms": 152824.81, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.046875, "tcp": []}
+{"ms": 153331.36, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.046875, "tcp": []}
+{"ms": 153839.43, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.04296875, "tcp": []}
+{"ms": 154350.73, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.04296875, "tcp": []}
+{"ms": 154857.21, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.04296875, "tcp": []}
+{"ms": 155363.91, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.04296875, "tcp": []}
+{"ms": 155871.03, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.04296875, "tcp": []}
+{"ms": 156377.59, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.04296875, "tcp": []}
+{"ms": 156884.15, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.04296875, "tcp": []}
+{"ms": 157389.9, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.04296875, "tcp": []}
+{"ms": 157896.81, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.04296875, "tcp": []}
+{"ms": 158402.96, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.04296875, "tcp": []}
+{"ms": 158909.47, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0390625, "tcp": []}
+{"ms": 159416.31, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0390625, "tcp": []}
+{"ms": 159923.53, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0390625, "tcp": []}
+{"ms": 160430.67, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0390625, "tcp": []}
+{"ms": 160938.16, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0390625, "tcp": []}
+{"ms": 161445.37, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0390625, "tcp": []}
+{"ms": 161952.17, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0390625, "tcp": []}
+{"ms": 162457.58, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0390625, "tcp": []}
+{"ms": 162965.05, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0390625, "tcp": []}
+{"ms": 163472.22, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.0390625, "tcp": []}
+{"ms": 163984.55, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03564453125, "tcp": []}
+{"ms": 164491.35, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03564453125, "tcp": []}
+{"ms": 164998.11, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03564453125, "tcp": []}
+{"ms": 165505.06, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03564453125, "tcp": []}
+{"ms": 166011.95, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03564453125, "tcp": []}
+{"ms": 166518.82, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03564453125, "tcp": []}
+{"ms": 167027.99, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03564453125, "tcp": []}
+{"ms": 167535.16, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03564453125, "tcp": []}
+{"ms": 168041.8, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03564453125, "tcp": []}
+{"ms": 168549.12, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03564453125, "tcp": []}
+{"ms": 169056.98, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03271484375, "tcp": []}
+{"ms": 169564.11, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03271484375, "tcp": []}
+{"ms": 170072.01, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03271484375, "tcp": []}
+{"ms": 170580.83, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03271484375, "tcp": []}
+{"ms": 171087.79, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03271484375, "tcp": []}
+{"ms": 171594.23, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03271484375, "tcp": []}
+{"ms": 172101.17, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03271484375, "tcp": []}
+{"ms": 172607.18, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03271484375, "tcp": []}
+{"ms": 173114.18, "pid": 708458, "rss_kib": 15124, "threads": 4, "fds": 6, "cpu_ticks": 20, "load1": 0.03271484375, "tcp": []}

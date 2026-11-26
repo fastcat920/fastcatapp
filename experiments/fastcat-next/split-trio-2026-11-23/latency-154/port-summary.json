@@ -1,0 +1,298 @@
+{
+  "latency": {
+    "next-opt": {
+      "19451": {
+        "total": 36,
+        "success": 36,
+        "p95_ms": 380.739
+      },
+      "19458": {
+        "total": 36,
+        "success": 36,
+        "p95_ms": 448.253
+      }
+    },
+    "next-base": {
+      "19451": {
+        "total": 36,
+        "success": 36,
+        "p95_ms": 348.588
+      },
+      "19458": {
+        "total": 36,
+        "success": 36,
+        "p95_ms": 396.786
+      }
+    },
+    "tuic": {
+      "19451": {
+        "total": 36,
+        "success": 36,
+        "p95_ms": 259.281
+      },
+      "19458": {
+        "total": 36,
+        "success": 36,
+        "p95_ms": 269.867
+      }
+    }
+  },
+  "mixed": {
+    "next-opt": {
+      "19451": {
+        "total": 36,
+        "success": 36,
+        "p95_ms": 820.73
+      },
+      "19458": {
+        "total": 36,
+        "success": 36,
+        "p95_ms": 754.301
+      }
+    },
+    "next-base": {
+      "19451": {
+        "total": 36,
+        "success": 36,
+        "p95_ms": 603.334
+      },
+      "19458": {
+        "total": 36,
+        "success": 36,
+        "p95_ms": 649.373
+      }
+    },
+    "tuic": {
+      "19451": {
+        "total": 36,
+        "success": 36,
+        "p95_ms": 708.635
+      },
+      "19458": {
+        "total": 36,
+        "success": 36,
+        "p95_ms": 519.176
+      }
+    }
+  },
+  "single16": {
+    "next-opt": {
+      "19451": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      },
+      "19458": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      }
+    },
+    "next-base": {
+      "19451": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      },
+      "19458": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      }
+    },
+    "tuic": {
+      "19451": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      },
+      "19458": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      }
+    }
+  },
+  "parallel4": {
+    "next-opt": {
+      "19451": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      },
+      "19458": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      }
+    },
+    "next-base": {
+      "19451": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      },
+      "19458": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      }
+    },
+    "tuic": {
+      "19451": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      },
+      "19458": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      }
+    }
+  },
+  "parallel8": {
+    "next-opt": {
+      "19451": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      },
+      "19458": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      }
+    },
+    "next-base": {
+      "19451": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      },
+      "19458": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      }
+    },
+    "tuic": {
+      "19451": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      },
+      "19458": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      }
+    }
+  },
+  "rolling": {
+    "next-opt": {
+      "19451": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      },
+      "19458": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      }
+    },
+    "next-base": {
+      "19451": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      },
+      "19458": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      }
+    },
+    "tuic": {
+      "19451": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      },
+      "19458": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      }
+    }
+  },
+  "rolling-small": {
+    "next-opt": {
+      "19451": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      },
+      "19458": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      }
+    },
+    "next-base": {
+      "19451": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      },
+      "19458": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      }
+    },
+    "tuic": {
+      "19451": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      },
+      "19458": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0
+      }
+    }
+  }
+}

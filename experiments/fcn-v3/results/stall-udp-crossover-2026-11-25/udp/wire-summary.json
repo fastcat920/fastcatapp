@@ -1,0 +1,3799 @@
+{
+  "run_id": "fcn3wire01",
+  "method": {
+    "fingerprint_scope": "source port and UDP-phase capture, equal wire sizes and SHA-256 prefixes",
+    "duplicate_fingerprints": "matched by minimum multiplicity, excluded from unique associations",
+    "calibration_max_server_delay_ns": 250000000,
+    "calibration_margin_ns": 5000000,
+    "calibration": "successful probes with one eligible exact pair teach wire size and server-side delay",
+    "candidate_window": "starts at loopback receive, ends at next receive or calibration search limit",
+    "candidate_caveat": "time and size indicate a possible association to a probe",
+    "android_timestamp": "userspace socket read, compared only with the same Android probe's deadline",
+    "missing_fingerprint_caveat": "capture gaps, offloads, socket reading and packet loss can all affect visibility"
+  },
+  "wire": {
+    "server": 1457,
+    "android": 1300,
+    "matched": 1300,
+    "server_unmatched": 157,
+    "android_unmatched": 0,
+    "unique_matches": 1300,
+    "matched_with_duplicate_fingerprint": 0
+  },
+  "arms": {
+    "current": {
+      "port": 18532,
+      "planned": 168,
+      "echoed": 161,
+      "wire": {
+        "server": 460,
+        "android": 432,
+        "matched": 432,
+        "server_unmatched": 28,
+        "android_unmatched": 0,
+        "unique_matches": 432,
+        "matched_with_duplicate_fingerprint": 0,
+        "by_payload_bytes": {
+          "21": {
+            "server": 18,
+            "android": 15,
+            "matched": 15,
+            "server_unmatched": 3,
+            "android_unmatched": 0,
+            "unique_matches": 15,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "24": {
+            "server": 37,
+            "android": 36,
+            "matched": 36,
+            "server_unmatched": 1,
+            "android_unmatched": 0,
+            "unique_matches": 36,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "25": {
+            "server": 121,
+            "android": 111,
+            "matched": 111,
+            "server_unmatched": 10,
+            "android_unmatched": 0,
+            "unique_matches": 111,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "26": {
+            "server": 26,
+            "android": 26,
+            "matched": 26,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 26,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "27": {
+            "server": 2,
+            "android": 2,
+            "matched": 2,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 2,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "28": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "31": {
+            "server": 6,
+            "android": 6,
+            "matched": 6,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 6,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "37": {
+            "server": 9,
+            "android": 8,
+            "matched": 8,
+            "server_unmatched": 1,
+            "android_unmatched": 0,
+            "unique_matches": 8,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "66": {
+            "server": 4,
+            "android": 4,
+            "matched": 4,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 4,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "71": {
+            "server": 6,
+            "android": 4,
+            "matched": 4,
+            "server_unmatched": 2,
+            "android_unmatched": 0,
+            "unique_matches": 4,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "88": {
+            "server": 24,
+            "android": 24,
+            "matched": 24,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 24,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "91": {
+            "server": 5,
+            "android": 4,
+            "matched": 4,
+            "server_unmatched": 1,
+            "android_unmatched": 0,
+            "unique_matches": 4,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "114": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "119": {
+            "server": 5,
+            "android": 5,
+            "matched": 5,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 5,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "134": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "139": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "280": {
+            "server": 24,
+            "android": 23,
+            "matched": 23,
+            "server_unmatched": 1,
+            "android_unmatched": 0,
+            "unique_matches": 23,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "536": {
+            "server": 24,
+            "android": 22,
+            "matched": 22,
+            "server_unmatched": 2,
+            "android_unmatched": 0,
+            "unique_matches": 22,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "924": {
+            "server": 24,
+            "android": 24,
+            "matched": 24,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 24,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1024": {
+            "server": 24,
+            "android": 22,
+            "matched": 22,
+            "server_unmatched": 2,
+            "android_unmatched": 0,
+            "unique_matches": 22,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1124": {
+            "server": 24,
+            "android": 24,
+            "matched": 24,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 24,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1174": {
+            "server": 24,
+            "android": 22,
+            "matched": 22,
+            "server_unmatched": 2,
+            "android_unmatched": 0,
+            "unique_matches": 22,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1269": {
+            "server": 2,
+            "android": 2,
+            "matched": 2,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 2,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1275": {
+            "server": 2,
+            "android": 2,
+            "matched": 2,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 2,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1280": {
+            "server": 18,
+            "android": 18,
+            "matched": 18,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 18,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1323": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1366": {
+            "server": 6,
+            "android": 5,
+            "matched": 5,
+            "server_unmatched": 1,
+            "android_unmatched": 0,
+            "unique_matches": 5,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1387": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1409": {
+            "server": 5,
+            "android": 5,
+            "matched": 5,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 5,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1419": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1430": {
+            "server": 5,
+            "android": 5,
+            "matched": 5,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 5,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1435": {
+            "server": 3,
+            "android": 3,
+            "matched": 3,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 3,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1441": {
+            "server": 5,
+            "android": 3,
+            "matched": 3,
+            "server_unmatched": 2,
+            "android_unmatched": 0,
+            "unique_matches": 3,
+            "matched_with_duplicate_fingerprint": 0
+          }
+        }
+      },
+      "android_observer": [
+        {
+          "round": 1,
+          "captured_rows": 74,
+          "observer_reported": 74,
+          "observer_dropped": 0
+        },
+        {
+          "round": 2,
+          "captured_rows": 71,
+          "observer_reported": 71,
+          "observer_dropped": 0
+        },
+        {
+          "round": 3,
+          "captured_rows": 72,
+          "observer_reported": 72,
+          "observer_dropped": 0
+        },
+        {
+          "round": 4,
+          "captured_rows": 70,
+          "observer_reported": 70,
+          "observer_dropped": 0
+        },
+        {
+          "round": 5,
+          "captured_rows": 71,
+          "observer_reported": 71,
+          "observer_dropped": 0
+        },
+        {
+          "round": 6,
+          "captured_rows": 74,
+          "observer_reported": 74,
+          "observer_dropped": 0
+        }
+      ],
+      "calibration": {
+        "64": {
+          "88": {
+            "successful_seeds": 24,
+            "overhead_bytes": 24,
+            "min_delay_ns": -87412,
+            "max_delay_ns": 803355
+          }
+        },
+        "256": {
+          "280": {
+            "successful_seeds": 23,
+            "overhead_bytes": 24,
+            "min_delay_ns": -71424,
+            "max_delay_ns": 1129827
+          }
+        },
+        "512": {
+          "536": {
+            "successful_seeds": 22,
+            "overhead_bytes": 24,
+            "min_delay_ns": -56189,
+            "max_delay_ns": 558852
+          }
+        },
+        "900": {
+          "924": {
+            "successful_seeds": 24,
+            "overhead_bytes": 24,
+            "min_delay_ns": -69766,
+            "max_delay_ns": 787777
+          }
+        },
+        "1000": {
+          "1024": {
+            "successful_seeds": 22,
+            "overhead_bytes": 24,
+            "min_delay_ns": -98824,
+            "max_delay_ns": 684332
+          }
+        },
+        "1100": {
+          "1124": {
+            "successful_seeds": 24,
+            "overhead_bytes": 24,
+            "min_delay_ns": -79312,
+            "max_delay_ns": 520975
+          }
+        },
+        "1150": {
+          "1174": {
+            "successful_seeds": 22,
+            "overhead_bytes": 24,
+            "min_delay_ns": -117812,
+            "max_delay_ns": 1047921
+          }
+        }
+      },
+      "failure_counts": {
+        "candidate_no_android_match": 7
+      },
+      "failures": [
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "c763b033c5f23d56",
+          "sequence": 17,
+          "bytes": 512,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595298029589947,
+          "echo_deadline_unix_ns": 1795595299530104332,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 1,
+          "echo_receipts": [
+            {
+              "run_id": "c763b033c5f23d56",
+              "seq": 17,
+              "size": 512,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595297954152428
+            },
+            {
+              "run_id": "c763b033c5f23d56",
+              "seq": 17,
+              "size": 512,
+              "event": "response",
+              "timestamp_unix_ns": 1795595297954209637
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595297954558000,
+              "server_delay_from_response_ns": 348363,
+              "payload_bytes": 536,
+              "sha256_16": "c76952a239bb7ab0",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "4d0dbd69f9c5197a",
+          "sequence": 28,
+          "bytes": 1150,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595327750176103,
+          "echo_deadline_unix_ns": 1795595329250628333,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "4d0dbd69f9c5197a",
+              "seq": 28,
+              "size": 1150,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595327673566687
+            },
+            {
+              "run_id": "4d0dbd69f9c5197a",
+              "seq": 28,
+              "size": 1150,
+              "event": "response",
+              "timestamp_unix_ns": 1795595327673619717
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595327674157000,
+              "server_delay_from_response_ns": 537283,
+              "payload_bytes": 1174,
+              "sha256_16": "87ae6a74bebcd1f7",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "044a15f9da36011b",
+          "sequence": 10,
+          "bytes": 512,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595390638004952,
+          "echo_deadline_unix_ns": 1795595392138196952,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 3,
+          "echo_receipts": [
+            {
+              "run_id": "044a15f9da36011b",
+              "seq": 10,
+              "size": 512,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595390562967701
+            },
+            {
+              "run_id": "044a15f9da36011b",
+              "seq": 10,
+              "size": 512,
+              "event": "response",
+              "timestamp_unix_ns": 1795595390563160539
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595390563127000,
+              "server_delay_from_response_ns": -33539,
+              "payload_bytes": 536,
+              "sha256_16": "cbb3071922a12eb7",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "24e67af4c3e6630c",
+          "sequence": 19,
+          "bytes": 1000,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595432262012416,
+          "echo_deadline_unix_ns": 1795595433762341340,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 5,
+          "echo_receipts": [
+            {
+              "run_id": "24e67af4c3e6630c",
+              "seq": 19,
+              "size": 1000,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595432183618006
+            },
+            {
+              "run_id": "24e67af4c3e6630c",
+              "seq": 19,
+              "size": 1000,
+              "event": "response",
+              "timestamp_unix_ns": 1795595432183674753
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595432184009000,
+              "server_delay_from_response_ns": 334247,
+              "payload_bytes": 1024,
+              "sha256_16": "1e9d532a29f7cdc8",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "8111a2c0d937cc71",
+          "sequence": 5,
+          "bytes": 1000,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595471077063188,
+          "echo_deadline_unix_ns": 1795595472577653034,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "8111a2c0d937cc71",
+              "seq": 5,
+              "size": 1000,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595470999899312
+            },
+            {
+              "run_id": "8111a2c0d937cc71",
+              "seq": 5,
+              "size": 1000,
+              "event": "response",
+              "timestamp_unix_ns": 1795595471000130594
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595471000098000,
+              "server_delay_from_response_ns": -32594,
+              "payload_bytes": 1024,
+              "sha256_16": "87c664afbc4ec6f2",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "8111a2c0d937cc71",
+          "sequence": 21,
+          "bytes": 1150,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595474255748111,
+          "echo_deadline_unix_ns": 1795595475756374265,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "8111a2c0d937cc71",
+              "seq": 21,
+              "size": 1150,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595474178303996
+            },
+            {
+              "run_id": "8111a2c0d937cc71",
+              "seq": 21,
+              "size": 1150,
+              "event": "response",
+              "timestamp_unix_ns": 1795595474178391203
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595474178993000,
+              "server_delay_from_response_ns": 601797,
+              "payload_bytes": 1174,
+              "sha256_16": "7453e1b02af0fabc",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "8111a2c0d937cc71",
+          "sequence": 23,
+          "bytes": 256,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595475886797650,
+          "echo_deadline_unix_ns": 1795595477386964419,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "8111a2c0d937cc71",
+              "seq": 23,
+              "size": 256,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595475809058646
+            },
+            {
+              "run_id": "8111a2c0d937cc71",
+              "seq": 23,
+              "size": 256,
+              "event": "response",
+              "timestamp_unix_ns": 1795595475809146674
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595475809343000,
+              "server_delay_from_response_ns": 196326,
+              "payload_bytes": 280,
+              "sha256_16": "9a4003b7fa425ecc",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        }
+      ]
+    },
+    "adaptive": {
+      "port": 18534,
+      "planned": 168,
+      "echoed": 147,
+      "wire": {
+        "server": 491,
+        "android": 441,
+        "matched": 441,
+        "server_unmatched": 50,
+        "android_unmatched": 0,
+        "unique_matches": 441,
+        "matched_with_duplicate_fingerprint": 0,
+        "by_payload_bytes": {
+          "21": {
+            "server": 40,
+            "android": 37,
+            "matched": 37,
+            "server_unmatched": 3,
+            "android_unmatched": 0,
+            "unique_matches": 37,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "24": {
+            "server": 25,
+            "android": 23,
+            "matched": 23,
+            "server_unmatched": 2,
+            "android_unmatched": 0,
+            "unique_matches": 23,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "25": {
+            "server": 121,
+            "android": 110,
+            "matched": 110,
+            "server_unmatched": 11,
+            "android_unmatched": 0,
+            "unique_matches": 110,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "26": {
+            "server": 40,
+            "android": 35,
+            "matched": 35,
+            "server_unmatched": 5,
+            "android_unmatched": 0,
+            "unique_matches": 35,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "27": {
+            "server": 7,
+            "android": 7,
+            "matched": 7,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 7,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "28": {
+            "server": 3,
+            "android": 3,
+            "matched": 3,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 3,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "29": {
+            "server": 2,
+            "android": 2,
+            "matched": 2,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 2,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "31": {
+            "server": 8,
+            "android": 7,
+            "matched": 7,
+            "server_unmatched": 1,
+            "android_unmatched": 0,
+            "unique_matches": 7,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "37": {
+            "server": 8,
+            "android": 8,
+            "matched": 8,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 8,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "39": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "66": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "71": {
+            "server": 5,
+            "android": 5,
+            "matched": 5,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 5,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "88": {
+            "server": 24,
+            "android": 19,
+            "matched": 19,
+            "server_unmatched": 5,
+            "android_unmatched": 0,
+            "unique_matches": 19,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "91": {
+            "server": 4,
+            "android": 3,
+            "matched": 3,
+            "server_unmatched": 1,
+            "android_unmatched": 0,
+            "unique_matches": 3,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "114": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "119": {
+            "server": 5,
+            "android": 5,
+            "matched": 5,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 5,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "127": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "129": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "171": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "280": {
+            "server": 23,
+            "android": 22,
+            "matched": 22,
+            "server_unmatched": 1,
+            "android_unmatched": 0,
+            "unique_matches": 22,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "536": {
+            "server": 24,
+            "android": 19,
+            "matched": 19,
+            "server_unmatched": 5,
+            "android_unmatched": 0,
+            "unique_matches": 19,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "924": {
+            "server": 24,
+            "android": 23,
+            "matched": 23,
+            "server_unmatched": 1,
+            "android_unmatched": 0,
+            "unique_matches": 23,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1024": {
+            "server": 24,
+            "android": 19,
+            "matched": 19,
+            "server_unmatched": 5,
+            "android_unmatched": 0,
+            "unique_matches": 19,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1124": {
+            "server": 24,
+            "android": 22,
+            "matched": 22,
+            "server_unmatched": 2,
+            "android_unmatched": 0,
+            "unique_matches": 22,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1174": {
+            "server": 24,
+            "android": 23,
+            "matched": 23,
+            "server_unmatched": 1,
+            "android_unmatched": 0,
+            "unique_matches": 23,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1272": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1275": {
+            "server": 3,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 2,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1279": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1280": {
+            "server": 17,
+            "android": 15,
+            "matched": 15,
+            "server_unmatched": 2,
+            "android_unmatched": 0,
+            "unique_matches": 15,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1366": {
+            "server": 6,
+            "android": 6,
+            "matched": 6,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 6,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1387": {
+            "server": 2,
+            "android": 2,
+            "matched": 2,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 2,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1409": {
+            "server": 6,
+            "android": 4,
+            "matched": 4,
+            "server_unmatched": 2,
+            "android_unmatched": 0,
+            "unique_matches": 4,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1419": {
+            "server": 2,
+            "android": 2,
+            "matched": 2,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 2,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1427": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1430": {
+            "server": 4,
+            "android": 4,
+            "matched": 4,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 4,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1435": {
+            "server": 2,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 1,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1439": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1441": {
+            "server": 4,
+            "android": 4,
+            "matched": 4,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 4,
+            "matched_with_duplicate_fingerprint": 0
+          }
+        }
+      },
+      "android_observer": [
+        {
+          "round": 1,
+          "captured_rows": 77,
+          "observer_reported": 77,
+          "observer_dropped": 0
+        },
+        {
+          "round": 2,
+          "captured_rows": 74,
+          "observer_reported": 74,
+          "observer_dropped": 0
+        },
+        {
+          "round": 3,
+          "captured_rows": 75,
+          "observer_reported": 75,
+          "observer_dropped": 0
+        },
+        {
+          "round": 4,
+          "captured_rows": 71,
+          "observer_reported": 71,
+          "observer_dropped": 0
+        },
+        {
+          "round": 5,
+          "captured_rows": 71,
+          "observer_reported": 71,
+          "observer_dropped": 0
+        },
+        {
+          "round": 6,
+          "captured_rows": 73,
+          "observer_reported": 73,
+          "observer_dropped": 0
+        }
+      ],
+      "calibration": {
+        "64": {
+          "88": {
+            "successful_seeds": 19,
+            "overhead_bytes": 24,
+            "min_delay_ns": -41128,
+            "max_delay_ns": 480567
+          }
+        },
+        "256": {
+          "280": {
+            "successful_seeds": 22,
+            "overhead_bytes": 24,
+            "min_delay_ns": -40033,
+            "max_delay_ns": 917299
+          }
+        },
+        "512": {
+          "536": {
+            "successful_seeds": 19,
+            "overhead_bytes": 24,
+            "min_delay_ns": -135918,
+            "max_delay_ns": 959441
+          }
+        },
+        "900": {
+          "924": {
+            "successful_seeds": 23,
+            "overhead_bytes": 24,
+            "min_delay_ns": -227535,
+            "max_delay_ns": 505819
+          }
+        },
+        "1000": {
+          "1024": {
+            "successful_seeds": 19,
+            "overhead_bytes": 24,
+            "min_delay_ns": -29757,
+            "max_delay_ns": 985007
+          }
+        },
+        "1100": {
+          "1124": {
+            "successful_seeds": 22,
+            "overhead_bytes": 24,
+            "min_delay_ns": -81803,
+            "max_delay_ns": 282792
+          }
+        },
+        "1150": {
+          "1174": {
+            "successful_seeds": 23,
+            "overhead_bytes": 24,
+            "min_delay_ns": -37299,
+            "max_delay_ns": 630280
+          }
+        }
+      },
+      "failure_counts": {
+        "candidate_no_android_match": 20,
+        "no_loopback_response_receipt": 1
+      },
+      "failures": [
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "47d3741f077d5049",
+          "sequence": 17,
+          "bytes": 512,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595304829787409,
+          "echo_deadline_unix_ns": 1795595306330076332,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 1,
+          "echo_receipts": [
+            {
+              "run_id": "47d3741f077d5049",
+              "seq": 17,
+              "size": 512,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595304776600755
+            },
+            {
+              "run_id": "47d3741f077d5049",
+              "seq": 17,
+              "size": 512,
+              "event": "response",
+              "timestamp_unix_ns": 1795595304776834800
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595304776800000,
+              "server_delay_from_response_ns": -34800,
+              "payload_bytes": 536,
+              "sha256_16": "b2ad53d95f086178",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "d22571641b6057c1",
+          "sequence": 5,
+          "bytes": 1000,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595354053029950,
+          "echo_deadline_unix_ns": 1795595355553280950,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "d22571641b6057c1",
+              "seq": 5,
+              "size": 1000,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595353977733646
+            },
+            {
+              "run_id": "d22571641b6057c1",
+              "seq": 5,
+              "size": 1000,
+              "event": "response",
+              "timestamp_unix_ns": 1795595353977782219
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595353978400000,
+              "server_delay_from_response_ns": 617781,
+              "payload_bytes": 1024,
+              "sha256_16": "e9790d52b331f931",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "d22571641b6057c1",
+          "sequence": 8,
+          "bytes": 64,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595355768970873,
+          "echo_deadline_unix_ns": 1795595357269096335,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "d22571641b6057c1",
+              "seq": 8,
+              "size": 64,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595355692331097
+            },
+            {
+              "run_id": "d22571641b6057c1",
+              "seq": 8,
+              "size": 64,
+              "event": "response",
+              "timestamp_unix_ns": 1795595355692461926
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595355692614000,
+              "server_delay_from_response_ns": 152074,
+              "payload_bytes": 88,
+              "sha256_16": "5631861bfebf5f38",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "d22571641b6057c1",
+          "sequence": 12,
+          "bytes": 1000,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595357817973950,
+          "echo_deadline_unix_ns": 1795595359318191412,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "d22571641b6057c1",
+              "seq": 12,
+              "size": 1000,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595357740413239
+            },
+            {
+              "run_id": "d22571641b6057c1",
+              "seq": 12,
+              "size": 1000,
+              "event": "response",
+              "timestamp_unix_ns": 1795595357740479866
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595357740659000,
+              "server_delay_from_response_ns": 179134,
+              "payload_bytes": 1024,
+              "sha256_16": "163b2be713277582",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "d22571641b6057c1",
+          "sequence": 15,
+          "bytes": 64,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595359865333643,
+          "echo_deadline_unix_ns": 1795595361365575104,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "d22571641b6057c1",
+              "seq": 15,
+              "size": 64,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595359788472879
+            },
+            {
+              "run_id": "d22571641b6057c1",
+              "seq": 15,
+              "size": 64,
+              "event": "response",
+              "timestamp_unix_ns": 1795595359788635349
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595359788608000,
+              "server_delay_from_response_ns": -27349,
+              "payload_bytes": 88,
+              "sha256_16": "f9b175fa903adc82",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "d22571641b6057c1",
+          "sequence": 17,
+          "bytes": 512,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595361710932643,
+          "echo_deadline_unix_ns": 1795595363211232412,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "d22571641b6057c1",
+              "seq": 17,
+              "size": 512,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595361634223070
+            },
+            {
+              "run_id": "d22571641b6057c1",
+              "seq": 17,
+              "size": 512,
+              "event": "response",
+              "timestamp_unix_ns": 1795595361634457397
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595361634415000,
+              "server_delay_from_response_ns": -42397,
+              "payload_bytes": 536,
+              "sha256_16": "47097f89e9c57cda",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "d22571641b6057c1",
+          "sequence": 19,
+          "bytes": 1000,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595363657980951,
+          "echo_deadline_unix_ns": 1795595365159891182,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "d22571641b6057c1",
+              "seq": 19,
+              "size": 1000,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595363583015247
+            },
+            {
+              "run_id": "d22571641b6057c1",
+              "seq": 19,
+              "size": 1000,
+              "event": "response",
+              "timestamp_unix_ns": 1795595363583191394
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595363583161000,
+              "server_delay_from_response_ns": -30394,
+              "payload_bytes": 1024,
+              "sha256_16": "269756f74fac85c4",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "d22571641b6057c1",
+          "sequence": 22,
+          "bytes": 64,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595365605634182,
+          "echo_deadline_unix_ns": 1795595367105880643,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "d22571641b6057c1",
+              "seq": 22,
+              "size": 64,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595365528225887
+            },
+            {
+              "run_id": "d22571641b6057c1",
+              "seq": 22,
+              "size": 64,
+              "event": "response",
+              "timestamp_unix_ns": 1795595365528298806
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595365528469000,
+              "server_delay_from_response_ns": 170194,
+              "payload_bytes": 88,
+              "sha256_16": "1db945217fbf4211",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "d22571641b6057c1",
+          "sequence": 23,
+          "bytes": 256,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595367107894566,
+          "echo_deadline_unix_ns": 1795595368608096413,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "d22571641b6057c1",
+              "seq": 23,
+              "size": 256,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595367034653239
+            },
+            {
+              "run_id": "d22571641b6057c1",
+              "seq": 23,
+              "size": 256,
+              "event": "response",
+              "timestamp_unix_ns": 1795595367034833703
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595367034807000,
+              "server_delay_from_response_ns": -26703,
+              "payload_bytes": 280,
+              "sha256_16": "93d2ab201b63bfec",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "583eaefce3ccae9d",
+          "sequence": 5,
+          "bytes": 1000,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595372449239721,
+          "echo_deadline_unix_ns": 1795595373949481567,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 3,
+          "echo_receipts": [
+            {
+              "run_id": "583eaefce3ccae9d",
+              "seq": 5,
+              "size": 1000,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595372379029438
+            },
+            {
+              "run_id": "583eaefce3ccae9d",
+              "seq": 5,
+              "size": 1000,
+              "event": "response",
+              "timestamp_unix_ns": 1795595372379080856
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595372379530000,
+              "server_delay_from_response_ns": 449144,
+              "payload_bytes": 1024,
+              "sha256_16": "70f2bb0da5dc3bfc",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "583eaefce3ccae9d",
+          "sequence": 8,
+          "bytes": 64,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595374414153567,
+          "echo_deadline_unix_ns": 1795595375914318798,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 3,
+          "echo_receipts": [
+            {
+              "run_id": "583eaefce3ccae9d",
+              "seq": 8,
+              "size": 64,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595374338756677
+            },
+            {
+              "run_id": "583eaefce3ccae9d",
+              "seq": 8,
+              "size": 64,
+              "event": "response",
+              "timestamp_unix_ns": 1795595374339144427
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595374339061000,
+              "server_delay_from_response_ns": -83427,
+              "payload_bytes": 88,
+              "sha256_16": "1024b5aecc02feff",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "583eaefce3ccae9d",
+          "sequence": 10,
+          "bytes": 512,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595376353758567,
+          "echo_deadline_unix_ns": 1795595377853932336,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 3,
+          "echo_receipts": [
+            {
+              "run_id": "583eaefce3ccae9d",
+              "seq": 10,
+              "size": 512,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595376278058664
+            },
+            {
+              "run_id": "583eaefce3ccae9d",
+              "seq": 10,
+              "size": 512,
+              "event": "response",
+              "timestamp_unix_ns": 1795595376278164667
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595376278345000,
+              "server_delay_from_response_ns": 180333,
+              "payload_bytes": 536,
+              "sha256_16": "a7f732bf7cadee56",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "583eaefce3ccae9d",
+          "sequence": 12,
+          "bytes": 1000,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595378300496106,
+          "echo_deadline_unix_ns": 1795595379801066567,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 3,
+          "echo_receipts": [
+            {
+              "run_id": "583eaefce3ccae9d",
+              "seq": 12,
+              "size": 1000,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595378251098963
+            },
+            {
+              "run_id": "583eaefce3ccae9d",
+              "seq": 12,
+              "size": 1000,
+              "event": "response",
+              "timestamp_unix_ns": 1795595378251267654
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595378251231000,
+              "server_delay_from_response_ns": -36654,
+              "payload_bytes": 1024,
+              "sha256_16": "9afc566f1b098f22",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "583eaefce3ccae9d",
+          "sequence": 13,
+          "bytes": 1100,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595379801811413,
+          "echo_deadline_unix_ns": 1795595381302164721,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 3,
+          "echo_receipts": [
+            {
+              "run_id": "583eaefce3ccae9d",
+              "seq": 13,
+              "size": 1100,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595379755689470
+            },
+            {
+              "run_id": "583eaefce3ccae9d",
+              "seq": 13,
+              "size": 1100,
+              "event": "response",
+              "timestamp_unix_ns": 1795595379755907716
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595379755875000,
+              "server_delay_from_response_ns": -32716,
+              "payload_bytes": 1124,
+              "sha256_16": "2782b632d572e8db",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "583eaefce3ccae9d",
+          "sequence": 14,
+          "bytes": 1150,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595381302924644,
+          "echo_deadline_unix_ns": 1795595382803185644,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 3,
+          "echo_receipts": [
+            {
+              "run_id": "583eaefce3ccae9d",
+              "seq": 14,
+              "size": 1150,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595381233283428
+            },
+            {
+              "run_id": "583eaefce3ccae9d",
+              "seq": 14,
+              "size": 1150,
+              "event": "response",
+              "timestamp_unix_ns": 1795595381233332302
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595381233801000,
+              "server_delay_from_response_ns": 468698,
+              "payload_bytes": 1174,
+              "sha256_16": "25d524f5a01ed1c5",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "583eaefce3ccae9d",
+          "sequence": 17,
+          "bytes": 512,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595383322781029,
+          "echo_deadline_unix_ns": 1795595384823114875,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 3,
+          "echo_receipts": [
+            {
+              "run_id": "583eaefce3ccae9d",
+              "seq": 17,
+              "size": 512,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595383247717671
+            },
+            {
+              "run_id": "583eaefce3ccae9d",
+              "seq": 17,
+              "size": 512,
+              "event": "response",
+              "timestamp_unix_ns": 1795595383247979210
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595383247918000,
+              "server_delay_from_response_ns": -61210,
+              "payload_bytes": 536,
+              "sha256_16": "d979b0c3012c7edf",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "583eaefce3ccae9d",
+          "sequence": 18,
+          "bytes": 900,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595384825228414,
+          "echo_deadline_unix_ns": 1795595386325835183,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 3,
+          "echo_receipts": [
+            {
+              "run_id": "583eaefce3ccae9d",
+              "seq": 18,
+              "size": 900,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595384777058266
+            },
+            {
+              "run_id": "583eaefce3ccae9d",
+              "seq": 18,
+              "size": 900,
+              "event": "response",
+              "timestamp_unix_ns": 1795595384777271382
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595384777240000,
+              "server_delay_from_response_ns": -31382,
+              "payload_bytes": 924,
+              "sha256_16": "f92ba5adf3a1e020",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "56afa431643ee052",
+          "sequence": 13,
+          "bytes": 1100,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595402855317645,
+          "echo_deadline_unix_ns": 1795595404355869338,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 4,
+          "echo_receipts": [
+            {
+              "run_id": "56afa431643ee052",
+              "seq": 13,
+              "size": 1100,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595402779479989
+            },
+            {
+              "run_id": "56afa431643ee052",
+              "seq": 13,
+              "size": 1100,
+              "event": "response",
+              "timestamp_unix_ns": 1795595402779576072
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595402779915000,
+              "server_delay_from_response_ns": 338928,
+              "payload_bytes": 1124,
+              "sha256_16": "4d35092f35ccca90",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "ccfafc0aa3dd3bc5",
+          "sequence": 2,
+          "bytes": 256,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595437623169263,
+          "echo_deadline_unix_ns": 1795595439123289340,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 5,
+          "echo_receipts": [],
+          "server_received": false,
+          "server_responded": false,
+          "classification": "no_loopback_response_receipt",
+          "egress_candidates": 0,
+          "candidates": []
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "ccfafc0aa3dd3bc5",
+          "sequence": 10,
+          "bytes": 512,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595440145464340,
+          "echo_deadline_unix_ns": 1795595441645748648,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 5,
+          "echo_receipts": [
+            {
+              "run_id": "ccfafc0aa3dd3bc5",
+              "seq": 10,
+              "size": 512,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595440069117642
+            },
+            {
+              "run_id": "ccfafc0aa3dd3bc5",
+              "seq": 10,
+              "size": 512,
+              "event": "response",
+              "timestamp_unix_ns": 1795595440069192194
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595440069377000,
+              "server_delay_from_response_ns": 184806,
+              "payload_bytes": 536,
+              "sha256_16": "aa4d795b7eb1687d",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "fcnv3",
+          "run_id": "33e1d2303ee0d8bb",
+          "sequence": 1,
+          "bytes": 64,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595462994592341,
+          "echo_deadline_unix_ns": 1795595464494697957,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "33e1d2303ee0d8bb",
+              "seq": 1,
+              "size": 64,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595462918441132
+            },
+            {
+              "run_id": "33e1d2303ee0d8bb",
+              "seq": 1,
+              "size": 64,
+              "event": "response",
+              "timestamp_unix_ns": 1795595462918652014
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595462918613000,
+              "server_delay_from_response_ns": -39014,
+              "payload_bytes": 88,
+              "sha256_16": "72da3b5d3c52fb63",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        }
+      ]
+    },
+    "tuic": {
+      "port": 18533,
+      "planned": 168,
+      "echoed": 140,
+      "wire": {
+        "server": 506,
+        "android": 427,
+        "matched": 427,
+        "server_unmatched": 79,
+        "android_unmatched": 0,
+        "unique_matches": 427,
+        "matched_with_duplicate_fingerprint": 0,
+        "by_payload_bytes": {
+          "21": {
+            "server": 64,
+            "android": 48,
+            "matched": 48,
+            "server_unmatched": 16,
+            "android_unmatched": 0,
+            "unique_matches": 48,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "24": {
+            "server": 30,
+            "android": 27,
+            "matched": 27,
+            "server_unmatched": 3,
+            "android_unmatched": 0,
+            "unique_matches": 27,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "25": {
+            "server": 111,
+            "android": 99,
+            "matched": 99,
+            "server_unmatched": 12,
+            "android_unmatched": 0,
+            "unique_matches": 99,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "26": {
+            "server": 41,
+            "android": 30,
+            "matched": 30,
+            "server_unmatched": 11,
+            "android_unmatched": 0,
+            "unique_matches": 30,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "27": {
+            "server": 16,
+            "android": 13,
+            "matched": 13,
+            "server_unmatched": 3,
+            "android_unmatched": 0,
+            "unique_matches": 13,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "28": {
+            "server": 4,
+            "android": 3,
+            "matched": 3,
+            "server_unmatched": 1,
+            "android_unmatched": 0,
+            "unique_matches": 3,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "29": {
+            "server": 2,
+            "android": 2,
+            "matched": 2,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 2,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "30": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "37": {
+            "server": 7,
+            "android": 6,
+            "matched": 6,
+            "server_unmatched": 1,
+            "android_unmatched": 0,
+            "unique_matches": 6,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "39": {
+            "server": 1,
+            "android": 0,
+            "matched": 0,
+            "server_unmatched": 1,
+            "android_unmatched": 0,
+            "unique_matches": 0,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "47": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "103": {
+            "server": 24,
+            "android": 19,
+            "matched": 19,
+            "server_unmatched": 5,
+            "android_unmatched": 0,
+            "unique_matches": 19,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "126": {
+            "server": 2,
+            "android": 2,
+            "matched": 2,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 2,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "131": {
+            "server": 6,
+            "android": 5,
+            "matched": 5,
+            "server_unmatched": 1,
+            "android_unmatched": 0,
+            "unique_matches": 5,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "138": {
+            "server": 2,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 1,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "139": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "143": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "148": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "198": {
+            "server": 2,
+            "android": 2,
+            "matched": 2,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 2,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "295": {
+            "server": 24,
+            "android": 23,
+            "matched": 23,
+            "server_unmatched": 1,
+            "android_unmatched": 0,
+            "unique_matches": 23,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "551": {
+            "server": 24,
+            "android": 18,
+            "matched": 18,
+            "server_unmatched": 6,
+            "android_unmatched": 0,
+            "unique_matches": 18,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "939": {
+            "server": 23,
+            "android": 20,
+            "matched": 20,
+            "server_unmatched": 3,
+            "android_unmatched": 0,
+            "unique_matches": 20,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1039": {
+            "server": 24,
+            "android": 19,
+            "matched": 19,
+            "server_unmatched": 5,
+            "android_unmatched": 0,
+            "unique_matches": 19,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1139": {
+            "server": 24,
+            "android": 21,
+            "matched": 21,
+            "server_unmatched": 3,
+            "android_unmatched": 0,
+            "unique_matches": 21,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1189": {
+            "server": 22,
+            "android": 20,
+            "matched": 20,
+            "server_unmatched": 2,
+            "android_unmatched": 0,
+            "unique_matches": 20,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1280": {
+            "server": 23,
+            "android": 20,
+            "matched": 20,
+            "server_unmatched": 3,
+            "android_unmatched": 0,
+            "unique_matches": 20,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1366": {
+            "server": 6,
+            "android": 6,
+            "matched": 6,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 6,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1387": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1409": {
+            "server": 6,
+            "android": 5,
+            "matched": 5,
+            "server_unmatched": 1,
+            "android_unmatched": 0,
+            "unique_matches": 5,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1419": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1430": {
+            "server": 5,
+            "android": 5,
+            "matched": 5,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 5,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1435": {
+            "server": 1,
+            "android": 1,
+            "matched": 1,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 1,
+            "matched_with_duplicate_fingerprint": 0
+          },
+          "1441": {
+            "server": 5,
+            "android": 5,
+            "matched": 5,
+            "server_unmatched": 0,
+            "android_unmatched": 0,
+            "unique_matches": 5,
+            "matched_with_duplicate_fingerprint": 0
+          }
+        }
+      },
+      "android_observer": [
+        {
+          "round": 1,
+          "captured_rows": 70,
+          "observer_reported": 70,
+          "observer_dropped": 0
+        },
+        {
+          "round": 2,
+          "captured_rows": 71,
+          "observer_reported": 71,
+          "observer_dropped": 0
+        },
+        {
+          "round": 3,
+          "captured_rows": 69,
+          "observer_reported": 69,
+          "observer_dropped": 0
+        },
+        {
+          "round": 4,
+          "captured_rows": 78,
+          "observer_reported": 78,
+          "observer_dropped": 0
+        },
+        {
+          "round": 5,
+          "captured_rows": 67,
+          "observer_reported": 67,
+          "observer_dropped": 0
+        },
+        {
+          "round": 6,
+          "captured_rows": 72,
+          "observer_reported": 72,
+          "observer_dropped": 0
+        }
+      ],
+      "calibration": {
+        "64": {
+          "103": {
+            "successful_seeds": 19,
+            "overhead_bytes": 39,
+            "min_delay_ns": -48069,
+            "max_delay_ns": 1869352
+          }
+        },
+        "256": {
+          "295": {
+            "successful_seeds": 23,
+            "overhead_bytes": 39,
+            "min_delay_ns": -43251,
+            "max_delay_ns": 1365033
+          }
+        },
+        "512": {
+          "551": {
+            "successful_seeds": 18,
+            "overhead_bytes": 39,
+            "min_delay_ns": -193448,
+            "max_delay_ns": 296322
+          }
+        },
+        "900": {
+          "939": {
+            "successful_seeds": 20,
+            "overhead_bytes": 39,
+            "min_delay_ns": -38160,
+            "max_delay_ns": 766338
+          }
+        },
+        "1000": {
+          "1039": {
+            "successful_seeds": 19,
+            "overhead_bytes": 39,
+            "min_delay_ns": -45186,
+            "max_delay_ns": 547598
+          }
+        },
+        "1100": {
+          "1139": {
+            "successful_seeds": 21,
+            "overhead_bytes": 39,
+            "min_delay_ns": -96137,
+            "max_delay_ns": 545284
+          }
+        },
+        "1150": {
+          "1189": {
+            "successful_seeds": 20,
+            "overhead_bytes": 39,
+            "min_delay_ns": -40028,
+            "max_delay_ns": 1577224
+          }
+        }
+      },
+      "failure_counts": {
+        "candidate_no_android_match": 25,
+        "no_loopback_response_receipt": 3
+      },
+      "failures": [
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "dd62bf217a9bd8c6",
+          "sequence": 1,
+          "bytes": 64,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595310108302255,
+          "echo_deadline_unix_ns": 1795595311608803101,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 1,
+          "echo_receipts": [
+            {
+              "run_id": "dd62bf217a9bd8c6",
+              "seq": 1,
+              "size": 64,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595310043142927
+            },
+            {
+              "run_id": "dd62bf217a9bd8c6",
+              "seq": 1,
+              "size": 64,
+              "event": "response",
+              "timestamp_unix_ns": 1795595310043340173
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595310043271000,
+              "server_delay_from_response_ns": -69173,
+              "payload_bytes": 103,
+              "sha256_16": "66306177256a8751",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "dd62bf217a9bd8c6",
+          "sequence": 2,
+          "bytes": 256,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595311611661025,
+          "echo_deadline_unix_ns": 1795595313111880717,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 1,
+          "echo_receipts": [
+            {
+              "run_id": "dd62bf217a9bd8c6",
+              "seq": 2,
+              "size": 256,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595311561252390
+            },
+            {
+              "run_id": "dd62bf217a9bd8c6",
+              "seq": 2,
+              "size": 256,
+              "event": "response",
+              "timestamp_unix_ns": 1795595311561342512
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595311561556000,
+              "server_delay_from_response_ns": 213488,
+              "payload_bytes": 295,
+              "sha256_16": "be49aa90bdf78e46",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "dd62bf217a9bd8c6",
+          "sequence": 7,
+          "bytes": 1150,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595313788287409,
+          "echo_deadline_unix_ns": 1795595315288894871,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 1,
+          "echo_receipts": [
+            {
+              "run_id": "dd62bf217a9bd8c6",
+              "seq": 7,
+              "size": 1150,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595313711849484
+            },
+            {
+              "run_id": "dd62bf217a9bd8c6",
+              "seq": 7,
+              "size": 1150,
+              "event": "response",
+              "timestamp_unix_ns": 1795595313712089993
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595313712062000,
+              "server_delay_from_response_ns": -27993,
+              "payload_bytes": 1189,
+              "sha256_16": "59bcc1318eb82e0f",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "dd62bf217a9bd8c6",
+          "sequence": 19,
+          "bytes": 1000,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595316652001563,
+          "echo_deadline_unix_ns": 1795595318152083179,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 1,
+          "echo_receipts": [
+            {
+              "run_id": "dd62bf217a9bd8c6",
+              "seq": 19,
+              "size": 1000,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595316574904171
+            },
+            {
+              "run_id": "dd62bf217a9bd8c6",
+              "seq": 19,
+              "size": 1000,
+              "event": "response",
+              "timestamp_unix_ns": 1795595316574975878
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595316575167000,
+              "server_delay_from_response_ns": 191122,
+              "payload_bytes": 1039,
+              "sha256_16": "03a0bddd6abf4cae",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "dd62bf217a9bd8c6",
+          "sequence": 25,
+          "bytes": 900,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595319009154564,
+          "echo_deadline_unix_ns": 1795595320509553025,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 1,
+          "echo_receipts": [
+            {
+              "run_id": "dd62bf217a9bd8c6",
+              "seq": 25,
+              "size": 900,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595318932636725
+            },
+            {
+              "run_id": "dd62bf217a9bd8c6",
+              "seq": 25,
+              "size": 900,
+              "event": "response",
+              "timestamp_unix_ns": 1795595318932686660
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595318933283000,
+              "server_delay_from_response_ns": 596340,
+              "payload_bytes": 939,
+              "sha256_16": "207080806d08976c",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "dd62bf217a9bd8c6",
+          "sequence": 28,
+          "bytes": 1150,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595320957140025,
+          "echo_deadline_unix_ns": 1795595322457477641,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 1,
+          "echo_receipts": [
+            {
+              "run_id": "dd62bf217a9bd8c6",
+              "seq": 28,
+              "size": 1150,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595320879932685
+            },
+            {
+              "run_id": "dd62bf217a9bd8c6",
+              "seq": 28,
+              "size": 1150,
+              "event": "response",
+              "timestamp_unix_ns": 1795595320880004802
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595320880339000,
+              "server_delay_from_response_ns": 334198,
+              "payload_bytes": 1189,
+              "sha256_16": "f3b6076294f97301",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "312f0daeb0e50ab6",
+          "sequence": 1,
+          "bytes": 64,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595331787835103,
+          "echo_deadline_unix_ns": 1795595333288148334,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "312f0daeb0e50ab6",
+              "seq": 1,
+              "size": 64,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595331711495858
+            },
+            {
+              "run_id": "312f0daeb0e50ab6",
+              "seq": 1,
+              "size": 64,
+              "event": "response",
+              "timestamp_unix_ns": 1795595331711562074
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595331711726000,
+              "server_delay_from_response_ns": 163926,
+              "payload_bytes": 103,
+              "sha256_16": "edc2b0b0357fd2c0",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "312f0daeb0e50ab6",
+          "sequence": 3,
+          "bytes": 512,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595333601063718,
+          "echo_deadline_unix_ns": 1795595335101403103,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "312f0daeb0e50ab6",
+              "seq": 3,
+              "size": 512,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595333524315142
+            },
+            {
+              "run_id": "312f0daeb0e50ab6",
+              "seq": 3,
+              "size": 512,
+              "event": "response",
+              "timestamp_unix_ns": 1795595333524381589
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595333524582000,
+              "server_delay_from_response_ns": 200411,
+              "payload_bytes": 551,
+              "sha256_16": "a093e313319aa737",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "312f0daeb0e50ab6",
+          "sequence": 6,
+          "bytes": 1100,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595335499198872,
+          "echo_deadline_unix_ns": 1795595336999306565,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "312f0daeb0e50ab6",
+              "seq": 6,
+              "size": 1100,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595335422678387
+            },
+            {
+              "run_id": "312f0daeb0e50ab6",
+              "seq": 6,
+              "size": 1100,
+              "event": "response",
+              "timestamp_unix_ns": 1795595335422862398
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595335422833000,
+              "server_delay_from_response_ns": -29398,
+              "payload_bytes": 1139,
+              "sha256_16": "ea85ffd1cd124bc6",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "312f0daeb0e50ab6",
+          "sequence": 7,
+          "bytes": 1150,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595337001301949,
+          "echo_deadline_unix_ns": 1795595338501597565,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [],
+          "server_received": false,
+          "server_responded": false,
+          "classification": "no_loopback_response_receipt",
+          "egress_candidates": 0,
+          "candidates": []
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "312f0daeb0e50ab6",
+          "sequence": 10,
+          "bytes": 512,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595338975369026,
+          "echo_deadline_unix_ns": 1795595340475640719,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "312f0daeb0e50ab6",
+              "seq": 10,
+              "size": 512,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595338898932468
+            },
+            {
+              "run_id": "312f0daeb0e50ab6",
+              "seq": 10,
+              "size": 512,
+              "event": "response",
+              "timestamp_unix_ns": 1795595338899270122
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595338899217000,
+              "server_delay_from_response_ns": -53122,
+              "payload_bytes": 551,
+              "sha256_16": "7b6a69d8416745c6",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "312f0daeb0e50ab6",
+          "sequence": 12,
+          "bytes": 1000,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595340822126565,
+          "echo_deadline_unix_ns": 1795595342322401565,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "312f0daeb0e50ab6",
+              "seq": 12,
+              "size": 1000,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595340745424710
+            },
+            {
+              "run_id": "312f0daeb0e50ab6",
+              "seq": 12,
+              "size": 1000,
+              "event": "response",
+              "timestamp_unix_ns": 1795595340745584715
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595340745554000,
+              "server_delay_from_response_ns": -30715,
+              "payload_bytes": 1039,
+              "sha256_16": "1443d383c484f25d",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "312f0daeb0e50ab6",
+          "sequence": 13,
+          "bytes": 1100,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595342324117334,
+          "echo_deadline_unix_ns": 1795595343824394180,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "312f0daeb0e50ab6",
+              "seq": 13,
+              "size": 1100,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595342251484754
+            },
+            {
+              "run_id": "312f0daeb0e50ab6",
+              "seq": 13,
+              "size": 1100,
+              "event": "response",
+              "timestamp_unix_ns": 1795595342251584043
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595342251876000,
+              "server_delay_from_response_ns": 291957,
+              "payload_bytes": 1139,
+              "sha256_16": "0dfdb236e5c4839f",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "312f0daeb0e50ab6",
+          "sequence": 19,
+          "bytes": 1000,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595344611356334,
+          "echo_deadline_unix_ns": 1795595346111645950,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "312f0daeb0e50ab6",
+              "seq": 19,
+              "size": 1000,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595344535097574
+            },
+            {
+              "run_id": "312f0daeb0e50ab6",
+              "seq": 19,
+              "size": 1000,
+              "event": "response",
+              "timestamp_unix_ns": 1795595344535198206
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595344535456000,
+              "server_delay_from_response_ns": 257794,
+              "payload_bytes": 1039,
+              "sha256_16": "792da723b4ea860d",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "312f0daeb0e50ab6",
+          "sequence": 24,
+          "bytes": 512,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595346758558488,
+          "echo_deadline_unix_ns": 1795595348258782796,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "312f0daeb0e50ab6",
+              "seq": 24,
+              "size": 512,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595346681702810
+            },
+            {
+              "run_id": "312f0daeb0e50ab6",
+              "seq": 24,
+              "size": 512,
+              "event": "response",
+              "timestamp_unix_ns": 1795595346681920465
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595346681890000,
+              "server_delay_from_response_ns": -30465,
+              "payload_bytes": 551,
+              "sha256_16": "60c72c884dabd223",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "312f0daeb0e50ab6",
+          "sequence": 25,
+          "bytes": 900,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595348259696411,
+          "echo_deadline_unix_ns": 1795595349759949027,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 2,
+          "echo_receipts": [
+            {
+              "run_id": "312f0daeb0e50ab6",
+              "seq": 25,
+              "size": 900,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595348188027391
+            },
+            {
+              "run_id": "312f0daeb0e50ab6",
+              "seq": 25,
+              "size": 900,
+              "event": "response",
+              "timestamp_unix_ns": 1795595348188105671
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595348188346000,
+              "server_delay_from_response_ns": 240329,
+              "payload_bytes": 939,
+              "sha256_16": "953c4cb8802f5ce7",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "03785827650ff8ed",
+          "sequence": 15,
+          "bytes": 64,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595410251994877,
+          "echo_deadline_unix_ns": 1795595411752093646,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 4,
+          "echo_receipts": [
+            {
+              "run_id": "03785827650ff8ed",
+              "seq": 15,
+              "size": 64,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595410174476712
+            },
+            {
+              "run_id": "03785827650ff8ed",
+              "seq": 15,
+              "size": 64,
+              "event": "response",
+              "timestamp_unix_ns": 1795595410174540875
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595410174857000,
+              "server_delay_from_response_ns": 316125,
+              "payload_bytes": 103,
+              "sha256_16": "523da682077ccbf1",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "03785827650ff8ed",
+          "sequence": 27,
+          "bytes": 1100,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595413115579108,
+          "echo_deadline_unix_ns": 1795595414615805338,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 4,
+          "echo_receipts": [
+            {
+              "run_id": "03785827650ff8ed",
+              "seq": 27,
+              "size": 1100,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595413038332066
+            },
+            {
+              "run_id": "03785827650ff8ed",
+              "seq": 27,
+              "size": 1100,
+              "event": "response",
+              "timestamp_unix_ns": 1795595413038398783
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595413038590000,
+              "server_delay_from_response_ns": 191217,
+              "payload_bytes": 1139,
+              "sha256_16": "ad0790267d3c1417",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "6c769b4b2171f02f",
+          "sequence": 7,
+          "bytes": 1150,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595423119993570,
+          "echo_deadline_unix_ns": 1795595424620060031,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 5,
+          "echo_receipts": [],
+          "server_received": false,
+          "server_responded": false,
+          "classification": "no_loopback_response_receipt",
+          "egress_candidates": 0,
+          "candidates": []
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "6c769b4b2171f02f",
+          "sequence": 11,
+          "bytes": 900,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595425007087493,
+          "echo_deadline_unix_ns": 1795595426507170185,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 5,
+          "echo_receipts": [],
+          "server_received": false,
+          "server_responded": false,
+          "classification": "no_loopback_response_receipt",
+          "egress_candidates": 0,
+          "candidates": []
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "657694c4d941c96a",
+          "sequence": 1,
+          "bytes": 64,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595445772317033,
+          "echo_deadline_unix_ns": 1795595447272710263,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "657694c4d941c96a",
+              "seq": 1,
+              "size": 64,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595445699016721
+            },
+            {
+              "run_id": "657694c4d941c96a",
+              "seq": 1,
+              "size": 64,
+              "event": "response",
+              "timestamp_unix_ns": 1795595445699056418
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595445699214000,
+              "server_delay_from_response_ns": 157582,
+              "payload_bytes": 103,
+              "sha256_16": "0540634287f7a30c",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "657694c4d941c96a",
+          "sequence": 3,
+          "bytes": 512,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595447625510571,
+          "echo_deadline_unix_ns": 1795595449125860110,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "657694c4d941c96a",
+              "seq": 3,
+              "size": 512,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595447549771209
+            },
+            {
+              "run_id": "657694c4d941c96a",
+              "seq": 3,
+              "size": 512,
+              "event": "response",
+              "timestamp_unix_ns": 1795595447550000005
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595447549941000,
+              "server_delay_from_response_ns": -59005,
+              "payload_bytes": 551,
+              "sha256_16": "acb3298dfe20531c",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "657694c4d941c96a",
+          "sequence": 10,
+          "bytes": 512,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595449924767418,
+          "echo_deadline_unix_ns": 1795595451425012648,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "657694c4d941c96a",
+              "seq": 10,
+              "size": 512,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595449849408365
+            },
+            {
+              "run_id": "657694c4d941c96a",
+              "seq": 10,
+              "size": 512,
+              "event": "response",
+              "timestamp_unix_ns": 1795595449849505871
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595449849742000,
+              "server_delay_from_response_ns": 236129,
+              "payload_bytes": 551,
+              "sha256_16": "ffc1458ea9a4adf1",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "657694c4d941c96a",
+          "sequence": 19,
+          "bytes": 1000,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595452366986879,
+          "echo_deadline_unix_ns": 1795595453867286802,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "657694c4d941c96a",
+              "seq": 19,
+              "size": 1000,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595452291314260
+            },
+            {
+              "run_id": "657694c4d941c96a",
+              "seq": 19,
+              "size": 1000,
+              "event": "response",
+              "timestamp_unix_ns": 1795595452291477461
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595452291442000,
+              "server_delay_from_response_ns": -35461,
+              "payload_bytes": 1039,
+              "sha256_16": "441295cfabfebb4d",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "657694c4d941c96a",
+          "sequence": 22,
+          "bytes": 64,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595454184733956,
+          "echo_deadline_unix_ns": 1795595455685328341,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "657694c4d941c96a",
+              "seq": 22,
+              "size": 64,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595454109292561
+            },
+            {
+              "run_id": "657694c4d941c96a",
+              "seq": 22,
+              "size": 64,
+              "event": "response",
+              "timestamp_unix_ns": 1795595454109517350
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595454109487000,
+              "server_delay_from_response_ns": -30350,
+              "payload_bytes": 103,
+              "sha256_16": "afdd71a5a1caad16",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "657694c4d941c96a",
+          "sequence": 24,
+          "bytes": 512,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595456022166879,
+          "echo_deadline_unix_ns": 1795595457522360726,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "657694c4d941c96a",
+              "seq": 24,
+              "size": 512,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595455946695943
+            },
+            {
+              "run_id": "657694c4d941c96a",
+              "seq": 24,
+              "size": 512,
+              "event": "response",
+              "timestamp_unix_ns": 1795595455946775866
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595455947023000,
+              "server_delay_from_response_ns": 247134,
+              "payload_bytes": 551,
+              "sha256_16": "5db0284a80420043",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "657694c4d941c96a",
+          "sequence": 25,
+          "bytes": 900,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595457523880418,
+          "echo_deadline_unix_ns": 1795595459024165341,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "657694c4d941c96a",
+              "seq": 25,
+              "size": 900,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595457475113182
+            },
+            {
+              "run_id": "657694c4d941c96a",
+              "seq": 25,
+              "size": 900,
+              "event": "response",
+              "timestamp_unix_ns": 1795595457475196020
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595457475432000,
+              "server_delay_from_response_ns": 235980,
+              "payload_bytes": 939,
+              "sha256_16": "ff0b7cab3fcb27ee",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        },
+        {
+          "event": "udp_packet",
+          "protocol": "tuic",
+          "run_id": "657694c4d941c96a",
+          "sequence": 26,
+          "bytes": 1000,
+          "attempted": true,
+          "submitted": true,
+          "echoed": false,
+          "send_unix_ns": 1795595459025068341,
+          "echo_deadline_unix_ns": 1795595460525464418,
+          "unmatched_replies": 0,
+          "error_stage": "echo",
+          "error_category": "timeout",
+          "evidence": "valid",
+          "round": 6,
+          "echo_receipts": [
+            {
+              "run_id": "657694c4d941c96a",
+              "seq": 26,
+              "size": 1000,
+              "event": "receive",
+              "timestamp_unix_ns": 1795595458976621167
+            },
+            {
+              "run_id": "657694c4d941c96a",
+              "seq": 26,
+              "size": 1000,
+              "event": "response",
+              "timestamp_unix_ns": 1795595458976786262
+            }
+          ],
+          "server_received": true,
+          "server_responded": true,
+          "classification": "candidate_no_android_match",
+          "egress_candidates": 1,
+          "candidates": [
+            {
+              "server_timestamp_unix_ns": 1795595458976751000,
+              "server_delay_from_response_ns": -35262,
+              "payload_bytes": 1039,
+              "sha256_16": "b88c1591ff712003",
+              "classification": "candidate_no_android_match"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "issues": []
+}

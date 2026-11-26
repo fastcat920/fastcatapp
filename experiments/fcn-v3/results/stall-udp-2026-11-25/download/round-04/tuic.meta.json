@@ -1,0 +1,53 @@
+{
+  "phase": "download",
+  "round": 4,
+  "position": 2,
+  "arm": "tuic",
+  "args": [
+    "./compare",
+    "-config",
+    "bench.json",
+    "-protocol",
+    "tuic",
+    "-phase",
+    "download",
+    "-bytes",
+    "1048576",
+    "-count",
+    "4",
+    "-workers",
+    "4",
+    "-timeout",
+    "25s",
+    "-diagnostic-id",
+    "fcn3diag01-tuic-4"
+  ],
+  "host_timeout_s": 40,
+  "diagnostic_id": "fcn3diag01-tuic-4",
+  "before": {
+    "default_net_id": 359,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795593884978,
+    "exit_code": 0,
+    "probe_error": null
+  },
+  "after": {
+    "default_net_id": 359,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795593886817,
+    "exit_code": 0,
+    "probe_error": null
+  },
+  "network_stable": true,
+  "status": "exited",
+  "exit_code": 0,
+  "start_unix_ms": 1795593884979,
+  "end_unix_ms": 1795593886723,
+  "elapsed_ms": 1744.755667
+}

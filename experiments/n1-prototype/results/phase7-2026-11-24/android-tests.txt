@@ -1,0 +1,69 @@
+=== RUN   TestClientEmissionTraceAndCompatibility
+=== RUN   TestClientEmissionTraceAndCompatibility/legacy/legacy
+    client_emission_test.go:54: request plaintext writes: [{"bytes":262,"shape":"request-headers"},{"bytes":31,"shape":"http-chunk","body_bytes":25},{"bytes":27,"shape":"http-chunk","body_bytes":21},{"bytes":5,"shape":"http-ending-only"}]
+=== RUN   TestClientEmissionTraceAndCompatibility/legacy/coalesced
+    client_emission_test.go:54: request plaintext writes: [{"bytes":262,"shape":"request-headers"},{"bytes":44,"shape":"http-chunk","body_bytes":38},{"bytes":22,"shape":"http-chunk","body_bytes":12}]
+=== RUN   TestClientEmissionTraceAndCompatibility/coalesced/legacy
+    client_emission_test.go:54: request plaintext writes: [{"bytes":262,"shape":"request-headers"},{"bytes":22,"shape":"http-chunk","body_bytes":16},{"bytes":17,"shape":"http-chunk","body_bytes":12},{"bytes":5,"shape":"http-ending-only"}]
+=== RUN   TestClientEmissionTraceAndCompatibility/coalesced/coalesced
+    client_emission_test.go:54: request plaintext writes: [{"bytes":262,"shape":"request-headers"},{"bytes":40,"shape":"http-chunk","body_bytes":34},{"bytes":38,"shape":"http-chunk","body_bytes":27}]
+--- PASS: TestClientEmissionTraceAndCompatibility (0.21s)
+    --- PASS: TestClientEmissionTraceAndCompatibility/legacy/legacy (0.04s)
+    --- PASS: TestClientEmissionTraceAndCompatibility/legacy/coalesced (0.03s)
+    --- PASS: TestClientEmissionTraceAndCompatibility/coalesced/legacy (0.07s)
+    --- PASS: TestClientEmissionTraceAndCompatibility/coalesced/coalesced (0.07s)
+=== RUN   TestCoalescedClientBulkAndAuthFailure
+--- PASS: TestCoalescedClientBulkAndAuthFailure (0.12s)
+=== RUN   TestCoalescedChunkFramingAndStableFIN
+--- PASS: TestCoalescedChunkFramingAndStableFIN (0.00s)
+=== RUN   TestCoalescedInteractiveAndBulk
+=== RUN   TestCoalescedInteractiveAndBulk/legacy
+=== RUN   TestCoalescedInteractiveAndBulk/coalesced
+=== RUN   TestCoalescedInteractiveAndBulk/capped
+--- PASS: TestCoalescedInteractiveAndBulk (0.28s)
+    --- PASS: TestCoalescedInteractiveAndBulk/legacy (0.08s)
+    --- PASS: TestCoalescedInteractiveAndBulk/coalesced (0.10s)
+    --- PASS: TestCoalescedInteractiveAndBulk/capped (0.09s)
+=== RUN   TestCoalescedServerFirstAndEmptyFIN
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/legacy
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/legacy/greeting-ready
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/legacy/greeting-
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/coalesced
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/coalesced/greeting-ready
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/coalesced/greeting-
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/capped
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/capped/greeting-ready
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/capped/greeting-
+--- PASS: TestCoalescedServerFirstAndEmptyFIN (0.39s)
+    --- PASS: TestCoalescedServerFirstAndEmptyFIN/legacy (0.13s)
+        --- PASS: TestCoalescedServerFirstAndEmptyFIN/legacy/greeting-ready (0.06s)
+        --- PASS: TestCoalescedServerFirstAndEmptyFIN/legacy/greeting- (0.07s)
+    --- PASS: TestCoalescedServerFirstAndEmptyFIN/coalesced (0.16s)
+        --- PASS: TestCoalescedServerFirstAndEmptyFIN/coalesced/greeting-ready (0.07s)
+        --- PASS: TestCoalescedServerFirstAndEmptyFIN/coalesced/greeting- (0.08s)
+    --- PASS: TestCoalescedServerFirstAndEmptyFIN/capped (0.10s)
+        --- PASS: TestCoalescedServerFirstAndEmptyFIN/capped/greeting-ready (0.05s)
+        --- PASS: TestCoalescedServerFirstAndEmptyFIN/capped/greeting- (0.05s)
+=== RUN   TestCoalescedAuthorizationFailure
+=== RUN   TestCoalescedAuthorizationFailure/legacy
+=== RUN   TestCoalescedAuthorizationFailure/coalesced
+=== RUN   TestCoalescedAuthorizationFailure/capped
+--- PASS: TestCoalescedAuthorizationFailure (0.19s)
+    --- PASS: TestCoalescedAuthorizationFailure/legacy (0.05s)
+    --- PASS: TestCoalescedAuthorizationFailure/coalesced (0.06s)
+    --- PASS: TestCoalescedAuthorizationFailure/capped (0.07s)
+=== RUN   TestCoalescedCancelReleasesSession
+=== RUN   TestCoalescedCancelReleasesSession/legacy
+=== RUN   TestCoalescedCancelReleasesSession/coalesced
+=== RUN   TestCoalescedCancelReleasesSession/capped
+--- PASS: TestCoalescedCancelReleasesSession (0.22s)
+    --- PASS: TestCoalescedCancelReleasesSession/legacy (0.07s)
+    --- PASS: TestCoalescedCancelReleasesSession/coalesced (0.08s)
+    --- PASS: TestCoalescedCancelReleasesSession/capped (0.07s)
+=== RUN   TestCoalescedWaitsForOuterRequestEOF
+--- PASS: TestCoalescedWaitsForOuterRequestEOF (0.19s)
+=== RUN   TestWriteCapEveryPaddingLength
+--- PASS: TestWriteCapEveryPaddingLength (0.01s)
+=== RUN   TestWriteCapPreservesStreamAndFIN
+--- PASS: TestWriteCapPreservesStreamAndFIN (0.06s)
+PASS

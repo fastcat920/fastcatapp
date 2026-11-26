@@ -1,0 +1,135 @@
+{
+  "case_summary": {
+    "bad-base64": {
+      "samples": 5,
+      "errors": 0,
+      "statuses": [
+        404
+      ],
+      "body_hashes": [
+        "b16e15764b8bc06c5c3f9f19bc8b99fa48e7894aa5a6ccdad65da49bbf564793"
+      ],
+      "connection_close": [
+        true
+      ],
+      "headers_p50_ms": 107.037,
+      "headers_p95_ms": 754.035
+    },
+    "missing-auth": {
+      "samples": 5,
+      "errors": 0,
+      "statuses": [
+        404
+      ],
+      "body_hashes": [
+        "b16e15764b8bc06c5c3f9f19bc8b99fa48e7894aa5a6ccdad65da49bbf564793"
+      ],
+      "connection_close": [
+        true
+      ],
+      "headers_p50_ms": 103.429,
+      "headers_p95_ms": 228.474
+    },
+    "ordinary-missing": {
+      "samples": 5,
+      "errors": 0,
+      "statuses": [
+        404
+      ],
+      "body_hashes": [
+        "b16e15764b8bc06c5c3f9f19bc8b99fa48e7894aa5a6ccdad65da49bbf564793"
+      ],
+      "connection_close": [
+        true
+      ],
+      "headers_p50_ms": 225.671,
+      "headers_p95_ms": 237.853
+    },
+    "oversized-token": {
+      "samples": 5,
+      "errors": 0,
+      "statuses": [
+        404
+      ],
+      "body_hashes": [
+        "b16e15764b8bc06c5c3f9f19bc8b99fa48e7894aa5a6ccdad65da49bbf564793"
+      ],
+      "connection_close": [
+        true
+      ],
+      "headers_p50_ms": 102.485,
+      "headers_p95_ms": 106.017
+    },
+    "public-root": {
+      "samples": 5,
+      "errors": 0,
+      "statuses": [
+        200
+      ],
+      "body_hashes": [
+        "c84dbfeb6788cd6a2f332855be956f1f24e90a5c13eb6a43aeb819bf9a317229"
+      ],
+      "connection_close": [
+        false
+      ],
+      "headers_p50_ms": 102.397,
+      "headers_p95_ms": 111.242
+    },
+    "short-token": {
+      "samples": 5,
+      "errors": 0,
+      "statuses": [
+        404
+      ],
+      "body_hashes": [
+        "b16e15764b8bc06c5c3f9f19bc8b99fa48e7894aa5a6ccdad65da49bbf564793"
+      ],
+      "connection_close": [
+        true
+      ],
+      "headers_p50_ms": 103.767,
+      "headers_p95_ms": 347.755
+    },
+    "stream-without-body": {
+      "samples": 5,
+      "errors": 0,
+      "statuses": [
+        404
+      ],
+      "body_hashes": [
+        "b16e15764b8bc06c5c3f9f19bc8b99fa48e7894aa5a6ccdad65da49bbf564793"
+      ],
+      "connection_close": [
+        true
+      ],
+      "headers_p50_ms": 105.779,
+      "headers_p95_ms": 1050.634
+    },
+    "wrong-key": {
+      "samples": 5,
+      "errors": 0,
+      "statuses": [
+        404
+      ],
+      "body_hashes": [
+        "b16e15764b8bc06c5c3f9f19bc8b99fa48e7894aa5a6ccdad65da49bbf564793"
+      ],
+      "connection_close": [
+        true
+      ],
+      "headers_p50_ms": 217.407,
+      "headers_p95_ms": 228.857
+    }
+  },
+  "timing_scope": "request headers sent to response headers received; excludes TLS setup",
+  "exploratory_wrong_key_minus_missing": {
+    "paired_rounds": 5,
+    "mean_difference_ms": -6.4976,
+    "bootstrap_mean_ci95_ms": [
+      -10.712600000000004,
+      -2.030400000000006
+    ],
+    "paired_sign_flip_p": 0.125,
+    "limitations": "Small sample, one device/network; exploratory only; cannot establish timing equivalence or GFW evasion."
+  }
+}

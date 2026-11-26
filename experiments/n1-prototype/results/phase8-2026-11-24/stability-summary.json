@@ -1,0 +1,67 @@
+{
+  "wifi": {
+    "requests": 26,
+    "full_success": 22,
+    "body_verified": 23,
+    "failures_by_phase": {
+      "entry_auth_headers": 1,
+      "tls_close_receive": 1,
+      "body": 1,
+      "tls": 1
+    },
+    "dns_median_ms": 2.9029999999999996,
+    "tls_median_ms": 1269.6825,
+    "case_results": {
+      "n1": {
+        "success": 4,
+        "total": 6
+      },
+      "ip": {
+        "success": 3,
+        "total": 4
+      },
+      "x25519": {
+        "success": 4,
+        "total": 4
+      },
+      "https": {
+        "success": 5,
+        "total": 6
+      },
+      "retry": {
+        "success": 6,
+        "total": 6
+      }
+    }
+  },
+  "cellular": {
+    "requests": 26,
+    "full_success": 26,
+    "body_verified": 26,
+    "failures_by_phase": {},
+    "dns_median_ms": 2.4415,
+    "tls_median_ms": 303.76750000000004,
+    "case_results": {
+      "n1": {
+        "success": 6,
+        "total": 6
+      },
+      "ip": {
+        "success": 4,
+        "total": 4
+      },
+      "x25519": {
+        "success": 4,
+        "total": 4
+      },
+      "https": {
+        "success": 6,
+        "total": 6
+      },
+      "retry": {
+        "success": 6,
+        "total": 6
+      }
+    }
+  }
+}

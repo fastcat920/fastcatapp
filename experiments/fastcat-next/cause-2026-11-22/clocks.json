@@ -1,0 +1,26 @@
+[
+  {
+    "server_ns": "1795358721307913930",
+    "server_local_mid_ns": 1795358721525035000,
+    "server_rtt_ns": 1477506000,
+    "android_ns": "1795358722806225588",
+    "android_local_mid_ns": 1795358722302076500,
+    "android_rtt_ns": 76569000
+  },
+  {
+    "server_ns": "1795358722863405212",
+    "server_local_mid_ns": 1795358722556013000,
+    "server_rtt_ns": 431226000,
+    "android_ns": "1795358723310322280",
+    "android_local_mid_ns": 1795358722808472000,
+    "android_rtt_ns": 73682000
+  },
+  {
+    "server_ns": "1795358723374045816",
+    "server_local_mid_ns": 1795358723066391000,
+    "server_rtt_ns": 442084000,
+    "android_ns": "1795358723828179511",
+    "android_local_mid_ns": 1795358723325383000,
+    "android_rtt_ns": 75892000
+  }
+]

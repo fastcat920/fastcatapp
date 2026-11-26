@@ -1,0 +1,33 @@
+{
+  "phase": "cache",
+  "plan": [
+    {
+      "arm": "cached",
+      "block": 0,
+      "bytes": 32768,
+      "count": 8,
+      "workers": 1
+    },
+    {
+      "arm": "capped",
+      "block": 1,
+      "bytes": 32768,
+      "count": 8,
+      "workers": 1
+    },
+    {
+      "arm": "cached",
+      "block": 2,
+      "bytes": 32768,
+      "count": 8,
+      "workers": 1
+    },
+    {
+      "arm": "capped",
+      "block": 3,
+      "bytes": 32768,
+      "count": 8,
+      "workers": 1
+    }
+  ]
+}

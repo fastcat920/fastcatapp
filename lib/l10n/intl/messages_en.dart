@@ -2160,6 +2160,9 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardKeepSubscriptionLinkSafe": MessageLookupByLibrary.simpleMessage(
       "Please keep your subscription link safe and don\'t share with others",
     ),
+    "xboardLatencyTestFailed": MessageLookupByLibrary.simpleMessage(
+      "Latency test failed",
+    ),
     "xboardLater": MessageLookupByLibrary.simpleMessage("Later"),
     "xboardLoadFailedCheckNetwork": MessageLookupByLibrary.simpleMessage(
       "Failed to load. Check your network.",
@@ -2365,6 +2368,36 @@ class MessageLookup extends MessageLookupByLibrary {
     "xboardNetworkDiagnosticsDomain": MessageLookupByLibrary.simpleMessage(
       "Domain",
     ),
+    "xboardNetworkDiagnosticsDownloadAverageSpeed":
+        MessageLookupByLibrary.simpleMessage("Average download speed"),
+    "xboardNetworkDiagnosticsDownloadCancel":
+        MessageLookupByLibrary.simpleMessage("Stop speed test"),
+    "xboardNetworkDiagnosticsDownloadCancelled":
+        MessageLookupByLibrary.simpleMessage("Speed test stopped"),
+    "xboardNetworkDiagnosticsDownloadFailed":
+        MessageLookupByLibrary.simpleMessage(
+          "Could not measure download speed",
+        ),
+    "xboardNetworkDiagnosticsDownloadNoNode":
+        MessageLookupByLibrary.simpleMessage(
+          "Skipped · No eligible proxy node",
+        ),
+    "xboardNetworkDiagnosticsDownloadRunning":
+        MessageLookupByLibrary.simpleMessage("Measuring download speed…"),
+    "xboardNetworkDiagnosticsDownloadSampleTime":
+        MessageLookupByLibrary.simpleMessage("Sample duration"),
+    "xboardNetworkDiagnosticsDownloadSecondsUnit":
+        MessageLookupByLibrary.simpleMessage("s"),
+    "xboardNetworkDiagnosticsDownloadShort":
+        MessageLookupByLibrary.simpleMessage("Short sample"),
+    "xboardNetworkDiagnosticsDownloadSpeed":
+        MessageLookupByLibrary.simpleMessage("Download speed test"),
+    "xboardNetworkDiagnosticsDownloadTotalBytes":
+        MessageLookupByLibrary.simpleMessage("Total downloaded"),
+    "xboardNetworkDiagnosticsDownloadTrafficNote":
+        MessageLookupByLibrary.simpleMessage(
+          "Diagnostics include a download speed test through the current node and may use up to 100 MB of data in 10 seconds.",
+        ),
     "xboardNetworkDiagnosticsEmptyResult": MessageLookupByLibrary.simpleMessage(
       "Empty result",
     ),
@@ -2391,13 +2424,10 @@ class MessageLookup extends MessageLookupByLibrary {
         MessageLookupByLibrary.simpleMessage(
           "The selected node passed, but the actual local proxy route failed. Check the active proxy group selection and try again.",
         ),
-    "xboardNetworkDiagnosticsNativeDirectDetail":
+    "xboardNetworkDiagnosticsNativeRouteNote":
         MessageLookupByLibrary.simpleMessage(
-          "Device request without the core test API; still uses system DNS and routing",
+          "Tested via system routing. VPN may affect the result.",
         ),
-    "xboardNetworkDiagnosticsNativeTunDetail": MessageLookupByLibrary.simpleMessage(
-      "Device request without the core test API; VPN/TUN may affect system DNS and routing, so this does not independently verify the physical network",
-    ),
     "xboardNetworkDiagnosticsNetworkEthernet":
         MessageLookupByLibrary.simpleMessage("Ethernet"),
     "xboardNetworkDiagnosticsNetworkMobile":

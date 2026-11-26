@@ -1,0 +1,1 @@
+{"phase": "rolling_download", "version": "tuic", "protocol": "quic", "round": 1, "workers": 4, "jobs": 12, "success": 0, "verified_bytes": 0, "received_bytes": 0, "expected_bytes_each": 4194304, "elapsed_ms": 180000, "error": "harness deadline 180s; no final completion report received; unobserved bytes credited zero"}

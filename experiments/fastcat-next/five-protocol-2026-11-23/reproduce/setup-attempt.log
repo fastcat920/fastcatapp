@@ -1,0 +1,28 @@
+Running as unit: fc-opt-backend-1795432037.service; invocation ID: 0d9d9973824a469cbbc64551b34ee48f
+/tmp/fc-five/speed/compare: 1 file pushed, 0 skipped. 36.3 MB/s (38809588 bytes in 1.021s)
+/tmp/fc-five/speed/client-1795432037.json: 1 file pushed, 0 skipped. 3.8 MB/s (422 bytes in 0.000s)
+/tmp/fc-five/speed/ca.pem: 1 file pushed, 0 skipped. 129.6 MB/s (334634 bytes in 0.002s)
+Warning: Activity not started, its current task has been brought to the front
+/tmp/fc-five/speed/pilot-1795432037-ports1-next-opt-1795432037.json: 1 file pushed, 0 skipped. 9.4 MB/s (936 bytes in 0.000s)
+COMPLETE pilot-1795432037-ports1-next-opt
+/tmp/fc-five/speed/pilot-1795432037-ports1-next-base-1795432037.json: 1 file pushed, 0 skipped. 7.1 MB/s (936 bytes in 0.000s)
+COMPLETE pilot-1795432037-ports1-next-base
+/tmp/fc-five/speed/pilot-1795432037-ports1-tuic-1795432037.json: 1 file pushed, 0 skipped. 7.3 MB/s (936 bytes in 0.000s)
+COMPLETE pilot-1795432037-ports1-tuic
+/tmp/fc-five/speed/pilot-1795432037-ports1-hysteria2-1795432037.json: 1 file pushed, 0 skipped. 8.1 MB/s (936 bytes in 0.000s)
+COMPLETE pilot-1795432037-ports1-hysteria2
+/tmp/fc-five/speed/pilot-1795432037-ports1-vless-vision-1795432037.json: 1 file pushed, 0 skipped. 6.9 MB/s (936 bytes in 0.000s)
+Warning: Activity not started, intent has been delivered to currently running top-most instance.
+VPN restored: True
+Traceback (most recent call last):
+  File "/tmp/fc-five/run.py", line 31, in <module>
+    name=f'pilot-{x.stamp}-ports{b+1}-{v}';port,_=setup(b,name,v);x.phase(name,['-samples','1','-pools','1','-batches','1','-workers','2']+fixed,v,timeout=100);rows=[]
+  File "/tmp/fc-five/run.py", line 26, in setup
+    if x.ssh('systemctl is-active '+active).strip()!='active':raise RuntimeError('test server inactive')
+  File "/tmp/fc-five/speed/lab.py", line 8, in ssh
+    def ssh(self,c):return sp.check_output(['ssh','-S',self.sock,'-o','ConnectTimeout=10',self.host,c],text=True,timeout=60)
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py", line 424, in check_output
+    return run(*popenargs, stdout=PIPE, timeout=timeout, check=True,
+  File "/Applications/Xcode.app/Contents/Developer/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/subprocess.py", line 528, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['ssh', '-S', '/Users/pizihu/.ssh/fastcat-speed-trio.sock', '-o', 'ConnectTimeout=10', 'root@172.104.55.44', 'systemctl is-active fc-opt-node-1795432037']' returned non-zero exit status 3.

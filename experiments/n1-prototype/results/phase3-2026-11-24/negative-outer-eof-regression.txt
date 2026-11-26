@@ -1,0 +1,5 @@
+--- FAIL: TestCoalescedWaitsForOuterRequestEOF (0.01s)
+    coalesced_test.go:224: session closed before outer request EOF
+FAIL
+FAIL	fastcat/n1prototype	0.782s
+FAIL

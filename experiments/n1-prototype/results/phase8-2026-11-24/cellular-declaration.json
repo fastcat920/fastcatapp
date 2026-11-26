@@ -1,0 +1,136 @@
+{
+  "plan": [
+    {
+      "case": "https",
+      "bytes": 32768,
+      "repeat": 1
+    },
+    {
+      "case": "ip",
+      "bytes": 32768,
+      "repeat": 4
+    },
+    {
+      "case": "retry",
+      "bytes": 32768,
+      "repeat": 1
+    },
+    {
+      "case": "x25519",
+      "bytes": 32768,
+      "repeat": 1
+    },
+    {
+      "case": "retry",
+      "bytes": 1048576,
+      "repeat": 2
+    },
+    {
+      "case": "https",
+      "bytes": 32768,
+      "repeat": 4
+    },
+    {
+      "case": "https",
+      "bytes": 1048576,
+      "repeat": 2
+    },
+    {
+      "case": "ip",
+      "bytes": 32768,
+      "repeat": 3
+    },
+    {
+      "case": "retry",
+      "bytes": 32768,
+      "repeat": 2
+    },
+    {
+      "case": "https",
+      "bytes": 32768,
+      "repeat": 2
+    },
+    {
+      "case": "https",
+      "bytes": 32768,
+      "repeat": 3
+    },
+    {
+      "case": "n1",
+      "bytes": 1048576,
+      "repeat": 1
+    },
+    {
+      "case": "https",
+      "bytes": 1048576,
+      "repeat": 1
+    },
+    {
+      "case": "n1",
+      "bytes": 32768,
+      "repeat": 4
+    },
+    {
+      "case": "n1",
+      "bytes": 1048576,
+      "repeat": 2
+    },
+    {
+      "case": "n1",
+      "bytes": 32768,
+      "repeat": 1
+    },
+    {
+      "case": "retry",
+      "bytes": 32768,
+      "repeat": 4
+    },
+    {
+      "case": "ip",
+      "bytes": 32768,
+      "repeat": 2
+    },
+    {
+      "case": "n1",
+      "bytes": 32768,
+      "repeat": 3
+    },
+    {
+      "case": "x25519",
+      "bytes": 32768,
+      "repeat": 2
+    },
+    {
+      "case": "x25519",
+      "bytes": 32768,
+      "repeat": 4
+    },
+    {
+      "case": "x25519",
+      "bytes": 32768,
+      "repeat": 3
+    },
+    {
+      "case": "n1",
+      "bytes": 32768,
+      "repeat": 2
+    },
+    {
+      "case": "retry",
+      "bytes": 32768,
+      "repeat": 3
+    },
+    {
+      "case": "ip",
+      "bytes": 32768,
+      "repeat": 1
+    },
+    {
+      "case": "retry",
+      "bytes": 1048576,
+      "repeat": 1
+    }
+  ],
+  "network": "cellular",
+  "scope": "new TCP/TLS; total30s; includes failures; X25519 diagnostic only"
+}

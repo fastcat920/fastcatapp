@@ -1,0 +1,28 @@
+[
+  {
+    "path": "ios/Frameworks/libclash.xcframework/ios-arm64/libclash.a",
+    "bytes": 165143096,
+    "sha256": "3d79ca315e5f3138cadc25362ee6bf80c425b2d692347070a5f0f631a5f8d5b6",
+    "protocol_marker_present": true
+  },
+  {
+    "path": "tvos/Frameworks/libclash.xcframework/tvos-arm64/libclash.a",
+    "bytes": 165143096,
+    "sha256": "f8f0225356cee3267c28dc740c7e309bbcab5a8f7e9427e8869a8dd973367b45",
+    "protocol_marker_present": true
+  },
+  {
+    "path": "/tmp/fastcat-v1-tvos-build/Build/Products/Debug-appletvos/FastCat.app/PlugIns/PacketTunnel.appex/PacketTunnel.debug.dylib",
+    "bytes": 78341888,
+    "sha256": "de3a967c5012f970e8d11285db988f9a981685345347373b939775de9b8b374e",
+    "protocol_marker_present": true,
+    "signed": false
+  },
+  {
+    "path": "/Users/pizihu/Projects/FastCatAPP/build/ios/iphoneos/Runner.app/PlugIns/PacketTunnel.appex/PacketTunnel",
+    "bytes": 78247624,
+    "sha256": "9fb6ac9e84df5960a2dbf863d7abdab7cbefbea73dad3bd3e6814d1980002c83",
+    "protocol_marker_present": true,
+    "signed": false
+  }
+]

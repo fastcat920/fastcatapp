@@ -199,6 +199,27 @@ struct TVRuntimeProtocolTests {
       subscriptionKeys: ["test": Data(repeating: 255, count: 32)],
       requireSubscriptionEncryption: true, fallbackAPIBaseURL: nil)
     build.currentSubscriptionKeyID = "test"
+    let fastCatYAML = """
+    proxies:
+      - name: fastcat-test
+        type: fastcat-https
+        server: localhost
+        port: 18443
+        token: test-token-with-at-least-24-bytes
+    proxy-groups:
+      - name: Route
+        type: select
+        proxies: [DIRECT, fastcat-test]
+    """
+    let fastCatRuntime = try build.runtimeConfiguration(fastCatYAML)
+    precondition(fastCatRuntime.contains(fastCatYAML))
+    precondition(TVSubscriptionNodes.parse(from: fastCatRuntime).map(\.name) == ["fastcat-test"])
+    let fastCatGraph = """
+    {"Route":{"type":"Selector","all":["DIRECT","fastcat-test"],"now":"DIRECT"},"fastcat-test":{"type":"FastCatHTTPS"}}
+    """
+    let fastCatSnapshot = TVSubscriptionNodes.liveSnapshot(from: fastCatGraph, mode: "rule")
+    precondition(fastCatSnapshot?.nodes.first?.type == "FastCatHTTPS")
+    precondition(fastCatSnapshot?.selectedName == "DIRECT")
     let original = "mode: rule\nproxies: []"
     let runtime = try build.runtimeConfiguration(original)
     precondition(runtime.contains("unified-delay: true"))

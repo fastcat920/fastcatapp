@@ -1,0 +1,1 @@
+Local result disk ran out of space during cold round 1. All rows that were written remain here. A clean balanced run was launched separately.

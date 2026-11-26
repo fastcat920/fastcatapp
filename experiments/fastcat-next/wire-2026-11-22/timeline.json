@@ -1,0 +1,114 @@
+[
+  {
+    "name": "default-b1-p1",
+    "condition": "default",
+    "block": 1,
+    "start": 1795362619.0208051,
+    "end": 1795362660.551879
+  },
+  {
+    "name": "no-gso-b1-p2",
+    "condition": "no-gso",
+    "block": 1,
+    "start": 1795362667.94188,
+    "end": 1795362700.407265
+  },
+  {
+    "name": "no-gso-fixed1200-b1-p3",
+    "condition": "no-gso-fixed1200",
+    "block": 1,
+    "start": 1795362710.803633,
+    "end": 1795362744.501707
+  },
+  {
+    "name": "fixed1200-b1-p4",
+    "condition": "fixed1200",
+    "block": 1,
+    "start": 1795362752.3481002,
+    "end": 1795362791.345473
+  },
+  {
+    "name": "no-gso-b2-p1",
+    "condition": "no-gso",
+    "block": 2,
+    "start": 1795362800.50683,
+    "end": 1795362834.0842218
+  },
+  {
+    "name": "fixed1200-b2-p2",
+    "condition": "fixed1200",
+    "block": 2,
+    "start": 1795362841.60354,
+    "end": 1795362879.79114
+  },
+  {
+    "name": "default-b2-p3",
+    "condition": "default",
+    "block": 2,
+    "start": 1795362886.6174111,
+    "end": 1795362923.737984
+  },
+  {
+    "name": "no-gso-fixed1200-b2-p4",
+    "condition": "no-gso-fixed1200",
+    "block": 2,
+    "start": 1795362932.042798,
+    "end": 1795362978.063636
+  },
+  {
+    "name": "fixed1200-b3-p1",
+    "condition": "fixed1200",
+    "block": 3,
+    "start": 1795362985.936936,
+    "end": 1795363048.8249118
+  },
+  {
+    "name": "no-gso-fixed1200-b3-p2",
+    "condition": "no-gso-fixed1200",
+    "block": 3,
+    "start": 1795363058.030741,
+    "end": 1795363087.244457
+  },
+  {
+    "name": "no-gso-b3-p3",
+    "condition": "no-gso",
+    "block": 3,
+    "start": 1795363094.890024,
+    "end": 1795363123.1025631
+  },
+  {
+    "name": "default-b3-p4",
+    "condition": "default",
+    "block": 3,
+    "start": 1795363130.289276,
+    "end": 1795363169.451945
+  },
+  {
+    "name": "no-gso-fixed1200-b4-p1",
+    "condition": "no-gso-fixed1200",
+    "block": 4,
+    "start": 1795363181.719033,
+    "end": 1795363225.292346
+  },
+  {
+    "name": "default-b4-p2",
+    "condition": "default",
+    "block": 4,
+    "start": 1795363233.934483,
+    "end": 1795363265.517689
+  },
+  {
+    "name": "fixed1200-b4-p3",
+    "condition": "fixed1200",
+    "block": 4,
+    "start": 1795363272.270195,
+    "end": 1795363306.345887
+  },
+  {
+    "name": "no-gso-b4-p4",
+    "condition": "no-gso",
+    "block": 4,
+    "start": 1795363312.795718,
+    "end": 1795363349.936518
+  }
+]

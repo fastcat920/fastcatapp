@@ -1,0 +1,87 @@
+{
+  "design": "two Williams cycles",
+  "cooldown_seconds": 5,
+  "fresh_transport_process_each_case": true,
+  "blocks": [
+    {
+      "cycle": 1,
+      "block": 1,
+      "order": [
+        "next-base",
+        "next-opt",
+        "tuic",
+        "next-primary"
+      ]
+    },
+    {
+      "cycle": 1,
+      "block": 2,
+      "order": [
+        "next-opt",
+        "next-primary",
+        "next-base",
+        "tuic"
+      ]
+    },
+    {
+      "cycle": 1,
+      "block": 3,
+      "order": [
+        "next-primary",
+        "tuic",
+        "next-opt",
+        "next-base"
+      ]
+    },
+    {
+      "cycle": 1,
+      "block": 4,
+      "order": [
+        "tuic",
+        "next-base",
+        "next-primary",
+        "next-opt"
+      ]
+    },
+    {
+      "cycle": 2,
+      "block": 1,
+      "order": [
+        "next-base",
+        "next-opt",
+        "tuic",
+        "next-primary"
+      ]
+    },
+    {
+      "cycle": 2,
+      "block": 2,
+      "order": [
+        "next-opt",
+        "next-primary",
+        "next-base",
+        "tuic"
+      ]
+    },
+    {
+      "cycle": 2,
+      "block": 3,
+      "order": [
+        "next-primary",
+        "tuic",
+        "next-opt",
+        "next-base"
+      ]
+    },
+    {
+      "cycle": 2,
+      "block": 4,
+      "order": [
+        "tuic",
+        "next-base",
+        "next-primary",
+        "next-opt"
+      ]
+    }
+  ]
+}

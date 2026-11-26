@@ -1,0 +1,68 @@
+{
+  "versions": [
+    "v2",
+    "v3-light-fast",
+    "vless-vision",
+    "trojan"
+  ],
+  "pools": 3,
+  "samples": 20,
+  "batches": 5,
+  "workers": 4,
+  "bulk_seconds": 10,
+  "bulk_rounds": 1,
+  "client_go": "1.26.2",
+  "server_go": "1.27.3",
+  "device": "A3GMVB2110006859",
+  "xray_module": "github.com/xtls/xray-core v1.261031.0 => github.com/wyx2685/xray-core v0.0.0-20261105071511-0061c59f331a",
+  "server_uses": "CatNode V2Core.Start/AddNode/AddUsers and custom dispatcher/limiter; synthetic unrestricted users; no panel",
+  "sha256": {
+    "v2": "c6d471e58d4fb162b54af40d56cfd8a88a803be22b33ffda05bbf212cb676668",
+    "v3": "2d8c68cc035fb883eb67458f78255c7f18ee65b30e992b75babf52d38e573f10",
+    "xray-lab": "9de30b0f2691ca84325dfba603dc1140ab3752eefe0ed07e0e41a714885e06ff",
+    "compare": "d7e643b3d9c7a066f500a0a709ff81bb9f896c7497c14e649b1c3af040d78146"
+  },
+  "xray_runtime_version": "26.10.31",
+  "bulk_inner_tls": {
+    "server_name": "zlhk.fastcat.ink",
+    "minimum_version": "TLS 1.3",
+    "certificate_verification": true
+  },
+  "default_network_before_and_after": 171,
+  "vpn_restored": true,
+  "temporary_ports_removed": [
+    19442,
+    19444,
+    19445,
+    19446,
+    19448
+  ],
+  "client_phase_hashes": {
+    "latency": "a4752641b1eb3b4c86f0ec60024bef9805eb4afa2e4fa170966f137349bfae3e",
+    "bulk": "d7e643b3d9c7a066f500a0a709ff81bb9f896c7497c14e649b1c3af040d78146",
+    "reason": "Same request/transport logic; bulk phase adds optional verified inner TLS for controlled echo target."
+  },
+  "raw_tls_observed": {
+    "vless-vision": [
+      {
+        "tls": "0x0304",
+        "cipher": "TLS_CHACHA20_POLY1305_SHA256",
+        "alpn": "",
+        "count": 63
+      }
+    ],
+    "trojan": [
+      {
+        "tls": "0x0304",
+        "cipher": "TLS_CHACHA20_POLY1305_SHA256",
+        "alpn": "h2",
+        "count": 63
+      }
+    ]
+  },
+  "source_sha256": {
+    "core/tools/fastcat-v3-compare/main.go": "97a64d4e2f991dcb8af3d6fadfb6dc8690c09ecbb044a37eaad253f143135be5",
+    "core/tools/fastcat-v3-compare/bulk_timed.go": "5464cec2f09bd9f99fdff59414745f3a4f63f16e5c7b9139b5052940832d8fa2",
+    "experiments/fastcat-v3/harnesses/catnode_four_way.go": "5d2405b21447545526bccede1efd6694d0cc980ab55f68b8e8158f04328acb4b"
+  }
+}

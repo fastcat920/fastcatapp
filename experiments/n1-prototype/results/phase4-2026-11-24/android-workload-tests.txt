@@ -1,0 +1,15 @@
+=== RUN   TestWorkloadBoundsAndPattern
+--- PASS: TestWorkloadBoundsAndPattern (0.00s)
+=== RUN   TestMatchedWorkloadModes
+{"bytes":4096,"chunk":512,"first_payload_ms":35.756,"first_response_headers_ms":35.736,"full_request_ms":36.904,"gap_ms":0,"header_kind":"application-response","kind":"n1","payload_verified":true,"shutdown_eof_observed":true}
+{"bytes":4096,"chunk":512,"first_payload_ms":49.341,"first_response_headers_ms":49.307,"full_request_ms":63.19,"gap_ms":1,"header_kind":"application-response","kind":"n1","payload_verified":true,"shutdown_eof_observed":true}
+{"bytes":4096,"chunk":512,"first_payload_ms":49.833,"first_response_headers_ms":49.768,"full_request_ms":52.212,"gap_ms":0,"header_kind":"application-response","kind":"get","payload_verified":true,"shutdown_eof_observed":true}
+{"bytes":4096,"chunk":512,"first_payload_ms":54.596,"first_response_headers_ms":54.529,"full_request_ms":67.008,"gap_ms":1,"header_kind":"application-response","kind":"get","payload_verified":true,"shutdown_eof_observed":true}
+{"bytes":4096,"chunk":512,"first_payload_ms":42.602,"first_response_headers_ms":41.418,"full_request_ms":44.91,"gap_ms":0,"header_kind":"early-rpc-ack","kind":"rpc","payload_verified":true,"shutdown_eof_observed":true}
+{"bytes":4096,"chunk":512,"first_payload_ms":60.129,"first_response_headers_ms":58.995,"full_request_ms":72.765,"gap_ms":1,"header_kind":"early-rpc-ack","kind":"rpc","payload_verified":true,"shutdown_eof_observed":true}
+--- PASS: TestMatchedWorkloadModes (0.35s)
+=== RUN   TestPublicWorkloadRejectsUnboundedRequest
+--- PASS: TestPublicWorkloadRejectsUnboundedRequest (0.01s)
+=== RUN   TestWorkloadControlsDisabledByDefault
+--- PASS: TestWorkloadControlsDisabledByDefault (0.01s)
+PASS

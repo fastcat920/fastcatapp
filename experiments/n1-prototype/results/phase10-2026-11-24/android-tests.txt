@@ -1,0 +1,13 @@
+=== RUN   TestLocalProxyPreservesReverseUploadAfterTargetFIN
+--- PASS: TestLocalProxyPreservesReverseUploadAfterTargetFIN (0.04s)
+=== RUN   TestPublicTargetsCannotNamePrivateOrMalformedDestinations
+--- PASS: TestPublicTargetsCannotNamePrivateOrMalformedDestinations (0.00s)
+=== RUN   TestPublicDNSRebindingIsRejectedBeforeConnect
+--- PASS: TestPublicDNSRebindingIsRejectedBeforeConnect (0.00s)
+=== RUN   TestBrowserLabBoundsAndUnauthorizedQuota
+--- PASS: TestBrowserLabBoundsAndUnauthorizedQuota (0.01s)
+=== RUN   TestPACIncludesOnlySelectedHosts
+--- PASS: TestPACIncludesOnlySelectedHosts (0.00s)
+=== RUN   TestPublicWorkloadRejectsUnboundedRequest
+--- PASS: TestPublicWorkloadRejectsUnboundedRequest (0.01s)
+PASS

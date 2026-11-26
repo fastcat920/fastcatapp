@@ -1,0 +1,2 @@
+{"event":"udp_packet","protocol":"tuic","run_id":"0791895c698743e3","sequence":1,"bytes":64,"attempted":true,"submitted":true,"echoed":false,"send_unix_ns":1795606330695396374,"echo_deadline_unix_ns":1795606332195529681,"unmatched_replies":0,"error_stage":"echo","error_category":"timeout"}
+{"event":"udp_summary","protocol":"tuic","run_id":"0791895c698743e3","planned":1,"attempted":1,"submitted":1,"echoed":0,"by_size":[{"bytes":64,"planned":1,"attempted":1,"submitted":1,"echoed":0}],"setup_ms":287.003384,"elapsed_ms":1790.725231,"echo_rtt_ms":{"n":0,"p50":null,"p95":null}}

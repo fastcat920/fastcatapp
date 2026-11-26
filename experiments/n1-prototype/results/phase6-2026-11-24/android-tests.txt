@@ -1,0 +1,67 @@
+=== RUN   TestClientEmissionTraceAndCompatibility
+=== RUN   TestClientEmissionTraceAndCompatibility/legacy/legacy
+    client_emission_test.go:54: request plaintext writes: [{"bytes":262,"shape":"request-headers"},{"bytes":15,"shape":"http-chunk","body_bytes":10},{"bytes":34,"shape":"http-chunk","body_bytes":28},{"bytes":5,"shape":"http-ending-only"}]
+=== RUN   TestClientEmissionTraceAndCompatibility/legacy/coalesced
+    client_emission_test.go:54: request plaintext writes: [{"bytes":262,"shape":"request-headers"},{"bytes":36,"shape":"http-chunk","body_bytes":30},{"bytes":23,"shape":"http-chunk","body_bytes":13}]
+=== RUN   TestClientEmissionTraceAndCompatibility/coalesced/legacy
+    client_emission_test.go:54: request plaintext writes: [{"bytes":262,"shape":"request-headers"},{"bytes":28,"shape":"http-chunk","body_bytes":22},{"bytes":43,"shape":"http-chunk","body_bytes":37},{"bytes":5,"shape":"http-ending-only"}]
+=== RUN   TestClientEmissionTraceAndCompatibility/coalesced/coalesced
+    client_emission_test.go:54: request plaintext writes: [{"bytes":262,"shape":"request-headers"},{"bytes":25,"shape":"http-chunk","body_bytes":19},{"bytes":19,"shape":"http-chunk","body_bytes":9}]
+--- PASS: TestClientEmissionTraceAndCompatibility (0.25s)
+    --- PASS: TestClientEmissionTraceAndCompatibility/legacy/legacy (0.04s)
+    --- PASS: TestClientEmissionTraceAndCompatibility/legacy/coalesced (0.06s)
+    --- PASS: TestClientEmissionTraceAndCompatibility/coalesced/legacy (0.07s)
+    --- PASS: TestClientEmissionTraceAndCompatibility/coalesced/coalesced (0.07s)
+=== RUN   TestCoalescedClientBulkAndAuthFailure
+--- PASS: TestCoalescedClientBulkAndAuthFailure (0.15s)
+=== RUN   TestCoalescedChunkFramingAndStableFIN
+--- PASS: TestCoalescedChunkFramingAndStableFIN (0.00s)
+=== RUN   TestCoalescedInteractiveAndBulk
+=== RUN   TestCoalescedInteractiveAndBulk/legacy
+=== RUN   TestCoalescedInteractiveAndBulk/coalesced
+--- PASS: TestCoalescedInteractiveAndBulk (0.20s)
+    --- PASS: TestCoalescedInteractiveAndBulk/legacy (0.10s)
+    --- PASS: TestCoalescedInteractiveAndBulk/coalesced (0.10s)
+=== RUN   TestCoalescedServerFirstAndEmptyFIN
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/legacy
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/legacy/greeting-ready
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/legacy/greeting-
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/coalesced
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/coalesced/greeting-ready
+=== RUN   TestCoalescedServerFirstAndEmptyFIN/coalesced/greeting-
+--- PASS: TestCoalescedServerFirstAndEmptyFIN (0.28s)
+    --- PASS: TestCoalescedServerFirstAndEmptyFIN/legacy (0.12s)
+        --- PASS: TestCoalescedServerFirstAndEmptyFIN/legacy/greeting-ready (0.06s)
+        --- PASS: TestCoalescedServerFirstAndEmptyFIN/legacy/greeting- (0.06s)
+    --- PASS: TestCoalescedServerFirstAndEmptyFIN/coalesced (0.16s)
+        --- PASS: TestCoalescedServerFirstAndEmptyFIN/coalesced/greeting-ready (0.08s)
+        --- PASS: TestCoalescedServerFirstAndEmptyFIN/coalesced/greeting- (0.07s)
+=== RUN   TestCoalescedAuthorizationFailure
+=== RUN   TestCoalescedAuthorizationFailure/legacy
+=== RUN   TestCoalescedAuthorizationFailure/coalesced
+--- PASS: TestCoalescedAuthorizationFailure (0.13s)
+    --- PASS: TestCoalescedAuthorizationFailure/legacy (0.06s)
+    --- PASS: TestCoalescedAuthorizationFailure/coalesced (0.06s)
+=== RUN   TestCoalescedCancelReleasesSession
+=== RUN   TestCoalescedCancelReleasesSession/legacy
+=== RUN   TestCoalescedCancelReleasesSession/coalesced
+--- PASS: TestCoalescedCancelReleasesSession (0.14s)
+    --- PASS: TestCoalescedCancelReleasesSession/legacy (0.07s)
+    --- PASS: TestCoalescedCancelReleasesSession/coalesced (0.08s)
+=== RUN   TestCoalescedWaitsForOuterRequestEOF
+--- PASS: TestCoalescedWaitsForOuterRequestEOF (0.19s)
+=== RUN   TestMatchedStreamingStagesAndSizes
+{"ack_headers_ms":64.499,"bytes":4096,"chunk":512,"first_payload_ms":67.505,"full_request_ms":70.323,"gap_ms":0,"kind":"matched-rpc","payload_verified":true,"request_writes":[{"bytes":262,"shape":"request-headers"},{"bytes":114,"shape":"http-chunk","body_bytes":108},{"bytes":19,"shape":"http-chunk","body_bytes":9}],"shutdown_eof_observed":true}
+{"ack_headers_ms":65.975,"bytes":4096,"chunk":512,"first_payload_ms":66.807,"full_request_ms":81.37,"gap_ms":1,"kind":"matched-rpc","payload_verified":true,"request_writes":[{"bytes":262,"shape":"request-headers"},{"bytes":114,"shape":"http-chunk","body_bytes":108},{"bytes":19,"shape":"http-chunk","body_bytes":9}],"shutdown_eof_observed":true}
+--- PASS: TestMatchedStreamingStagesAndSizes (0.24s)
+=== RUN   TestMatchedControlDisabled
+--- PASS: TestMatchedControlDisabled (0.01s)
+=== RUN   TestMatchedWorkloadModes
+{"bytes":4096,"chunk":512,"first_payload_ms":70.962,"first_response_headers_ms":70.93,"full_request_ms":74.066,"gap_ms":0,"header_kind":"application-response","kind":"n1","payload_verified":true,"shutdown_eof_observed":true}
+{"bytes":4096,"chunk":512,"first_payload_ms":64.379,"first_response_headers_ms":64.357,"full_request_ms":81.563,"gap_ms":1,"header_kind":"application-response","kind":"n1","payload_verified":true,"shutdown_eof_observed":true}
+{"bytes":4096,"chunk":512,"first_payload_ms":69.65,"first_response_headers_ms":69.608,"full_request_ms":72.31,"gap_ms":0,"header_kind":"application-response","kind":"get","payload_verified":true,"shutdown_eof_observed":true}
+{"bytes":4096,"chunk":512,"first_payload_ms":66.727,"first_response_headers_ms":66.665,"full_request_ms":79.749,"gap_ms":1,"header_kind":"application-response","kind":"get","payload_verified":true,"shutdown_eof_observed":true}
+{"bytes":4096,"chunk":512,"first_payload_ms":66.979,"first_response_headers_ms":65.478,"full_request_ms":70.43,"gap_ms":0,"header_kind":"early-rpc-ack","kind":"rpc","payload_verified":true,"shutdown_eof_observed":true}
+{"bytes":4096,"chunk":512,"first_payload_ms":62.565,"first_response_headers_ms":60.943,"full_request_ms":75.648,"gap_ms":1,"header_kind":"early-rpc-ack","kind":"rpc","payload_verified":true,"shutdown_eof_observed":true}
+--- PASS: TestMatchedWorkloadModes (0.47s)
+PASS

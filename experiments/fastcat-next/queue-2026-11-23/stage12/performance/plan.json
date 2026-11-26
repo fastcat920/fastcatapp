@@ -1,0 +1,88 @@
+{
+  "phase": "performance",
+  "variants": {
+    "baseline": "original",
+    "budget": "shared 16KiB/2ms packetization budget only while fresh and bulk coexist; 500ms fresh lease"
+  },
+  "sha256": {
+    "compare": "a2e52b8b2c9cdb344d11e1d1e8804d97fd098bb27f7773b2a7360daf5cf8154b",
+    "next-diagnostic": "0e7406d5d1f09a05ad7a4c5f0d6d2b54e6952c5848a89a74f763a3941f31add2"
+  },
+  "client_policy": "original next-opt; GSO and PMTU defaults unchanged",
+  "trace": false,
+  "gate": {
+    "loaded_p95_ratio_max": 0.8,
+    "warm_p95_ratio_max": 1.1,
+    "throughput_ratio_min": 0.9,
+    "completion_not_lower": true,
+    "min_loaded_samples": 48
+  },
+  "metrics": [
+    [
+      "mixed",
+      6,
+      [
+        "-mixed-download-bytes",
+        "16777216",
+        "-samples",
+        "12",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "90s"
+      ],
+      true,
+      120
+    ],
+    [
+      "parallel",
+      6,
+      [
+        "-download-bytes",
+        "4194304",
+        "-download-workers",
+        "4",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "90s"
+      ],
+      true,
+      120
+    ],
+    [
+      "rolling",
+      6,
+      [
+        "-download-bytes",
+        "4194304",
+        "-download-workers",
+        "4",
+        "-download-jobs",
+        "12",
+        "-download-rounds",
+        "1",
+        "-download-timeout",
+        "150s"
+      ],
+      true,
+      180
+    ],
+    [
+      "latency",
+      3,
+      [
+        "-samples",
+        "12",
+        "-pools",
+        "1",
+        "-batches",
+        "3",
+        "-workers",
+        "4"
+      ],
+      false,
+      450
+    ]
+  ]
+}

@@ -1,0 +1,17 @@
+[
+  {
+    "exit_code": 0,
+    "stdout": "{\"bytes\":32768,\"chunk\":16384,\"first_payload_ms\":1399.679,\"first_response_headers_ms\":1399.633,\"full_request_ms\":1706.041,\"gap_ms\":0,\"header_kind\":\"application-response\",\"kind\":\"n1\",\"payload_verified\":true,\"shutdown_eof_observed\":true}\n",
+    "stderr": ""
+  },
+  {
+    "exit_code": 0,
+    "stdout": "{\"bytes\":32768,\"chunk\":16384,\"first_payload_ms\":1014.035,\"first_response_headers_ms\":1014.018,\"full_request_ms\":1436.973,\"gap_ms\":0,\"header_kind\":\"application-response\",\"kind\":\"n1\",\"payload_verified\":true,\"shutdown_eof_observed\":true}\n",
+    "stderr": ""
+  },
+  {
+    "exit_code": 0,
+    "stdout": "{\"bytes\":32768,\"chunk\":16384,\"first_payload_ms\":1351.248,\"first_response_headers_ms\":1351.221,\"full_request_ms\":1454.007,\"gap_ms\":0,\"header_kind\":\"application-response\",\"kind\":\"n1\",\"payload_verified\":true,\"shutdown_eof_observed\":true}\n",
+    "stderr": ""
+  }
+]

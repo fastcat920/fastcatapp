@@ -1,0 +1,3 @@
+ok  	core/fastcatnext	20.270s
+ok  	core/tools/fastcat-v3-compare	(cached)
+?   	core/tools/fastcat-next	[no test files]

@@ -1,0 +1,9 @@
+Started fastcat-fcn3-phase1-fcn.service - [systemd-run] /opt/fastcat-fcn3-phase1/fcn-v3-server -listen :18532 -cert /opt/fastcat-fcn3-phase1/tls.pem -key /opt/fastcat-fcn3-phase1/tls.key -credentials-file /opt/fastcat-fcn3-phase1/credentials.json -target 127.0.0.1:18476.
+2026/11/25 13:22:50 load TLS certificate and key: x509: invalid ECDSA parameters
+fastcat-fcn3-phase1-fcn.service: Main process exited, code=exited, status=1/FAILURE
+fastcat-fcn3-phase1-fcn.service: Failed with result 'exit-code'.
+active
+active
+active
+UNCONN 0      0      *:18532 *:*
+UNCONN 0      0      *:18533 *:*

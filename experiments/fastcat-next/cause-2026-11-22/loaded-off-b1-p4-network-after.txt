@@ -1,0 +1,313 @@
+NetworkProviders for: UntrustedWifiNetworkFactory TelephonyNetworkFactory[0] VcnNetworkProvider VpnNetworkProvider:0 PhoneSwitcherNetworkRequstListener OemPaidWifiNetworkFactory PhoneSwitcherNetworkRequstListener TelephonyNetworkFactory[1] Ethernet WifiNetworkFactory
+
+Active default network: 171
+
+Current per-app default networks: Per-App Network Preference:
+    none
+
+Current Networks:
+  NetworkAgentInfo{network{171}  handle{737845104653}  ni{WIFI CONNECTED extra: } Score(60 ; KeepConnected : 0 ; Policies : TRANSPORT_PRIMARY&EVER_VALIDATED&IS_UNMETERED&IS_VALIDATED)  everValidated lastValidated  lp{{InterfaceName: wlan0 LinkAddresses: [ ****** ] DnsAddresses: [ /fe80::a6ba:70ff:fe89:84f4%wlan0,/192.168.31.1 ] Domains: null MTU: 0 ServerAddress: /192.168.31.1 TcpBufferSizes: 524288,2097152,8388608,262144,524288,4194304 Routes: [ fe80::/64 -> :: wlan0 mtu 0,192.168.31.0/24 -> 0.0.0.0 wlan0 mtu 0,0.0.0.0/0 -> 192.168.31.1 wlan0 mtu 0 ]}}  nc{[ Transports: WIFI Capabilities: NOT_METERED&INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&VALIDATED&NOT_ROAMING&FOREGROUND&NOT_CONGESTED&NOT_SUSPENDED&NOT_VCN_MANAGED LinkUpBandwidth>=12000Kbps LinkDnBandwidth>=30000Kbps Specifier: <WifiNetworkAgentSpecifier [WifiConfiguration=, SSID=****, BSSID=****, band=1, mMatchLocalOnlySpecifiers=false]> TransportInfo: <SSID: "Xiaomi_E958", Security type: 2, Supplicant state: COMPLETED, Wi-Fi standard: 4, RSSI: -49, Link speed: 78Mbps, Tx Link speed: 78Mbps, Max Supported Tx Link speed: 72Mbps, Rx Link speed: 86Mbps, Max Supported Rx Link speed: 72Mbps, Frequency: 2412MHz, Net ID: 2, Metered hint: false, score: 60, CarrierMerged: false, SubscriptionId: -1, IsPrimary: 1> SignalStrength: -49 OwnerUid: 1000 AdminUids: [1000] SSID: "Xiaomi_E958"]}}
+    Requests: REQUEST:12 LISTEN:71 BACKGROUND_REQUEST:0 total:83
+      NetworkRequest [ REQUEST id=1, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=5, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ LISTEN id=7, [ Capabilities: FOREGROUND RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ LISTEN id=8, [ Transports: WIFI Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&FOREGROUND&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=12, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ LISTEN id=14, [ Capabilities: FOREGROUND RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ LISTEN id=15, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&FOREGROUND&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=16, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ LISTEN id=18, [ RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ LISTEN id=19, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=21, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10123 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=23, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10102 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=25, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10064 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=27, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=29, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=31, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1073 RequestorUid: 1073 RequestorPkg: com.android.networkstack] ]
+      NetworkRequest [ LISTEN id=33, [ Transports: WIFI Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1073 RequestorUid: 1073 RequestorPkg: com.android.networkstack] ]
+      NetworkRequest [ TRACK_SYSTEM_DEFAULT id=34, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED RequestorUid: 1073 RequestorPkg: com.android.networkstack.tethering] ]
+      NetworkRequest [ LISTEN id=35, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&VALIDATED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ LISTEN id=36, [ Transports: CELLULAR|WIFI Capabilities: NOT_VPN RequestorUid: 10074 RequestorPkg: com.android.systemui] ]
+      NetworkRequest [ TRACK_DEFAULT id=37, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10074 RequestorUid: 10074 RequestorPkg: com.android.systemui] ]
+      NetworkRequest [ TRACK_DEFAULT id=39, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10074 RequestorUid: 10074 RequestorPkg: com.android.systemui] ]
+      NetworkRequest [ LISTEN id=42, [ Transports: WIFI Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Forbidden: 40 Uid: 1000 RequestorUid: 1000 RequestorPkg: com.hihonor.systemserver] ]
+      NetworkRequest [ LISTEN id=44, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: com.hihonor.hiview] ]
+      NetworkRequest [ LISTEN id=45, [ Transports: WIFI Capabilities: INTERNET&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1001 RequestorUid: 1001 RequestorPkg: com.android.phone] ]
+      NetworkRequest [ LISTEN id=46, [ Transports: WIFI Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: com.hihonor.nearby] ]
+      NetworkRequest [ LISTEN id=48, [ Capabilities: NOT_VCN_MANAGED RequestorUid: 10074 RequestorPkg: com.android.systemui] ]
+      NetworkRequest [ TRACK_DEFAULT id=49, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1001 RequestorUid: 1001 RequestorPkg: com.android.phone] ]
+      NetworkRequest [ LISTEN id=51, [ Transports: WIFI Capabilities: INTERNET&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1001 RequestorUid: 1001 RequestorPkg: com.android.phone] ]
+      NetworkRequest [ LISTEN id=52, [ Transports: WIFI Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: com.hihonor.nearby] ]
+      NetworkRequest [ TRACK_DEFAULT id=53, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1001 RequestorUid: 1001 RequestorPkg: com.android.phone] ]
+      NetworkRequest [ TRACK_DEFAULT id=55, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1001 RequestorUid: 1001 RequestorPkg: com.android.phone] ]
+      NetworkRequest [ LISTEN id=57, [ Transports: CELLULAR|WIFI Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED RequestorUid: 1000 RequestorPkg: com.hihonor.systemserver] ]
+      NetworkRequest [ TRACK_DEFAULT id=59, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: com.hihonor.systemserver] ]
+      NetworkRequest [ TRACK_DEFAULT id=62, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=64, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=66, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=76, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10056 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=88, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10087 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=97, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10147 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=101, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ LISTEN id=103, [ Transports: CELLULAR|WIFI Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=110, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10121 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=115, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: com.hihonor.android.chr] ]
+      NetworkRequest [ TRACK_DEFAULT id=118, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10069 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=137, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10071 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=141, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10017 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ LISTEN id=168, [ Transports: CELLULAR|WIFI|ETHERNET Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10032 RequestorUid: 10032 RequestorPkg: com.huawei.hwid] ]
+      NetworkRequest [ REQUEST id=206, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=207, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10121 RequestorUid: 10121 RequestorPkg: com.hihonor.id] ]
+      NetworkRequest [ TRACK_DEFAULT id=209, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10121 RequestorUid: 10121 RequestorPkg: com.hihonor.id] ]
+      NetworkRequest [ TRACK_DEFAULT id=211, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10121 RequestorUid: 10121 RequestorPkg: com.hihonor.id] ]
+      NetworkRequest [ TRACK_DEFAULT id=213, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10121 RequestorUid: 10121 RequestorPkg: com.hihonor.id] ]
+      NetworkRequest [ TRACK_DEFAULT id=223, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10089 RequestorUid: 10089 RequestorPkg: com.hihonor.awareness] ]
+      NetworkRequest [ TRACK_DEFAULT id=225, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10089 RequestorUid: 10089 RequestorPkg: com.hihonor.awareness] ]
+      NetworkRequest [ TRACK_DEFAULT id=277, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10083 RequestorUid: 10083 RequestorPkg: com.baidu.input_hihonor] ]
+      NetworkRequest [ LISTEN id=364, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&VALIDATED&NOT_VCN_MANAGED Uid: 10032 RequestorUid: 10032 RequestorPkg: com.huawei.hwid] ]
+      NetworkRequest [ TRACK_DEFAULT id=365, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10032 RequestorUid: 10032 RequestorPkg: com.huawei.hwid] ]
+      NetworkRequest [ TRACK_DEFAULT id=399, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10032 RequestorUid: 10032 RequestorPkg: com.huawei.hwid] ]
+      NetworkRequest [ TRACK_DEFAULT id=624, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ TRACK_DEFAULT id=739, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10066 RequestorUid: 10066 RequestorPkg: com.hihonor.mms] ]
+      NetworkRequest [ REQUEST id=742, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10066 RequestorUid: 10066 RequestorPkg: com.hihonor.mms] ]
+      NetworkRequest [ REQUEST id=1047, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10198 RequestorUid: 10198 RequestorPkg: com.fastcat.app.debug] ]
+      NetworkRequest [ LISTEN id=1048, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10198 RequestorUid: 10198 RequestorPkg: com.fastcat.app.debug] ]
+      NetworkRequest [ LISTEN_FOR_BEST id=1049, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10198 RequestorUid: 10198 RequestorPkg: com.fastcat.app.debug] ]
+      NetworkRequest [ LISTEN id=1061, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]
+      NetworkRequest [ REQUEST id=1063, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]
+      NetworkRequest [ REQUEST id=1067, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]
+      NetworkRequest [ LISTEN id=1068, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]
+      NetworkRequest [ REQUEST id=1070, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]
+      NetworkRequest [ REQUEST id=1072, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]
+      NetworkRequest [ LISTEN id=1073, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]
+      NetworkRequest [ LISTEN id=1105, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10056 RequestorUid: 10056 RequestorPkg: com.hihonor.magicvoice] ]
+      NetworkRequest [ LISTEN id=1106, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10056 RequestorUid: 10056 RequestorPkg: com.hihonor.magicvoice] ]
+      NetworkRequest [ REQUEST id=1111, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ LISTEN id=1120, [ Transports: WIFI Capabilities: NOT_VPN RequestorUid: 10099 RequestorPkg: com.honor.browser] ]
+      NetworkRequest [ REQUEST id=1122, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]
+      NetworkRequest [ REQUEST id=1124, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]
+      NetworkRequest [ LISTEN id=1125, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]
+      NetworkRequest [ REQUEST id=1127, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]
+      NetworkRequest [ LISTEN id=1218, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10033 RequestorUid: 10033 RequestorPkg: com.hihonor.hiboard] ]
+      NetworkRequest [ LISTEN id=1219, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10033 RequestorUid: 10033 RequestorPkg: com.hihonor.hiboard] ]
+      NetworkRequest [ LISTEN id=1361, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&VALIDATED&NOT_VCN_MANAGED Uid: 10032 RequestorUid: 10032 RequestorPkg: com.huawei.hwid] ]
+    Inactivity Timers:
+  NetworkAgentInfo{network{178}  handle{767909875725}  ni{MOBILE[NR] CONNECTED extra: ims} Score(45 ; KeepConnected : 0 ; Policies : EVER_VALIDATED&IS_UNMETERED&IS_VALIDATED)  everValidated lastValidated  lp{{InterfaceName: ccmni1 LinkAddresses: [ ****** ] DnsAddresses: [ ] PcscfAddresses: [ /2409:8053:5002:5008::107:6801,/2409:804b:5002:500f::107:6501,/2409:804b:5002:500f::107:6701,/2409:8053:5002:5008::107:6a01 ] Domains: null MTU: 1400 TcpBufferSizes: 2097152,6291456,16777216,512000,2097152,8388608 Routes: [ ::/0 -> :: ccmni1 mtu 0,2409:814a:b43c:bdcc::/64 -> :: ccmni1 mtu 0 ]}}  nc{[ Transports: CELLULAR Capabilities: IMS&NOT_METERED&TRUSTED&NOT_VPN&VALIDATED&NOT_ROAMING&FOREGROUND&NOT_CONGESTED&NOT_SUSPENDED&NOT_VCN_MANAGED LinkUpBandwidth>=14Kbps LinkDnBandwidth>=14Kbps Specifier: <TelephonyNetworkSpecifier [mSubId = 1]> SubscriptionIds: {1}]}}
+    Requests: REQUEST:1 LISTEN:7 BACKGROUND_REQUEST:0 total:8
+      NetworkRequest [ LISTEN id=7, [ Capabilities: FOREGROUND RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ LISTEN id=14, [ Capabilities: FOREGROUND RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ LISTEN id=18, [ RequestorUid: 1000 RequestorPkg: android] ]
+      NetworkRequest [ LISTEN id=36, [ Transports: CELLULAR|WIFI Capabilities: NOT_VPN RequestorUid: 10074 RequestorPkg: com.android.systemui] ]
+      NetworkRequest [ LISTEN id=48, [ Capabilities: NOT_VCN_MANAGED RequestorUid: 10074 RequestorPkg: com.android.systemui] ]
+      NetworkRequest [ LISTEN id=74, [ Capabilities: IMS&TRUSTED&NOT_VPN Uid: 1001 RequestorUid: 1001 RequestorPkg: com.mediatek.ims] ]
+      NetworkRequest [ LISTEN id=1177, [ Transports: CELLULAR Capabilities: IMS&TRUSTED&NOT_VPN Specifier: <TelephonyNetworkSpecifier [mSubId = 1]> Uid: 1001 RequestorUid: 1001 RequestorPkg: com.mediatek.ims] ]
+      NetworkRequest [ REQUEST id=1178, [ Transports: CELLULAR Capabilities: IMS&TRUSTED&NOT_VPN Specifier: <TelephonyNetworkSpecifier [mSubId = 1]> Uid: 1001 RequestorUid: 1001 RequestorPkg: com.mediatek.ims] ]
+    Inactivity Timers:
+
+Status for known UIDs:
+  
+Network Requests:
+  uid/pid:1000/1052 activeRequest: 1 callbackRequest: 1 [NetworkRequest [ REQUEST id=1, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 1 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: 5 callbackRequest: 5 [NetworkRequest [ TRACK_DEFAULT id=5, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: null callbackRequest: 7 [NetworkRequest [ LISTEN id=7, [ Capabilities: FOREGROUND RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: null callbackRequest: 8 [NetworkRequest [ LISTEN id=8, [ Transports: WIFI Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&FOREGROUND&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: null callbackRequest: 9 [NetworkRequest [ LISTEN id=9, [ Transports: BLUETOOTH Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&FOREGROUND&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: null callbackRequest: 10 [NetworkRequest [ LISTEN id=10, [ Transports: BLUETOOTH Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&FOREGROUND&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: null callbackRequest: 11 [NetworkRequest [ LISTEN id=11, [ Transports: CELLULAR Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&FOREGROUND&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: 12 callbackRequest: 12 [NetworkRequest [ TRACK_DEFAULT id=12, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: null callbackRequest: 14 [NetworkRequest [ LISTEN id=14, [ Capabilities: FOREGROUND RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: null callbackRequest: 15 [NetworkRequest [ LISTEN id=15, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&FOREGROUND&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: 16 callbackRequest: 16 [NetworkRequest [ TRACK_DEFAULT id=16, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: null callbackRequest: 18 [NetworkRequest [ LISTEN id=18, [ RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: null callbackRequest: 19 [NetworkRequest [ LISTEN id=19, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: null callbackRequest: 20 [NetworkRequest [ LISTEN id=20, [ Transports: CELLULAR Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 asUid: 10123 activeRequest: 21 callbackRequest: 21 [NetworkRequest [ TRACK_DEFAULT id=21, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10123 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 asUid: 10102 activeRequest: 23 callbackRequest: 23 [NetworkRequest [ TRACK_DEFAULT id=23, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10102 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 asUid: 10064 activeRequest: 25 callbackRequest: 25 [NetworkRequest [ TRACK_DEFAULT id=25, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10064 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: 27 callbackRequest: 27 [NetworkRequest [ TRACK_DEFAULT id=27, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: 29 callbackRequest: 29 [NetworkRequest [ TRACK_DEFAULT id=29, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1073/2067 activeRequest: 31 callbackRequest: 31 [NetworkRequest [ TRACK_DEFAULT id=31, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1073 RequestorUid: 1073 RequestorPkg: com.android.networkstack] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1073/2067 activeRequest: null callbackRequest: 33 [NetworkRequest [ LISTEN id=33, [ Transports: WIFI Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1073 RequestorUid: 1073 RequestorPkg: com.android.networkstack] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1073/2067 activeRequest: 34 callbackRequest: 34 [NetworkRequest [ TRACK_SYSTEM_DEFAULT id=34, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED RequestorUid: 1073 RequestorPkg: com.android.networkstack.tethering] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: null callbackRequest: 35 [NetworkRequest [ LISTEN id=35, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&VALIDATED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10074/1929 activeRequest: null callbackRequest: 36 [NetworkRequest [ LISTEN id=36, [ Transports: CELLULAR|WIFI Capabilities: NOT_VPN RequestorUid: 10074 RequestorPkg: com.android.systemui] ]] callback flags: 1 priority: 2147483647
+  uid/pid:10074/1929 activeRequest: 37 callbackRequest: 37 [NetworkRequest [ TRACK_DEFAULT id=37, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10074 RequestorUid: 10074 RequestorPkg: com.android.systemui] ]] callback flags: 1 priority: 2147483647
+  uid/pid:10074/1929 activeRequest: 39 callbackRequest: 39 [NetworkRequest [ TRACK_DEFAULT id=39, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10074 RequestorUid: 10074 RequestorPkg: com.android.systemui] ]] callback flags: 1 priority: 2147483647
+  uid/pid:1000/2178 activeRequest: null callbackRequest: 41 [NetworkRequest [ LISTEN id=41, [ Transports: CELLULAR Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN Specifier: <TelephonyNetworkSpecifier [mSubId = 999999]> Uid: 1000 RequestorUid: 1000 RequestorPkg: com.hihonor.systemserver] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/2178 activeRequest: null callbackRequest: 42 [NetworkRequest [ LISTEN id=42, [ Transports: WIFI Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Forbidden: 40 Uid: 1000 RequestorUid: 1000 RequestorPkg: com.hihonor.systemserver] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/2178 activeRequest: null callbackRequest: 43 [NetworkRequest [ LISTEN id=43, [ Transports: WIFI Capabilities: TRUSTED&NOT_VPN&40 Uid: 1000 RequestorUid: 1000 RequestorPkg: com.hihonor.systemserver] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/2206 activeRequest: null callbackRequest: 44 [NetworkRequest [ LISTEN id=44, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: com.hihonor.hiview] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1001/2228 activeRequest: null callbackRequest: 45 [NetworkRequest [ LISTEN id=45, [ Transports: WIFI Capabilities: INTERNET&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1001 RequestorUid: 1001 RequestorPkg: com.android.phone] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/2162 activeRequest: null callbackRequest: 46 [NetworkRequest [ LISTEN id=46, [ Transports: WIFI Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: com.hihonor.nearby] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10074/1929 activeRequest: null callbackRequest: 48 [NetworkRequest [ LISTEN id=48, [ Capabilities: NOT_VCN_MANAGED RequestorUid: 10074 RequestorPkg: com.android.systemui] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1001/2228 activeRequest: 49 callbackRequest: 49 [NetworkRequest [ TRACK_DEFAULT id=49, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1001 RequestorUid: 1001 RequestorPkg: com.android.phone] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1001/2228 activeRequest: null callbackRequest: 51 [NetworkRequest [ LISTEN id=51, [ Transports: WIFI Capabilities: INTERNET&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1001 RequestorUid: 1001 RequestorPkg: com.android.phone] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/2162 activeRequest: null callbackRequest: 52 [NetworkRequest [ LISTEN id=52, [ Transports: WIFI Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: com.hihonor.nearby] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1001/2228 activeRequest: 53 callbackRequest: 53 [NetworkRequest [ TRACK_DEFAULT id=53, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1001 RequestorUid: 1001 RequestorPkg: com.android.phone] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1001/2228 activeRequest: 55 callbackRequest: 55 [NetworkRequest [ TRACK_DEFAULT id=55, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1001 RequestorUid: 1001 RequestorPkg: com.android.phone] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/2178 activeRequest: null callbackRequest: 57 [NetworkRequest [ LISTEN id=57, [ Transports: CELLULAR|WIFI Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED RequestorUid: 1000 RequestorPkg: com.hihonor.systemserver] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/2178 activeRequest: null callbackRequest: 58 [NetworkRequest [ LISTEN id=58, [ Transports: WIFI Capabilities: TRUSTED&40 RequestorUid: 1000 RequestorPkg: com.hihonor.systemserver] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/2178 activeRequest: 59 callbackRequest: 59 [NetworkRequest [ TRACK_DEFAULT id=59, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: com.hihonor.systemserver] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: 62 callbackRequest: 62 [NetworkRequest [ TRACK_DEFAULT id=62, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: 64 callbackRequest: 64 [NetworkRequest [ TRACK_DEFAULT id=64, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: 66 callbackRequest: 66 [NetworkRequest [ TRACK_DEFAULT id=66, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1001/3298 activeRequest: null callbackRequest: 74 [NetworkRequest [ LISTEN id=74, [ Capabilities: IMS&TRUSTED&NOT_VPN Uid: 1001 RequestorUid: 1001 RequestorPkg: com.mediatek.ims] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1001/3298 activeRequest: null callbackRequest: 75 [NetworkRequest [ LISTEN id=75, [ Capabilities: EIMS&TRUSTED&NOT_VPN Uid: 1001 RequestorUid: 1001 RequestorPkg: com.mediatek.ims] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 asUid: 10056 activeRequest: 76 callbackRequest: 76 [NetworkRequest [ TRACK_DEFAULT id=76, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10056 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 asUid: 10087 activeRequest: 88 callbackRequest: 88 [NetworkRequest [ TRACK_DEFAULT id=88, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10087 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 asUid: 10147 activeRequest: 97 callbackRequest: 97 [NetworkRequest [ TRACK_DEFAULT id=97, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10147 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/5731 activeRequest: 101 callbackRequest: 101 [NetworkRequest [ TRACK_DEFAULT id=101, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/5731 activeRequest: null callbackRequest: 103 [NetworkRequest [ LISTEN id=103, [ Transports: CELLULAR|WIFI Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 asUid: 10121 activeRequest: 110 callbackRequest: 110 [NetworkRequest [ TRACK_DEFAULT id=110, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10121 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/2206 activeRequest: null callbackRequest: 114 [NetworkRequest [ LISTEN id=114, [ Transports: CELLULAR Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: com.hihonor.android.chr] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/2206 activeRequest: 115 callbackRequest: 115 [NetworkRequest [ TRACK_DEFAULT id=115, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: com.hihonor.android.chr] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 asUid: 10069 activeRequest: 118 callbackRequest: 118 [NetworkRequest [ TRACK_DEFAULT id=118, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10069 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 asUid: 10071 activeRequest: 137 callbackRequest: 137 [NetworkRequest [ TRACK_DEFAULT id=137, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10071 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 asUid: 10017 activeRequest: 141 callbackRequest: 141 [NetworkRequest [ TRACK_DEFAULT id=141, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10017 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10032/15174 activeRequest: null callbackRequest: 168 [NetworkRequest [ LISTEN id=168, [ Transports: CELLULAR|WIFI|ETHERNET Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10032 RequestorUid: 10032 RequestorPkg: com.huawei.hwid] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/26048 activeRequest: 206 callbackRequest: 206 [NetworkRequest [ REQUEST id=206, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10121/26473 activeRequest: 207 callbackRequest: 207 [NetworkRequest [ TRACK_DEFAULT id=207, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10121 RequestorUid: 10121 RequestorPkg: com.hihonor.id] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10121/26445 activeRequest: 209 callbackRequest: 209 [NetworkRequest [ TRACK_DEFAULT id=209, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10121 RequestorUid: 10121 RequestorPkg: com.hihonor.id] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10121/26445 activeRequest: 211 callbackRequest: 211 [NetworkRequest [ TRACK_DEFAULT id=211, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10121 RequestorUid: 10121 RequestorPkg: com.hihonor.id] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10121/26445 activeRequest: 213 callbackRequest: 213 [NetworkRequest [ TRACK_DEFAULT id=213, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10121 RequestorUid: 10121 RequestorPkg: com.hihonor.id] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10089/27806 activeRequest: 223 callbackRequest: 223 [NetworkRequest [ TRACK_DEFAULT id=223, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10089 RequestorUid: 10089 RequestorPkg: com.hihonor.awareness] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10089/27806 activeRequest: 225 callbackRequest: 225 [NetworkRequest [ TRACK_DEFAULT id=225, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10089 RequestorUid: 10089 RequestorPkg: com.hihonor.awareness] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10083/2599 activeRequest: 277 callbackRequest: 277 [NetworkRequest [ TRACK_DEFAULT id=277, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10083 RequestorUid: 10083 RequestorPkg: com.baidu.input_hihonor] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10032/23374 activeRequest: null callbackRequest: 364 [NetworkRequest [ LISTEN id=364, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&VALIDATED&NOT_VCN_MANAGED Uid: 10032 RequestorUid: 10032 RequestorPkg: com.huawei.hwid] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10032/23374 activeRequest: 365 callbackRequest: 365 [NetworkRequest [ TRACK_DEFAULT id=365, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10032 RequestorUid: 10032 RequestorPkg: com.huawei.hwid] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10032/23374 activeRequest: 399 callbackRequest: 399 [NetworkRequest [ TRACK_DEFAULT id=399, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10032 RequestorUid: 10032 RequestorPkg: com.huawei.hwid] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 asUid: 10099 activeRequest: 624 callbackRequest: 624 [NetworkRequest [ TRACK_DEFAULT id=624, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10066/16868 activeRequest: 739 callbackRequest: 739 [NetworkRequest [ TRACK_DEFAULT id=739, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10066 RequestorUid: 10066 RequestorPkg: com.hihonor.mms] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10066/16868 activeRequest: 742 callbackRequest: 741 [NetworkRequest [ REQUEST id=742, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10066 RequestorUid: 10066 RequestorPkg: com.hihonor.mms] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/28097 activeRequest: null callbackRequest: 1028 [NetworkRequest [ LISTEN id=1028, [ Transports: CELLULAR Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: com.hihonor.systemmanager] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10198/32088 activeRequest: 1047 callbackRequest: 1046 [NetworkRequest [ REQUEST id=1047, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10198 RequestorUid: 10198 RequestorPkg: com.fastcat.app.debug] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10198/32088 activeRequest: null callbackRequest: 1048 [NetworkRequest [ LISTEN id=1048, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10198 RequestorUid: 10198 RequestorPkg: com.fastcat.app.debug] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10198/32088 activeRequest: 1049 callbackRequest: 1049 [NetworkRequest [ LISTEN_FOR_BEST id=1049, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10198 RequestorUid: 10198 RequestorPkg: com.fastcat.app.debug] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10099/3447 activeRequest: null callbackRequest: 1061 [NetworkRequest [ LISTEN id=1061, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10099/3447 activeRequest: 1063 callbackRequest: 1062 [NetworkRequest [ REQUEST id=1063, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10099/3447 activeRequest: 1067 callbackRequest: 1066 [NetworkRequest [ REQUEST id=1067, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10099/3447 activeRequest: null callbackRequest: 1068 [NetworkRequest [ LISTEN id=1068, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10099/3447 activeRequest: 1070 callbackRequest: 1069 [NetworkRequest [ REQUEST id=1070, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10099/3447 activeRequest: 1072 callbackRequest: 1071 [NetworkRequest [ REQUEST id=1072, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10099/3447 activeRequest: null callbackRequest: 1073 [NetworkRequest [ LISTEN id=1073, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10056/9337 activeRequest: null callbackRequest: 1105 [NetworkRequest [ LISTEN id=1105, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10056 RequestorUid: 10056 RequestorPkg: com.hihonor.magicvoice] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10056/9337 activeRequest: null callbackRequest: 1106 [NetworkRequest [ LISTEN id=1106, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10056 RequestorUid: 10056 RequestorPkg: com.hihonor.magicvoice] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/1052 activeRequest: 1111 callbackRequest: 1111 [NetworkRequest [ REQUEST id=1111, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 1000 RequestorUid: 1000 RequestorPkg: android] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10099/3447 activeRequest: null callbackRequest: 1120 [NetworkRequest [ LISTEN id=1120, [ Transports: WIFI Capabilities: NOT_VPN RequestorUid: 10099 RequestorPkg: com.honor.browser] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10099/3447 activeRequest: 1122 callbackRequest: 1121 [NetworkRequest [ REQUEST id=1122, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10099/3447 activeRequest: 1124 callbackRequest: 1123 [NetworkRequest [ REQUEST id=1124, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10099/3447 activeRequest: null callbackRequest: 1125 [NetworkRequest [ LISTEN id=1125, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10099/3447 activeRequest: 1127 callbackRequest: 1126 [NetworkRequest [ REQUEST id=1127, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10099 RequestorUid: 10099 RequestorPkg: com.honor.browser] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1001/3298 activeRequest: null callbackRequest: 1149 [NetworkRequest [ LISTEN id=1149, [ Transports: CELLULAR Capabilities: IMS&TRUSTED&NOT_VPN Specifier: <TelephonyNetworkSpecifier [mSubId = -1]> Uid: 1001 RequestorUid: 1001 RequestorPkg: com.mediatek.ims] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1001/3298 activeRequest: null callbackRequest: 1150 [NetworkRequest [ LISTEN id=1150, [ Transports: CELLULAR Capabilities: EIMS&TRUSTED&NOT_VPN Specifier: <TelephonyNetworkSpecifier [mSubId = -1]> Uid: 1001 RequestorUid: 1001 RequestorPkg: com.mediatek.ims] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1000/2178 activeRequest: null callbackRequest: 1173 [NetworkRequest [ LISTEN id=1173, [ Transports: CELLULAR Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VPN Specifier: <TelephonyNetworkSpecifier [mSubId = 1]> Uid: 1000 RequestorUid: 1000 RequestorPkg: com.hihonor.systemserver] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1001/3298 activeRequest: null callbackRequest: 1175 [NetworkRequest [ LISTEN id=1175, [ Transports: CELLULAR Capabilities: EIMS&TRUSTED&NOT_VPN Specifier: <TelephonyNetworkSpecifier [mSubId = 1]> Uid: 1001 RequestorUid: 1001 RequestorPkg: com.mediatek.ims] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1001/3298 activeRequest: null callbackRequest: 1177 [NetworkRequest [ LISTEN id=1177, [ Transports: CELLULAR Capabilities: IMS&TRUSTED&NOT_VPN Specifier: <TelephonyNetworkSpecifier [mSubId = 1]> Uid: 1001 RequestorUid: 1001 RequestorPkg: com.mediatek.ims] ]] callback flags: 0 priority: 2147483647
+  uid/pid:1001/3298 activeRequest: 1178 callbackRequest: 1178 [NetworkRequest [ REQUEST id=1178, [ Transports: CELLULAR Capabilities: IMS&TRUSTED&NOT_VPN Specifier: <TelephonyNetworkSpecifier [mSubId = 1]> Uid: 1001 RequestorUid: 1001 RequestorPkg: com.mediatek.ims] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10033/9593 activeRequest: null callbackRequest: 1218 [NetworkRequest [ LISTEN id=1218, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10033 RequestorUid: 10033 RequestorPkg: com.hihonor.hiboard] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10033/9593 activeRequest: null callbackRequest: 1219 [NetworkRequest [ LISTEN id=1219, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&NOT_VCN_MANAGED Uid: 10033 RequestorUid: 10033 RequestorPkg: com.hihonor.hiboard] ]] callback flags: 0 priority: 2147483647
+  uid/pid:10032/15526 activeRequest: null callbackRequest: 1361 [NetworkRequest [ LISTEN id=1361, [ Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VPN&VALIDATED&NOT_VCN_MANAGED Uid: 10032 RequestorUid: 10032 RequestorPkg: com.huawei.hwid] ]] callback flags: 0 priority: 2147483647
+
+mLegacyTypeTracker:
+  Supported types: 0 1 2 3 4 5 7 9 10 11 12 13 14 15 17
+  Current state:
+    1 [171 WIFI]
+
+
+Supported Socket keepalives: [1, 3, 0, 0, 0, 0, 0, 0, 0]
+Reserved Privileged keepalives: 2
+Allowed Unprivileged keepalives per uid: 2
+Socket keepalives:
+
+Bad Wi-Fi avoidance: unrestricted
+
+
+mNetworkRequestInfoLogs (most recent first):
+  2026-11-22T22:20:26.446 - RELEASE uid/pid:10031/32644 activeRequest: 1409 callbackRequest: 1408 [NetworkRequest [ REQUEST id=1409, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10031 RequestorUid: 10031 RequestorPkg: com.hihonor.android.pushagent] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T20:23:55.285 - REGISTER uid/pid:10031/32644 activeRequest: null callbackRequest: 1408 [NetworkRequest [ REQUEST id=1409, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10031 RequestorUid: 10031 RequestorPkg: com.hihonor.android.pushagent] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T19:02:23.197 - RELEASE uid/pid:10036/23835 activeRequest: 1405 callbackRequest: 1404 [NetworkRequest [ REQUEST id=1405, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10036 RequestorUid: 10036 RequestorPkg: com.hihonor.voiceengine] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T18:58:39.181 - RELEASE uid/pid:10031/23153 activeRequest: 1403 callbackRequest: 1402 [NetworkRequest [ REQUEST id=1403, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10031 RequestorUid: 10031 RequestorPkg: com.hihonor.android.pushagent] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T18:20:21.801 - RELEASE uid/pid:10198/32088 activeRequest: null callbackRequest: 1407 [NetworkRequest [ LISTEN id=1407, [ Transports: VPN Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10198 RequestorUid: 10198 RequestorPkg: com.fastcat.app.debug] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T18:20:21.608 - REGISTER uid/pid:10198/32088 activeRequest: null callbackRequest: 1407 [NetworkRequest [ LISTEN id=1407, [ Transports: VPN Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10198 RequestorUid: 10198 RequestorPkg: com.fastcat.app.debug] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T17:55:57.917 - RELEASE uid/pid:10198/32088 activeRequest: null callbackRequest: 1406 [NetworkRequest [ LISTEN id=1406, [ Transports: VPN Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10198 RequestorUid: 10198 RequestorPkg: com.fastcat.app.debug] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T17:55:57.703 - REGISTER uid/pid:10198/32088 activeRequest: null callbackRequest: 1406 [NetworkRequest [ LISTEN id=1406, [ Transports: VPN Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10198 RequestorUid: 10198 RequestorPkg: com.fastcat.app.debug] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T17:31:01.473 - REGISTER uid/pid:10036/23835 activeRequest: null callbackRequest: 1404 [NetworkRequest [ REQUEST id=1405, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10036 RequestorUid: 10036 RequestorPkg: com.hihonor.voiceengine] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T17:20:55.545 - REGISTER uid/pid:10031/23153 activeRequest: null callbackRequest: 1402 [NetworkRequest [ REQUEST id=1403, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10031 RequestorUid: 10031 RequestorPkg: com.hihonor.android.pushagent] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T17:19:20.967 - RELEASE uid/pid:10198/32088 activeRequest: null callbackRequest: 1401 [NetworkRequest [ LISTEN id=1401, [ Transports: VPN Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10198 RequestorUid: 10198 RequestorPkg: com.fastcat.app.debug] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T17:19:20.674 - REGISTER uid/pid:10198/32088 activeRequest: null callbackRequest: 1401 [NetworkRequest [ LISTEN id=1401, [ Transports: VPN Capabilities: NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10198 RequestorUid: 10198 RequestorPkg: com.fastcat.app.debug] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T16:37:51.274 - RELEASE uid/pid:10121/17002 activeRequest: 1392 callbackRequest: 1391 [NetworkRequest [ REQUEST id=1392, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10121 RequestorUid: 10121 RequestorPkg: com.hihonor.id] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T16:22:41.529 - RELEASE uid/pid:10087/32372 activeRequest: 1400 callbackRequest: 1399 [NetworkRequest [ REQUEST id=1400, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10087 RequestorUid: 10087 RequestorPkg: com.hihonor.brain] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T16:22:41.168 - REGISTER uid/pid:10087/32372 activeRequest: null callbackRequest: 1399 [NetworkRequest [ REQUEST id=1400, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10087 RequestorUid: 10087 RequestorPkg: com.hihonor.brain] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T16:22:36.281 - RELEASE uid/pid:10087/32372 activeRequest: 1398 callbackRequest: 1397 [NetworkRequest [ REQUEST id=1398, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10087 RequestorUid: 10087 RequestorPkg: com.hihonor.brain] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T16:22:35.877 - REGISTER uid/pid:10087/32372 activeRequest: null callbackRequest: 1397 [NetworkRequest [ REQUEST id=1398, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10087 RequestorUid: 10087 RequestorPkg: com.hihonor.brain] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T16:22:25.382 - RELEASE uid/pid:10087/32372 activeRequest: 1396 callbackRequest: 1395 [NetworkRequest [ REQUEST id=1396, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10087 RequestorUid: 10087 RequestorPkg: com.hihonor.brain] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T16:22:25.340 - REGISTER uid/pid:10087/32372 activeRequest: null callbackRequest: 1395 [NetworkRequest [ REQUEST id=1396, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10087 RequestorUid: 10087 RequestorPkg: com.hihonor.brain] ]] callback flags: 0 priority: 2147483647
+  2026-11-22T16:22:21.426 - RELEASE uid/pid:10036/5530 activeRequest: 1372 callbackRequest: 1371 [NetworkRequest [ REQUEST id=1372, [ Capabilities: INTERNET&NOT_RESTRICTED&TRUSTED&NOT_VCN_MANAGED Uid: 10036 RequestorUid: 10036 RequestorPkg: com.hihonor.voiceengine] ]] callback flags: 0 priority: 2147483647
+
+mNetworkInfoBlockingLogs (most recent first):
+  2026-11-21T14:07:30.127 - UNBLOCKED 10147(97) on netId 214: 0
+  2026-11-21T14:07:30.125 - UNBLOCKED 10099(1127) on netId 214: 0
+  2026-11-21T14:07:30.124 - UNBLOCKED 10099(1124) on netId 214: 0
+  2026-11-21T14:07:30.122 - UNBLOCKED 10099(1122) on netId 214: 0
+  2026-11-21T14:07:30.121 - UNBLOCKED 10099(1073) on netId 214: 0
+  2026-11-21T14:07:30.119 - UNBLOCKED 10099(1072) on netId 214: 0
+  2026-11-21T14:07:30.119 - UNBLOCKED 10099(1070) on netId 214: 0
+  2026-11-21T14:07:30.116 - UNBLOCKED 10099(1068) on netId 214: 0
+  2026-11-21T14:07:30.116 - UNBLOCKED 10099(1067) on netId 214: 0
+  2026-11-21T14:07:30.109 - UNBLOCKED 10099(1063) on netId 214: 0
+  2026-11-21T14:07:30.109 - UNBLOCKED 10099(624) on netId 214: 0
+  2026-11-21T14:07:30.108 - UNBLOCKED 10099(1125) on netId 171: 0
+  2026-11-21T14:07:30.108 - UNBLOCKED 10099(1120) on netId 171: 0
+  2026-11-21T14:07:30.107 - UNBLOCKED 10099(1073) on netId 171: 0
+  2026-11-21T14:07:30.107 - UNBLOCKED 10099(1068) on netId 171: 0
+  2026-11-21T14:07:30.106 - UNBLOCKED 10099(1061) on netId 171: 0
+  2026-11-21T14:07:01.962 - BLOCKED 10099(1127) on netId 214: 4
+  2026-11-21T14:07:01.961 - BLOCKED 10099(1124) on netId 214: 4
+  2026-11-21T14:07:01.961 - BLOCKED 10099(1122) on netId 214: 4
+  2026-11-21T14:07:01.961 - BLOCKED 10099(1073) on netId 214: 4
+  2026-11-21T14:07:01.961 - BLOCKED 10099(1072) on netId 214: 4
+  2026-11-21T14:07:01.960 - BLOCKED 10099(1070) on netId 214: 4
+  2026-11-21T14:07:01.960 - BLOCKED 10099(1068) on netId 214: 4
+  2026-11-21T14:07:01.960 - BLOCKED 10099(1067) on netId 214: 4
+  2026-11-21T14:07:01.960 - BLOCKED 10099(1063) on netId 214: 4
+  2026-11-21T14:07:01.960 - BLOCKED 10099(624) on netId 214: 4
+  2026-11-21T14:07:01.959 - BLOCKED 10099(1125) on netId 171: 4
+  2026-11-21T14:07:01.959 - BLOCKED 10099(1120) on netId 171: 4
+  2026-11-21T14:07:01.959 - BLOCKED 10099(1073) on netId 171: 4
+  2026-11-21T14:07:01.958 - BLOCKED 10099(1068) on netId 171: 4
+  2026-11-21T14:07:01.957 - BLOCKED 10099(1061) on netId 171: 4
+  2026-11-21T14:07:00.717 - BLOCKED 10147(97) on netId 214: 4
+  2026-11-20T16:22:25.616 - UNBLOCKED 10064
+  2026-11-20T13:01:24.720 - UNBLOCKED 10099
+  2026-11-20T12:05:58.710 - UNBLOCKED 10147(97) on netId 140: 0
+  2026-11-20T12:05:58.701 - UNBLOCKED 10123(21) on netId 140: 0
+  2026-11-20T12:05:58.683 - UNBLOCKED 10064(25) on netId 140: 0
+  2026-11-20T12:05:55.229 - UNBLOCKED 10031
+  2026-11-20T12:05:54.896 - BLOCKED 10064(25) on netId 140: 4
+  2026-11-20T12:05:54.895 - UNBLOCKED 10066(742) on netId 140: 0
+
+NetTransition WakeLock activity (most recent first):
+  total acquisitions: 3
+  total releases: 3
+  cumulative duration: 31s
+  longest duration: 15s
+  2026-11-20T16:45:32.222 - RELEASE (EVENT_CLEAR_NET_TRANSITION_WAKELOCK)
+  2026-11-20T16:45:30.786 - ACQUIRE for [156 WIFI]
+  2026-11-20T04:18:50.670 - RELEASE (EVENT_EXPIRE_NET_TRANSITION_WAKELOCK)
+  2026-11-20T04:18:35.650 - ACQUIRE for [104 WIFI]
+  2026-11-19T01:11:51.803 - RELEASE (EVENT_EXPIRE_NET_TRANSITION_WAKELOCK)
+  2026-11-19T01:11:36.789 - ACQUIRE for [100 WIFI]
+  
+  bandwidth update requests (by uid):
+
+mOemNetworkPreferencesLogs (most recent first):
+
+
+Permission Monitor:
+  Interface filtering rules:
+
+Legacy network activity:
+  mNetworkActive=true
+  Idle timers:
+    wlan0:
+      timeout=15 type=1

@@ -1,0 +1,144 @@
+[
+  {
+    "path": "VLESS + TCP + TLS + Vision",
+    "version": "vless-vision",
+    "carrier": "tcp-tls",
+    "attempts": 2,
+    "complete": 2,
+    "raw_total_ms": [
+      2231,
+      2752
+    ],
+    "median_complete_total_ms": 2491.5,
+    "median_complete_e2e_mbps": 3.4033287114072768,
+    "received_mib": 2.0,
+    "errors": []
+  },
+  {
+    "path": "Trojan + TCP + TLS",
+    "version": "trojan",
+    "carrier": "tcp-tls",
+    "attempts": 2,
+    "complete": 2,
+    "raw_total_ms": [
+      21513,
+      6234
+    ],
+    "median_complete_total_ms": 13873.5,
+    "median_complete_e2e_mbps": 0.8677612770835799,
+    "received_mib": 2.0,
+    "errors": []
+  },
+  {
+    "path": "Hysteria 2",
+    "version": "hysteria2",
+    "carrier": "quic",
+    "attempts": 2,
+    "complete": 2,
+    "raw_total_ms": [
+      2121,
+      1667
+    ],
+    "median_complete_total_ms": 1894.0,
+    "median_complete_e2e_mbps": 4.493331680666088,
+    "received_mib": 2.0,
+    "errors": []
+  },
+  {
+    "path": "TUIC v5",
+    "version": "tuic",
+    "carrier": "quic",
+    "attempts": 2,
+    "complete": 2,
+    "raw_total_ms": [
+      3835,
+      1593
+    ],
+    "median_complete_total_ms": 2714.0,
+    "median_complete_e2e_mbps": 3.726522754051217,
+    "received_mib": 2.0,
+    "errors": []
+  },
+  {
+    "path": "AnyTLS",
+    "version": "anytls",
+    "carrier": "tcp-tls",
+    "attempts": 2,
+    "complete": 2,
+    "raw_total_ms": [
+      17611,
+      2499
+    ],
+    "median_complete_total_ms": 10055.0,
+    "median_complete_e2e_mbps": 1.916022173962321,
+    "received_mib": 2.0,
+    "errors": []
+  },
+  {
+    "path": "FastCat v2 · H2",
+    "version": "v2",
+    "carrier": "h2",
+    "attempts": 2,
+    "complete": 1,
+    "raw_total_ms": [
+      2861,
+      30000
+    ],
+    "median_complete_total_ms": 2861,
+    "median_complete_e2e_mbps": 2.9313919232067103,
+    "received_mib": 1.953125,
+    "errors": [
+      "read pipe: i/o timeout"
+    ]
+  },
+  {
+    "path": "FastCat v2 · H3",
+    "version": "v2",
+    "carrier": "h3",
+    "attempts": 2,
+    "complete": 0,
+    "raw_total_ms": [
+      30001,
+      30000
+    ],
+    "median_complete_total_ms": null,
+    "median_complete_e2e_mbps": null,
+    "received_mib": 0.8125,
+    "errors": [
+      "deadline exceeded",
+      "deadline exceeded"
+    ]
+  },
+  {
+    "path": "最新轻量版 · H2",
+    "version": "v3-light-fast",
+    "carrier": "h2",
+    "attempts": 2,
+    "complete": 2,
+    "raw_total_ms": [
+      5799,
+      3669
+    ],
+    "median_complete_total_ms": 4734.0,
+    "median_complete_e2e_mbps": 1.8662642274211483,
+    "received_mib": 2.0,
+    "errors": []
+  },
+  {
+    "path": "最新轻量版 · H3",
+    "version": "v3-light-fast",
+    "carrier": "h3",
+    "attempts": 2,
+    "complete": 1,
+    "raw_total_ms": [
+      18387,
+      30001
+    ],
+    "median_complete_total_ms": 18387,
+    "median_complete_e2e_mbps": 0.45620971675435007,
+    "received_mib": 1.46875,
+    "errors": [
+      "H3_REQUEST_CANCELLED (local)"
+    ]
+  }
+]

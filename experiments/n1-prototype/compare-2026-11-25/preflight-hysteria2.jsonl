@@ -1,0 +1,3 @@
+{"bytes":8192,"cleanup_ms":0.067,"entry_ms":2439.289,"error_category":"truncated","error_stage":"headers","headers_ms":3763.679,"phase":"cold","protocol":"hysteria2","sample":1,"start_unix_ms":1795538037757,"success":false,"total_ms":3763.689}
+{"bytes":8192,"cleanup_ms":0.04,"entry_ms":633.171,"error_category":"truncated","error_stage":"headers","headers_ms":2046.022,"phase":"cold","protocol":"hysteria2","sample":2,"start_unix_ms":1795538041523,"success":false,"total_ms":2046.033}
+{"count":2,"elapsed_ms":5813.441,"event":"batch-ended","failed":2,"phase":"cold","protocol":"hysteria2","workers":1}

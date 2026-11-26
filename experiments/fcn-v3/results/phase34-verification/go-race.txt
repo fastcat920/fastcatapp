@@ -1,0 +1,3 @@
+ok  	core/fcnv3	7.582s
+ok  	core/tools/fcn-v3-server	2.981s
+ok  	core/tools/fcn-v3-compare	3.478s

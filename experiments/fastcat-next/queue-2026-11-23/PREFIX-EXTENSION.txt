@@ -1,0 +1,48 @@
+Experimental FCN/1 kind-2 bounded downstream prefix copies (2026-11-23)
+
+Status: laboratory extension; off by default. Not a general retransmission/FEC scheme.
+
+Negotiation:
+- Existing OPEN version stays 1. Kind 0 = legacy TCP; 1 = UDP association.
+- Kind 2 explicitly requests TCP with bounded downstream prefix copies.
+- OPEN kind is included in the exporter-bound HMAC along with the target/account/nonce.
+- Client configuration must explicitly enable PrefixRedundancy and use QUIC.
+- Server must explicitly enable PrefixRedundancy; both endpoints must advertise QUIC DATAGRAM support.
+- A new server with the feature disabled returns status 3 before dialing a target.
+- Older servers may reject kind 2 as authentication/protocol failure. No silent downgrade or automatic request/payload replay.
+- A new server with the feature enabled still accepts legacy kind 0 and UDP kind 1.
+- H2 does not support this extension. Reply coalescing and downstream budgeting cannot be combined with it in this prototype.
+
+Canonical stream:
+- Unchanged byte sequence: one success status byte 0 followed by TCP target bytes.
+- Authentication failures and target failures do not emit copies.
+- Canonical stream remains reliable. Lost/unsupported/full-queue copies do not fail or replace it.
+
+Copy DATAGRAM, server to client, all fields network byte order:
+  uint64 stream_id
+  uint16 magic = 0xFC31
+  uint16 byte_offset
+  1..1024 payload bytes
+- Offset counts the success byte at offset 0, then business data from offset 1.
+- Offset + payload length <= 8193.
+- At most 12 SendDatagram attempts and at most 8193 payload bytes per stream.
+- No timed retransmission of these copies. They are additional QUIC-encrypted DATAGRAM frames; QUIC manages AEAD nonces and congestion control.
+- A failed queue attempt consumes packet budget. Original stream bytes are never replayed at the application or target side.
+- Internal cursor saturates at the prefix boundary for arbitrarily long streams.
+
+Receiver:
+- Demultiplex copies only to an explicitly registered kind-2 stream. UDP association IDs are separate stream IDs.
+- Validate magic, length and prefix offset; ignore malformed/unregistered copies.
+- Deliver each byte offset once, in order. Accept reordering and identical duplicates.
+- Compare overlapping copy/canonical bytes; inconsistent authenticated representations fail with ErrProtocol.
+- Copy queue bounded at 16 fragments; prefix history bounded at 8193 bytes plus validity bits.
+- At most one pending reliable read and one 32KiB result buffer. No unbounded receive pump.
+- On reliable catch-up beyond prefix, unregister copies and use the normal reliable Read fast path.
+- Preserve read deadlines, deadline rearming, EOF, cancellation and half-close.
+
+Accounting / observation:
+- Business upload/download counters include target bytes once, excluding success byte and all duplicate copy bytes.
+- Diagnostic prefix_copy_summary counts payload accepted by SendDatagram and attempts, not proof of NIC transmission.
+- prefix_delivered_bytes counts bytes handed to the consumer from copy history before the reliable Read caught up; it is not a physical loss counter.
+- Request boundary snapshots can run without packet tracing. Live session wire usage includes QUIC headers, control frames and retransmissions, excluding UDP/IP framing.
+- Live wire snapshots are not lifetime totals across session removal/reset; benchmark snapshots are taken before client close and report active session count.

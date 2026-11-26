@@ -34,6 +34,7 @@ import 'package:fl_clash/xboard/features/initialization/initialization.dart';
 import 'package:fl_clash/xboard/features/auth/utils/customer_service_helper.dart';
 import 'package:fl_clash/xboard/features/auth/services/device_heartbeat_service.dart';
 import 'package:fl_clash/xboard/features/connectivity/connectivity.dart';
+import 'package:fl_clash/xboard/features/subscription/services/foreground_subscription_refresh.dart';
 
 class Application extends ConsumerStatefulWidget {
   const Application({
@@ -53,6 +54,8 @@ class ApplicationState extends ConsumerState<Application>
   StreamSubscription<Map<String, dynamic>>? _updateConfigSubscription;
   StreamSubscription<dynamic>? _iosVpnStatusSubscription;
   bool _iosVpnSyncing = false;
+  int _foregroundGeneration = 0;
+  int _foregroundConnectivityChecks = 0;
 
   Future<void> _syncIosVpnStatus() async {
     if (!Platform.isIOS ||
@@ -265,7 +268,10 @@ class ApplicationState extends ConsumerState<Application>
             (previous?.isRecovering == true &&
                 (previous?.consecutiveFailures ?? 0) >= 2);
         if (next.isOnline && recoveredFromOffline) {
-          unawaited(_refreshRemoteDataAfterRecovery());
+          // A resume-triggered probe uses the separate VPN-connected gate.
+          unawaited(_refreshRemoteDataAfterRecovery(
+            refreshSubscription: _foregroundConnectivityChecks == 0,
+          ));
         }
       },
       fireImmediately: true,
@@ -456,13 +462,17 @@ class ApplicationState extends ConsumerState<Application>
     });
   }
 
-  Future<void> _refreshRemoteDataAfterRecovery() async {
+  Future<void> _refreshRemoteDataAfterRecovery({
+    required bool refreshSubscription,
+  }) async {
     final userState = ref.read(xboardUserProvider);
     if (!userState.isAuthenticated) return;
     try {
-      await ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo(
-            importProfile: false,
-          );
+      if (refreshSubscription) {
+        await ref.read(xboardUserProvider.notifier).refreshSubscriptionInfo(
+              importProfile: false,
+            );
+      }
       if (mounted) {
         ref
             .read(xboardUserProvider.notifier)
@@ -483,8 +493,42 @@ class ApplicationState extends ConsumerState<Application>
     }
   }
 
+  Future<void> _verifyConnectivityOnResume() async {
+    _foregroundConnectivityChecks++;
+    try {
+      await ref.read(serviceConnectivityProvider.notifier).verifyNow();
+    } finally {
+      _foregroundConnectivityChecks--;
+    }
+  }
+
+  Future<void> _refreshSubscriptionOnResume(int generation) async {
+    try {
+      await _syncIosVpnStatus();
+      await refreshConnectedSubscriptionOnResume(
+        isCurrent: () => mounted &&
+            generation == _foregroundGeneration &&
+            ref.read(xboardUserProvider).isAuthenticated,
+        isConnected: () async {
+          if (Platform.isIOS || Platform.isAndroid) {
+            final nativeState = await service?.getVpnConnectionState().timeout(
+                  const Duration(seconds: 3),
+                );
+            return nativeState == 'connected';
+          }
+          return ref.read(runTimeProvider) != null;
+        },
+        refresh: () => ref.read(xboardUserProvider.notifier)
+            .refreshSubscriptionInfo(importProfile: false, source: '回到前台'),
+      );
+    } catch (error) {
+      debugPrint('[Application] 前台订阅刷新失败: $error');
+    }
+  }
+
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    final generation = ++_foregroundGeneration;
     _noticeEnvironmentChanged();
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.hidden) {
@@ -493,7 +537,7 @@ class ApplicationState extends ConsumerState<Application>
     }
     if (state == AppLifecycleState.resumed) {
       unawaited(_syncTvSystemTheme());
-      unawaited(_syncIosVpnStatus());
+      unawaited(_refreshSubscriptionOnResume(generation));
       final backgroundedAt = globalState.appBackgroundedAt;
       globalState.appBackgroundedAt = null;
       if (backgroundedAt != null &&
@@ -504,9 +548,7 @@ class ApplicationState extends ConsumerState<Application>
         globalState.latencyWarmupUntil =
             DateTime.now().add(const Duration(seconds: 15));
       }
-      unawaited(
-        ref.read(serviceConnectivityProvider.notifier).verifyNow(),
-      );
+      unawaited(_verifyConnectivityOnResume());
       unawaited(
         XBoardDeviceHeartbeatService.markActive(
           reason: 'app_resumed',

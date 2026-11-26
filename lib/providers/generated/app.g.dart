@@ -335,7 +335,7 @@ final groupsProvider =
 );
 
 typedef _$Groups = AutoDisposeNotifier<List<Group>>;
-String _$delayDataSourceHash() => r'd6484844070c42dbcda0c7c4546e581de463aa26';
+String _$delayDataSourceHash() => r'8ce48b9aca621b3815c91b9315379e4252584aa7';
 
 /// See also [DelayDataSource].
 @ProviderFor(DelayDataSource)

@@ -1,0 +1,1 @@
+Final and isolate contexts completed. Android VPN CONNECTED restored; stay_on_while_plugged_in=0. VPS no running fc-opt-* service or /run/fc-opt-* directory. No test listeners 19445/19451/19454/19458/19459. Production TCP+UDP 443/18447 listening. Private client/server credential files removed by context cleanup.

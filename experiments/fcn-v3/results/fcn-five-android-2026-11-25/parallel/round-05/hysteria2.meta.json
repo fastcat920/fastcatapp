@@ -1,0 +1,58 @@
+{
+  "phase": "parallel",
+  "arm": "hysteria2",
+  "entry_port": 18535,
+  "round": 5,
+  "rounds": 5,
+  "position": 5,
+  "args": [
+    "./compare",
+    "-config",
+    "bench.json",
+    "-protocol",
+    "hysteria2",
+    "-phase",
+    "download",
+    "-bytes",
+    "1048576",
+    "-count",
+    "4",
+    "-workers",
+    "4",
+    "-timeout",
+    "30s",
+    "-diagnostic-id",
+    "fcnfive02-parallel-5-hysteria2"
+  ],
+  "planned": 4,
+  "diagnostic_id": "fcnfive02-parallel-5-hysteria2",
+  "host_timeout_s": 48,
+  "before": {
+    "default_net_id": 361,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795599609744,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "after": {
+    "default_net_id": 361,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795599617925,
+    "exit_code": 0,
+    "probe_error": null,
+    "system_validated": true
+  },
+  "network_stable": true,
+  "status": "exited",
+  "exit_code": 0,
+  "start_unix_ms": 1795599609744,
+  "end_unix_ms": 1795599617814,
+  "elapsed_ms": 8069.593791
+}

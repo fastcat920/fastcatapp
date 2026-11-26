@@ -194,7 +194,9 @@ class EncryptedSubscriptionService {
         client.findProxy = (_) => 'DIRECT';
         client.connectionTimeout = requestTimeout;
 
-        final uri = Uri.parse(SubscriptionUrlHelper.ensureFastCatFlag(url));
+        final uri = Uri.parse(
+          await SubscriptionUrlHelper.ensureFastCatFlagForCore(url),
+        );
         final request = await client.getUrl(uri);
 
         // 设置请求头

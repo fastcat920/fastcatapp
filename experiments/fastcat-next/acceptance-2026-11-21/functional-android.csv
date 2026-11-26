@@ -1,0 +1,28 @@
+﻿carrier,check,elapsed_ms,ok,error
+quic,half-close-256KiB,1550,True,
+quic,fresh-after-network-reset,1226,True,
+quic,wrong-key-rejected,323,True,
+h2,half-close-256KiB,2255,True,
+h2,fresh-after-network-reset,4657,True,
+h2,wrong-key-rejected,499,True,
+quic,udp1100-01,105,True,
+quic,udp1100-02,102,True,
+quic,udp1100-03,131,True,
+quic,udp1100-04,2000,False,read fcn-datagram: deadline exceeded
+quic,udp1100-05,122,True,
+quic,udp1100-06,101,True,
+quic,udp1100-07,101,True,
+quic,udp1100-08,101,True,
+quic,udp1100-09,2000,False,read fcn-datagram: deadline exceeded
+quic,udp1100-10,2000,False,read fcn-datagram: deadline exceeded
+quic,udp1100-11,127,True,
+quic,udp1100-12,101,True,
+quic,udp1100-13,102,True,
+quic,udp1100-14,101,True,
+quic,udp1100-15,101,True,
+quic,udp1100-16,101,True,
+quic,udp1100-17,2001,False,read fcn-datagram: deadline exceeded
+quic,udp1100-18,2001,False,read fcn-datagram: deadline exceeded
+quic,udp1100-19,2000,False,read fcn-datagram: deadline exceeded
+quic,udp1100-20,129,True,
+quic,udp-oversize-rejected,0,True,

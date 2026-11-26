@@ -1,0 +1,32 @@
+[
+  {
+    "block": 1,
+    "baseline": 517.145,
+    "recovery": 491.883
+  },
+  {
+    "block": 2,
+    "baseline": 699.941,
+    "recovery": 502.029
+  },
+  {
+    "block": 3,
+    "baseline": 601.371,
+    "recovery": 466.668
+  },
+  {
+    "block": 4,
+    "baseline": 630.467,
+    "recovery": 492.743
+  },
+  {
+    "block": 5,
+    "baseline": 757.433,
+    "recovery": 636.957
+  },
+  {
+    "block": 6,
+    "baseline": 523.129,
+    "recovery": 597.876
+  }
+]

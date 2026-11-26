@@ -1,0 +1,96 @@
+{
+  "phase": "mechanism",
+  "summary": {
+    "baseline": {
+      "loaded_success": 0,
+      "loaded_total": 0,
+      "loaded_p50": null,
+      "loaded_p95": null,
+      "foreground_success": 0,
+      "foreground_total": 0,
+      "background_success": 0,
+      "background_total": 0,
+      "parallel": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0,
+        "median_mbps": null
+      },
+      "rolling": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0,
+        "median_mbps": null
+      },
+      "cold": {
+        "success": 36,
+        "total": 36,
+        "p50": 932.242,
+        "p95": 1987.266
+      },
+      "warm": {
+        "success": 36,
+        "total": 36,
+        "p50": 461.812,
+        "p95": 1123.249
+      },
+      "batch": {
+        "success": 3,
+        "total": 3,
+        "p50": 436.324,
+        "p95": 690.728
+      },
+      "combined": 0,
+      "flushed": 0,
+      "first_byte_only_frames": 107
+    },
+    "coalesce5": {
+      "loaded_success": 0,
+      "loaded_total": 0,
+      "loaded_p50": null,
+      "loaded_p95": null,
+      "foreground_success": 0,
+      "foreground_total": 0,
+      "background_success": 0,
+      "background_total": 0,
+      "parallel": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0,
+        "median_mbps": null
+      },
+      "rolling": {
+        "groups": 0,
+        "success": 0,
+        "jobs": 0,
+        "aggregate_mbps": 0.0,
+        "median_mbps": null
+      },
+      "cold": {
+        "success": 36,
+        "total": 36,
+        "p50": 1097.207,
+        "p95": 4894.749
+      },
+      "warm": {
+        "success": 36,
+        "total": 36,
+        "p50": 446.019,
+        "p95": 988.14
+      },
+      "batch": {
+        "success": 3,
+        "total": 3,
+        "p50": 725.209,
+        "p95": 733.767
+      },
+      "combined": 78,
+      "flushed": 0,
+      "first_byte_only_frames": 0
+    }
+  },
+  "rows": 156
+}

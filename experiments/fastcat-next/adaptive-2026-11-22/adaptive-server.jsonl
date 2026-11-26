@@ -1,0 +1,91 @@
+Starting fc-opt-next-1795321362.service - [systemd-run] /usr/local/bin/fc-opt-next-1795321362 -config /run/credentials/fc-opt-next-1795321362.service/config...
+Started fc-opt-next-1795321362.service - [systemd-run] /usr/local/bin/fc-opt-next-1795321362 -config /run/credentials/fc-opt-next-1795321362.service/config.
+{"stage":"upload_blocked","carrier":"quic","duration_us":1000153,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":522778}
+{"stage":"upload_blocked","carrier":"quic","duration_us":2000608,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":1523234}
+{"stage":"upload_blocked","carrier":"quic","duration_us":3000599,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":2523225}
+{"stage":"upload_blocked","carrier":"quic","duration_us":4000530,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":3523155}
+{"wire_bytes_sent":18939706,"wire_bytes_received":191667,"session":1,"cwnd_bytes":1478003,"bytes_in_flight":673187,"smoothed_rtt_us":117271,"blocked_sent":2,"stage":"server_quic_progress","carrier":"quic","duration_us":5001251,"ok":true,"packets_sent":13767,"packets_received":1969,"declared_lost":2323}
+{"stage":"upload_blocked","carrier":"quic","duration_us":5000046,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":4522671}
+{"stage":"upload_blocked","carrier":"quic","duration_us":6000729,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":5523354}
+{"stage":"upload_blocked","carrier":"quic","duration_us":7000605,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":6523231}
+{"stage":"upload_blocked","carrier":"quic","duration_us":8001130,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":7523755}
+{"stage":"download_end","carrier":"quic","duration_us":8002500,"ok":true,"read_bytes":33603900,"written_bytes":33603900,"read_wait_us":475074,"write_wait_us":132111}
+{"stage":"upload_end","carrier":"quic","duration_us":8002488,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":7525110,"write_wait_us":73}
+{"wire_bytes_sent":42066773,"wire_bytes_received":451004,"session":1,"cwnd_bytes":1767377,"smoothed_rtt_us":115196,"blocked_sent":2,"stage":"server_quic_end","carrier":"quic","duration_us":8828988,"ok":true,"packets_sent":30515,"packets_received":4077,"declared_lost":5679}
+{"stage":"upload_blocked","carrier":"quic","duration_us":1000370,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":698680}
+{"stage":"upload_blocked","carrier":"quic","duration_us":2000491,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":1698802}
+{"stage":"upload_blocked","carrier":"quic","duration_us":3000992,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":2699302}
+{"stage":"upload_blocked","carrier":"quic","duration_us":4000813,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":3699123}
+{"wire_bytes_sent":23472753,"wire_bytes_received":208054,"session":2,"cwnd_bytes":1585410,"bytes_in_flight":1245088,"smoothed_rtt_us":104853,"blocked_sent":10,"stage":"server_quic_progress","carrier":"quic","duration_us":5000664,"ok":true,"packets_sent":17051,"packets_received":2112,"declared_lost":3154}
+{"stage":"upload_blocked","carrier":"quic","duration_us":5000517,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":4698827}
+{"stage":"upload_blocked","carrier":"quic","duration_us":6000130,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":5698441}
+{"stage":"upload_blocked","carrier":"quic","duration_us":7000586,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":6698896}
+{"stage":"download_end","carrier":"quic","duration_us":7641505,"ok":true,"read_bytes":33603900,"written_bytes":33603900,"read_wait_us":300024,"write_wait_us":380800}
+{"stage":"upload_end","carrier":"quic","duration_us":7641755,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":7340062,"write_wait_us":28}
+{"wire_bytes_sent":42787110,"wire_bytes_received":413318,"session":2,"cwnd_bytes":1688926,"bytes_in_flight":22,"smoothed_rtt_us":104307,"blocked_sent":11,"stage":"server_quic_end","carrier":"quic","duration_us":8275718,"ok":true,"packets_sent":31052,"packets_received":3880,"declared_lost":6197,"max_pto":1}
+{"stage":"upload_blocked","carrier":"quic","duration_us":2000242,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":1440028}
+{"stage":"upload_blocked","carrier":"quic","duration_us":3001076,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":2440862}
+{"stage":"upload_blocked","carrier":"quic","duration_us":4000798,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":3440584}
+{"wire_bytes_sent":3808620,"wire_bytes_received":70380,"session":3,"cwnd_bytes":237333,"bytes_in_flight":91502,"smoothed_rtt_us":100874,"stage":"server_quic_progress","carrier":"quic","duration_us":5001819,"ok":true,"packets_sent":2824,"packets_received":857,"declared_lost":635}
+{"stage":"upload_blocked","carrier":"quic","duration_us":5000043,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":4439830}
+{"stage":"upload_blocked","carrier":"quic","duration_us":6000927,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":5440714}
+{"stage":"upload_blocked","carrier":"quic","duration_us":7000252,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":6440039}
+{"stage":"upload_blocked","carrier":"quic","duration_us":8000530,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":7440317}
+{"stage":"upload_blocked","carrier":"quic","duration_us":9000069,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":8439855}
+{"wire_bytes_sent":10575326,"wire_bytes_received":196056,"session":3,"cwnd_bytes":407326,"bytes_in_flight":166853,"smoothed_rtt_us":102606,"stage":"server_quic_progress","carrier":"quic","duration_us":10000856,"ok":true,"packets_sent":7729,"packets_received":2335,"declared_lost":1754}
+{"stage":"upload_blocked","carrier":"quic","duration_us":10000097,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":9439884}
+{"stage":"upload_blocked","carrier":"quic","duration_us":11000260,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":10440047}
+{"stage":"upload_blocked","carrier":"quic","duration_us":12000336,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":11440123}
+{"stage":"upload_blocked","carrier":"quic","duration_us":13000736,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":12440523}
+{"stage":"upload_blocked","carrier":"quic","duration_us":14000060,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":13439846}
+{"wire_bytes_sent":20353613,"wire_bytes_received":393185,"session":3,"cwnd_bytes":574778,"bytes_in_flight":224747,"smoothed_rtt_us":100881,"stage":"server_quic_progress","carrier":"quic","duration_us":15001587,"ok":true,"packets_sent":14837,"packets_received":4144,"declared_lost":3631}
+{"stage":"upload_blocked","carrier":"quic","duration_us":15000545,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":14440332}
+{"stage":"upload_blocked","carrier":"quic","duration_us":16000122,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":15439909}
+{"stage":"upload_blocked","carrier":"quic","duration_us":17000164,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":16439950}
+{"stage":"upload_blocked","carrier":"quic","duration_us":18000166,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":17439952}
+{"stage":"upload_blocked","carrier":"quic","duration_us":19000687,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":18440474}
+{"wire_bytes_sent":34263728,"wire_bytes_received":650745,"session":3,"cwnd_bytes":723262,"bytes_in_flight":317110,"smoothed_rtt_us":100260,"blocked_sent":3,"stage":"server_quic_progress","carrier":"quic","duration_us":20001426,"ok":true,"packets_sent":24950,"packets_received":6102,"declared_lost":6859}
+{"stage":"upload_blocked","carrier":"quic","duration_us":20001083,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":19440870}
+{"stage":"upload_blocked","carrier":"quic","duration_us":21000188,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":20439975}
+{"stage":"upload_blocked","carrier":"quic","duration_us":22001022,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":21440809}
+{"stage":"upload_blocked","carrier":"quic","duration_us":23000497,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":22440283}
+{"stage":"upload_blocked","carrier":"quic","duration_us":24000431,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":23440218}
+{"stage":"download_end","carrier":"quic","duration_us":24540973,"ok":true,"read_bytes":33603901,"written_bytes":33603901,"read_wait_us":559024,"write_wait_us":251226}
+{"stage":"upload_end","carrier":"quic","duration_us":24541088,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":23980871,"write_wait_us":713}
+{"wire_bytes_sent":49046629,"wire_bytes_received":963681,"session":3,"cwnd_bytes":749095,"bytes_in_flight":17292,"smoothed_rtt_us":110935,"blocked_sent":5,"stage":"server_quic_progress","carrier":"quic","duration_us":25001514,"ok":true,"packets_sent":35686,"packets_received":8174,"declared_lost":10718}
+{"wire_bytes_sent":49062466,"wire_bytes_received":963932,"session":3,"cwnd_bytes":749095,"bytes_in_flight":22,"smoothed_rtt_us":107551,"blocked_sent":5,"stage":"server_quic_end","carrier":"quic","duration_us":25533288,"ok":true,"packets_sent":35698,"packets_received":8180,"declared_lost":10729}
+{"stage":"upload_blocked","carrier":"quic","duration_us":1000125,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":784191}
+{"stage":"upload_blocked","carrier":"quic","duration_us":2000655,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":1784720}
+{"stage":"upload_blocked","carrier":"quic","duration_us":3000411,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":2784477}
+{"stage":"upload_blocked","carrier":"quic","duration_us":4000456,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":3784522}
+{"wire_bytes_sent":5319602,"wire_bytes_received":96893,"session":4,"cwnd_bytes":304585,"bytes_in_flight":146431,"smoothed_rtt_us":96549,"stage":"server_quic_progress","carrier":"quic","duration_us":5001234,"ok":true,"packets_sent":3909,"packets_received":1170,"declared_lost":826,"max_pto":1}
+{"stage":"upload_blocked","carrier":"quic","duration_us":5000079,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":4784145}
+{"stage":"upload_blocked","carrier":"quic","duration_us":6000656,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":5784722}
+{"stage":"upload_blocked","carrier":"quic","duration_us":7000123,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":6784189}
+{"stage":"upload_blocked","carrier":"quic","duration_us":8000119,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":7784185}
+{"stage":"upload_blocked","carrier":"quic","duration_us":9000997,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":8785063}
+{"wire_bytes_sent":13449920,"wire_bytes_received":233877,"session":4,"cwnd_bytes":472489,"bytes_in_flight":181227,"smoothed_rtt_us":97327,"stage":"server_quic_progress","carrier":"quic","duration_us":10000261,"ok":true,"packets_sent":9811,"packets_received":2741,"declared_lost":2019,"max_pto":1}
+{"stage":"upload_blocked","carrier":"quic","duration_us":10000227,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":9784293}
+{"stage":"upload_blocked","carrier":"quic","duration_us":11000528,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":10784593}
+{"stage":"upload_blocked","carrier":"quic","duration_us":12000333,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":11784398}
+{"stage":"upload_blocked","carrier":"quic","duration_us":13000173,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":12784239}
+{"stage":"upload_blocked","carrier":"quic","duration_us":14000742,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":13784808}
+{"wire_bytes_sent":24858364,"wire_bytes_received":446865,"session":4,"cwnd_bytes":628113,"bytes_in_flight":320464,"smoothed_rtt_us":116649,"stage":"server_quic_progress","carrier":"quic","duration_us":15001221,"ok":true,"packets_sent":18111,"packets_received":4682,"declared_lost":4134,"max_pto":1}
+{"stage":"upload_blocked","carrier":"quic","duration_us":15000537,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":14784603}
+{"stage":"upload_blocked","carrier":"quic","duration_us":16000071,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":15784137}
+{"stage":"upload_blocked","carrier":"quic","duration_us":17000734,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":16784800}
+{"stage":"upload_blocked","carrier":"quic","duration_us":18000589,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":17784655}
+{"stage":"upload_blocked","carrier":"quic","duration_us":19000527,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":18784593}
+{"wire_bytes_sent":37624241,"wire_bytes_received":728564,"session":4,"cwnd_bytes":648538,"bytes_in_flight":310128,"smoothed_rtt_us":96206,"stage":"server_quic_progress","carrier":"quic","duration_us":20000242,"ok":true,"packets_sent":27416,"packets_received":6880,"declared_lost":6881,"max_pto":1}
+{"stage":"upload_blocked","carrier":"quic","duration_us":20000815,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":19784881}
+{"stage":"upload_blocked","carrier":"quic","duration_us":21000220,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":20784285}
+{"stage":"upload_blocked","carrier":"quic","duration_us":22000866,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":21784932}
+{"stage":"download_end","carrier":"quic","duration_us":22442065,"ok":true,"read_bytes":33603901,"written_bytes":33603901,"read_wait_us":214503,"write_wait_us":134829}
+{"stage":"upload_end","carrier":"quic","duration_us":22442093,"ok":false,"read_bytes":431,"written_bytes":431,"read_wait_us":22226155,"write_wait_us":41}
+{"wire_bytes_sent":46185633,"wire_bytes_received":908532,"session":4,"cwnd_bytes":737324,"bytes_in_flight":1435,"smoothed_rtt_us":103988,"stage":"server_quic_end","carrier":"quic","duration_us":23682686,"ok":true,"packets_sent":33652,"packets_received":8306,"declared_lost":8696,"max_pto":1}
+Stopping fc-opt-next-1795321362.service - [systemd-run] /usr/local/bin/fc-opt-next-1795321362 -config /run/credentials/fc-opt-next-1795321362.service/config...
+fc-opt-next-1795321362.service: Deactivated successfully.
+Stopped fc-opt-next-1795321362.service - [systemd-run] /usr/local/bin/fc-opt-next-1795321362 -config /run/credentials/fc-opt-next-1795321362.service/config.
+fc-opt-next-1795321362.service: Consumed 8.144s CPU time, 16.9M memory peak.
+Starting fc-opt-next-1795321362.service - [systemd-run] /usr/local/bin/fc-opt-next-1795321362 -config /run/credentials/fc-opt-next-1795321362.service/config...
+Started fc-opt-next-1795321362.service - [systemd-run] /usr/local/bin/fc-opt-next-1795321362 -config /run/credentials/fc-opt-next-1795321362.service/config.

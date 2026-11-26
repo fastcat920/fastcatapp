@@ -1,0 +1,275 @@
+{
+  "jobs": [
+    {
+      "phase": "download",
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1,
+      "protocol": "n1",
+      "block": 1,
+      "position": 1,
+      "phase_index": 0
+    },
+    {
+      "phase": "download",
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1,
+      "protocol": "tuic",
+      "block": 1,
+      "position": 2,
+      "phase_index": 0
+    },
+    {
+      "phase": "download",
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1,
+      "protocol": "hysteria2",
+      "block": 1,
+      "position": 3,
+      "phase_index": 0
+    },
+    {
+      "phase": "download",
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1,
+      "protocol": "tuic",
+      "block": 2,
+      "position": 1,
+      "phase_index": 0
+    },
+    {
+      "phase": "download",
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1,
+      "protocol": "hysteria2",
+      "block": 2,
+      "position": 2,
+      "phase_index": 0
+    },
+    {
+      "phase": "download",
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1,
+      "protocol": "n1",
+      "block": 2,
+      "position": 3,
+      "phase_index": 0
+    },
+    {
+      "phase": "download",
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1,
+      "protocol": "hysteria2",
+      "block": 3,
+      "position": 1,
+      "phase_index": 0
+    },
+    {
+      "phase": "download",
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1,
+      "protocol": "n1",
+      "block": 3,
+      "position": 2,
+      "phase_index": 0
+    },
+    {
+      "phase": "download",
+      "bytes": 4194304,
+      "count": 1,
+      "workers": 1,
+      "protocol": "tuic",
+      "block": 3,
+      "position": 3,
+      "phase_index": 0
+    },
+    {
+      "phase": "download",
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4,
+      "protocol": "hysteria2",
+      "block": 1,
+      "position": 1,
+      "phase_index": 1
+    },
+    {
+      "phase": "download",
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4,
+      "protocol": "tuic",
+      "block": 1,
+      "position": 2,
+      "phase_index": 1
+    },
+    {
+      "phase": "download",
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4,
+      "protocol": "n1",
+      "block": 1,
+      "position": 3,
+      "phase_index": 1
+    },
+    {
+      "phase": "download",
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4,
+      "protocol": "tuic",
+      "block": 2,
+      "position": 1,
+      "phase_index": 1
+    },
+    {
+      "phase": "download",
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4,
+      "protocol": "n1",
+      "block": 2,
+      "position": 2,
+      "phase_index": 1
+    },
+    {
+      "phase": "download",
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4,
+      "protocol": "hysteria2",
+      "block": 2,
+      "position": 3,
+      "phase_index": 1
+    },
+    {
+      "phase": "download",
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4,
+      "protocol": "n1",
+      "block": 3,
+      "position": 1,
+      "phase_index": 1
+    },
+    {
+      "phase": "download",
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4,
+      "protocol": "hysteria2",
+      "block": 3,
+      "position": 2,
+      "phase_index": 1
+    },
+    {
+      "phase": "download",
+      "bytes": 1048576,
+      "count": 4,
+      "workers": 4,
+      "protocol": "tuic",
+      "block": 3,
+      "position": 3,
+      "phase_index": 1
+    },
+    {
+      "phase": "upload",
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1,
+      "protocol": "n1",
+      "block": 1,
+      "position": 1,
+      "phase_index": 2
+    },
+    {
+      "phase": "upload",
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1,
+      "protocol": "tuic",
+      "block": 1,
+      "position": 2,
+      "phase_index": 2
+    },
+    {
+      "phase": "upload",
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1,
+      "protocol": "hysteria2",
+      "block": 1,
+      "position": 3,
+      "phase_index": 2
+    },
+    {
+      "phase": "upload",
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1,
+      "protocol": "tuic",
+      "block": 2,
+      "position": 1,
+      "phase_index": 2
+    },
+    {
+      "phase": "upload",
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1,
+      "protocol": "hysteria2",
+      "block": 2,
+      "position": 2,
+      "phase_index": 2
+    },
+    {
+      "phase": "upload",
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1,
+      "protocol": "n1",
+      "block": 2,
+      "position": 3,
+      "phase_index": 2
+    },
+    {
+      "phase": "upload",
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1,
+      "protocol": "hysteria2",
+      "block": 3,
+      "position": 1,
+      "phase_index": 2
+    },
+    {
+      "phase": "upload",
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1,
+      "protocol": "n1",
+      "block": 3,
+      "position": 2,
+      "phase_index": 2
+    },
+    {
+      "phase": "upload",
+      "bytes": 1048576,
+      "count": 1,
+      "workers": 1,
+      "protocol": "tuic",
+      "block": 3,
+      "position": 3,
+      "phase_index": 2
+    }
+  ],
+  "created_unix": 1795539216.798831
+}

@@ -1,0 +1,388 @@
+{
+  "run_id": "fcn3wire01",
+  "jobs": [
+    {
+      "phase": "udp",
+      "round": 1,
+      "position": 1,
+      "arm": "current",
+      "args": [
+        "./compare",
+        "-config",
+        "bench.json",
+        "-protocol",
+        "fcnv3",
+        "-udp-diagnostic",
+        "-count",
+        "28",
+        "-timeout",
+        "55s",
+        "-udp-wire-rx"
+      ],
+      "host_timeout_s": 70,
+      "entry_port": 18532
+    },
+    {
+      "phase": "udp",
+      "round": 1,
+      "position": 2,
+      "arm": "adaptive",
+      "args": [
+        "./compare",
+        "-config",
+        "adaptive.json",
+        "-protocol",
+        "fcnv3",
+        "-udp-diagnostic",
+        "-count",
+        "28",
+        "-timeout",
+        "55s",
+        "-udp-wire-rx"
+      ],
+      "host_timeout_s": 70,
+      "entry_port": 18534
+    },
+    {
+      "phase": "udp",
+      "round": 1,
+      "position": 3,
+      "arm": "tuic",
+      "args": [
+        "./compare",
+        "-config",
+        "bench.json",
+        "-protocol",
+        "tuic",
+        "-udp-diagnostic",
+        "-count",
+        "28",
+        "-timeout",
+        "55s",
+        "-udp-wire-rx"
+      ],
+      "host_timeout_s": 70,
+      "entry_port": 18533
+    },
+    {
+      "phase": "udp",
+      "round": 2,
+      "position": 1,
+      "arm": "current",
+      "args": [
+        "./compare",
+        "-config",
+        "bench.json",
+        "-protocol",
+        "fcnv3",
+        "-udp-diagnostic",
+        "-count",
+        "28",
+        "-timeout",
+        "55s",
+        "-udp-wire-rx"
+      ],
+      "host_timeout_s": 70,
+      "entry_port": 18532
+    },
+    {
+      "phase": "udp",
+      "round": 2,
+      "position": 2,
+      "arm": "tuic",
+      "args": [
+        "./compare",
+        "-config",
+        "bench.json",
+        "-protocol",
+        "tuic",
+        "-udp-diagnostic",
+        "-count",
+        "28",
+        "-timeout",
+        "55s",
+        "-udp-wire-rx"
+      ],
+      "host_timeout_s": 70,
+      "entry_port": 18533
+    },
+    {
+      "phase": "udp",
+      "round": 2,
+      "position": 3,
+      "arm": "adaptive",
+      "args": [
+        "./compare",
+        "-config",
+        "adaptive.json",
+        "-protocol",
+        "fcnv3",
+        "-udp-diagnostic",
+        "-count",
+        "28",
+        "-timeout",
+        "55s",
+        "-udp-wire-rx"
+      ],
+      "host_timeout_s": 70,
+      "entry_port": 18534
+    },
+    {
+      "phase": "udp",
+      "round": 3,
+      "position": 1,
+      "arm": "adaptive",
+      "args": [
+        "./compare",
+        "-config",
+        "adaptive.json",
+        "-protocol",
+        "fcnv3",
+        "-udp-diagnostic",
+        "-count",
+        "28",
+        "-timeout",
+        "55s",
+        "-udp-wire-rx"
+      ],
+      "host_timeout_s": 70,
+      "entry_port": 18534
+    },
+    {
+      "phase": "udp",
+      "round": 3,
+      "position": 2,
+      "arm": "current",
+      "args": [
+        "./compare",
+        "-config",
+        "bench.json",
+        "-protocol",
+        "fcnv3",
+        "-udp-diagnostic",
+        "-count",
+        "28",
+        "-timeout",
+        "55s",
+        "-udp-wire-rx"
+      ],
+      "host_timeout_s": 70,
+      "entry_port": 18532
+    },
+    {
+      "phase": "udp",
+      "round": 3,
+      "position": 3,
+      "arm": "tuic",
+      "args": [
+        "./compare",
+        "-config",
+        "bench.json",
+        "-protocol",
+        "tuic",
+        "-udp-diagnostic",
+        "-count",
+        "28",
+        "-timeout",
+        "55s",
+        "-udp-wire-rx"
+      ],
+      "host_timeout_s": 70,
+      "entry_port": 18533
+    },
+    {
+      "phase": "udp",
+      "round": 4,
+      "position": 1,
+      "arm": "adaptive",
+      "args": [
+        "./compare",
+        "-config",
+        "adaptive.json",
+        "-protocol",
+        "fcnv3",
+        "-udp-diagnostic",
+        "-count",
+        "28",
+        "-timeout",
+        "55s",
+        "-udp-wire-rx"
+      ],
+      "host_timeout_s": 70,
+      "entry_port": 18534
+    },
+    {
+      "phase": "udp",
+      "round": 4,
+      "position": 2,
+      "arm": "tuic",
+      "args": [
+        "./compare",
+        "-config",
+        "bench.json",
+        "-protocol",
+        "tuic",
+        "-udp-diagnostic",
+        "-count",
+        "28",
+        "-timeout",
+        "55s",
+        "-udp-wire-rx"
+      ],
+      "host_timeout_s": 70,
+      "entry_port": 18533
+    },
+    {
+      "phase": "udp",
+      "round": 4,
+      "position": 3,
+      "arm": "current",
+      "args": [
+        "./compare",
+        "-config",
+        "bench.json",
+        "-protocol",
+        "fcnv3",
+        "-udp-diagnostic",
+        "-count",
+        "28",
+        "-timeout",
+        "55s",
+        "-udp-wire-rx"
+      ],
+      "host_timeout_s": 70,
+      "entry_port": 18532
+    },
+    {
+      "phase": "udp",
+      "round": 5,
+      "position": 1,
+      "arm": "tuic",
+      "args": [
+        "./compare",
+        "-config",
+        "bench.json",
+        "-protocol",
+        "tuic",
+        "-udp-diagnostic",
+        "-count",
+        "28",
+        "-timeout",
+        "55s",
+        "-udp-wire-rx"
+      ],
+      "host_timeout_s": 70,
+      "entry_port": 18533
+    },
+    {
+      "phase": "udp",
+      "round": 5,
+      "position": 2,
+      "arm": "current",
+      "args": [
+        "./compare",
+        "-config",
+        "bench.json",
+        "-protocol",
+        "fcnv3",
+        "-udp-diagnostic",
+        "-count",
+        "28",
+        "-timeout",
+        "55s",
+        "-udp-wire-rx"
+      ],
+      "host_timeout_s": 70,
+      "entry_port": 18532
+    },
+    {
+      "phase": "udp",
+      "round": 5,
+      "position": 3,
+      "arm": "adaptive",
+      "args": [
+        "./compare",
+        "-config",
+        "adaptive.json",
+        "-protocol",
+        "fcnv3",
+        "-udp-diagnostic",
+        "-count",
+        "28",
+        "-timeout",
+        "55s",
+        "-udp-wire-rx"
+      ],
+      "host_timeout_s": 70,
+      "entry_port": 18534
+    },
+    {
+      "phase": "udp",
+      "round": 6,
+      "position": 1,
+      "arm": "tuic",
+      "args": [
+        "./compare",
+        "-config",
+        "bench.json",
+        "-protocol",
+        "tuic",
+        "-udp-diagnostic",
+        "-count",
+        "28",
+        "-timeout",
+        "55s",
+        "-udp-wire-rx"
+      ],
+      "host_timeout_s": 70,
+      "entry_port": 18533
+    },
+    {
+      "phase": "udp",
+      "round": 6,
+      "position": 2,
+      "arm": "adaptive",
+      "args": [
+        "./compare",
+        "-config",
+        "adaptive.json",
+        "-protocol",
+        "fcnv3",
+        "-udp-diagnostic",
+        "-count",
+        "28",
+        "-timeout",
+        "55s",
+        "-udp-wire-rx"
+      ],
+      "host_timeout_s": 70,
+      "entry_port": 18534
+    },
+    {
+      "phase": "udp",
+      "round": 6,
+      "position": 3,
+      "arm": "current",
+      "args": [
+        "./compare",
+        "-config",
+        "bench.json",
+        "-protocol",
+        "fcnv3",
+        "-udp-diagnostic",
+        "-count",
+        "28",
+        "-timeout",
+        "55s",
+        "-udp-wire-rx"
+      ],
+      "host_timeout_s": 70,
+      "entry_port": 18532
+    }
+  ],
+  "ports": {
+    "current": 18532,
+    "adaptive": 18534,
+    "tuic": 18533
+  }
+}

@@ -1,0 +1,7 @@
+2026/11/25 13:33:34 FCN v3 listening on [::]:18532 with credential revision 1
+2026/11/25 13:43:40 loaded credential revision 2
+2026/11/25 13:43:43 loaded credential revision 3
+temporary ports closed and files removed
+  catnode-native-93.service     loaded active running CatNode native node 93
+  catnode-native-94.service     loaded active running CatNode native node 94
+  fastcat-n1-experiment.service loaded active running [systemd-run] /opt/fastcat-n1-lab/n1 -mode server -listen 0.0.0.0:18461 -config /opt/fastcat-n1-lab/config.json -cert /etc/letsencrypt/live/zlhk.fastcat.ink/fullchain.pem -cert-key /etc/letsencrypt/live/zlhk.fastcat.ink/privkey.pem -target 127.0.0.1:18462

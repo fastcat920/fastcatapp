@@ -150,6 +150,11 @@ require (
 // for https://github.com/golang/protobuf/issues/1704
 replace google.golang.org/protobuf => github.com/metacubex/protobuf-go v0.0.0-20260306035419-7ceee0674686
 
-require github.com/fastcat920/fcn v0.0.0
+require (
+	github.com/fastcat920/fcn v0.0.0
+	github.com/fastcat920/fcnv3 v0.0.0
+)
 
 replace github.com/fastcat920/fcn => ./transport/fcn
+
+replace github.com/fastcat920/fcnv3 => ../fcnv3

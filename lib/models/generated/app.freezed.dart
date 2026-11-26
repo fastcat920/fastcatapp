@@ -22,7 +22,7 @@ mixin _$AppState {
   List<Package> get packages => throw _privateConstructorUsedError;
   int get sortNum => throw _privateConstructorUsedError;
   Size get viewSize => throw _privateConstructorUsedError;
-  Map<String, Map<String, int?>> get delayMap =>
+  Map<String, Map<String, Delay>> get delayMap =>
       throw _privateConstructorUsedError;
   List<Group> get groups => throw _privateConstructorUsedError;
   int get checkIpNum => throw _privateConstructorUsedError;
@@ -57,7 +57,7 @@ abstract class $AppStateCopyWith<$Res> {
       List<Package> packages,
       int sortNum,
       Size viewSize,
-      Map<String, Map<String, int?>> delayMap,
+      Map<String, Map<String, Delay>> delayMap,
       List<Group> groups,
       int checkIpNum,
       Brightness? brightness,
@@ -137,7 +137,7 @@ class _$AppStateCopyWithImpl<$Res, $Val extends AppState>
       delayMap: null == delayMap
           ? _value.delayMap
           : delayMap // ignore: cast_nullable_to_non_nullable
-              as Map<String, Map<String, int?>>,
+              as Map<String, Map<String, Delay>>,
       groups: null == groups
           ? _value.groups
           : groups // ignore: cast_nullable_to_non_nullable
@@ -209,7 +209,7 @@ abstract class _$$AppStateImplCopyWith<$Res>
       List<Package> packages,
       int sortNum,
       Size viewSize,
-      Map<String, Map<String, int?>> delayMap,
+      Map<String, Map<String, Delay>> delayMap,
       List<Group> groups,
       int checkIpNum,
       Brightness? brightness,
@@ -287,7 +287,7 @@ class __$$AppStateImplCopyWithImpl<$Res>
       delayMap: null == delayMap
           ? _value._delayMap
           : delayMap // ignore: cast_nullable_to_non_nullable
-              as Map<String, Map<String, int?>>,
+              as Map<String, Map<String, Delay>>,
       groups: null == groups
           ? _value._groups
           : groups // ignore: cast_nullable_to_non_nullable
@@ -354,7 +354,7 @@ class _$AppStateImpl implements _AppState {
       final List<Package> packages = const [],
       this.sortNum = 0,
       required this.viewSize,
-      final Map<String, Map<String, int?>> delayMap = const {},
+      final Map<String, Map<String, Delay>> delayMap = const {},
       final List<Group> groups = const [],
       this.checkIpNum = 0,
       this.brightness,
@@ -396,10 +396,10 @@ class _$AppStateImpl implements _AppState {
   final int sortNum;
   @override
   final Size viewSize;
-  final Map<String, Map<String, int?>> _delayMap;
+  final Map<String, Map<String, Delay>> _delayMap;
   @override
   @JsonKey()
-  Map<String, Map<String, int?>> get delayMap {
+  Map<String, Map<String, Delay>> get delayMap {
     if (_delayMap is EqualUnmodifiableMapView) return _delayMap;
     // ignore: implicit_dynamic_type
     return EqualUnmodifiableMapView(_delayMap);
@@ -534,7 +534,7 @@ abstract class _AppState implements AppState {
       final List<Package> packages,
       final int sortNum,
       required final Size viewSize,
-      final Map<String, Map<String, int?>> delayMap,
+      final Map<String, Map<String, Delay>> delayMap,
       final List<Group> groups,
       final int checkIpNum,
       final Brightness? brightness,
@@ -562,7 +562,7 @@ abstract class _AppState implements AppState {
   @override
   Size get viewSize;
   @override
-  Map<String, Map<String, int?>> get delayMap;
+  Map<String, Map<String, Delay>> get delayMap;
   @override
   List<Group> get groups;
   @override

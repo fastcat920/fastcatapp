@@ -1,0 +1,54 @@
+{
+  "phase": "download",
+  "round": 3,
+  "position": 2,
+  "arm": "current",
+  "args": [
+    "./compare",
+    "-config",
+    "bench-b.json",
+    "-protocol",
+    "fcnv3",
+    "-phase",
+    "download",
+    "-bytes",
+    "1048576",
+    "-count",
+    "4",
+    "-workers",
+    "4",
+    "-timeout",
+    "25s",
+    "-diagnostic-id",
+    "fcn3crossb-current-3"
+  ],
+  "host_timeout_s": 40,
+  "diagnostic_id": "fcn3crossb-current-3",
+  "entry_port": 18534,
+  "before": {
+    "default_net_id": 359,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795595189610,
+    "exit_code": 0,
+    "probe_error": null
+  },
+  "after": {
+    "default_net_id": 359,
+    "validated": true,
+    "transports": [
+      "WIFI"
+    ],
+    "observed_unix_ms": 1795595193737,
+    "exit_code": 0,
+    "probe_error": null
+  },
+  "network_stable": true,
+  "status": "exited",
+  "exit_code": 0,
+  "start_unix_ms": 1795595189611,
+  "end_unix_ms": 1795595193649,
+  "elapsed_ms": 4038.541208
+}

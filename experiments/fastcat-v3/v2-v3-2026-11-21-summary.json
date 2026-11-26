@@ -1,0 +1,477 @@
+{
+  "date": "2026-11-21",
+  "scope": "Honor Android Wi-Fi, standalone common comparison tool, same VPS and certificate, separate isolated ports; no ECH or DoH",
+  "client_go": "go1.26.2",
+  "server_go": {
+    "v2": "go1.27.3",
+    "v3": "go1.27.3"
+  },
+  "target": "example.com:443",
+  "samples": 20,
+  "batch_rounds": 5,
+  "workers": 4,
+  "formal_success": 239,
+  "formal_attempts": 240,
+  "resources": {
+    "v2": {
+      "cpu_delta_ms": 509.988,
+      "memory_peak_mib": 10.98
+    },
+    "v3": {
+      "cpu_delta_ms": 730.905,
+      "memory_peak_mib": 12.68
+    }
+  },
+  "groups": [
+    {
+      "phase": "batch",
+      "protocol": "h2",
+      "version": "v2",
+      "success": 20,
+      "attempts": 20,
+      "first_byte": {
+        "p50_ms": 1335.4,
+        "p95_ms": 4105.4,
+        "max_ms": 4364.8
+      },
+      "entry": {
+        "p50_ms": 237.0,
+        "p95_ms": 478.2,
+        "max_ms": 480.3
+      },
+      "target_tls": {
+        "p50_ms": 622.4,
+        "p95_ms": 1156.9,
+        "max_ms": 3720.7
+      },
+      "response": {
+        "p50_ms": 408.0,
+        "p95_ms": 2713.7,
+        "max_ms": 3579.1
+      },
+      "errors": []
+    },
+    {
+      "phase": "batch",
+      "protocol": "h2",
+      "version": "v3",
+      "success": 20,
+      "attempts": 20,
+      "first_byte": {
+        "p50_ms": 843.3,
+        "p95_ms": 1015.7,
+        "max_ms": 1585.9
+      },
+      "entry": {
+        "p50_ms": 115.0,
+        "p95_ms": 287.5,
+        "max_ms": 287.9
+      },
+      "target_tls": {
+        "p50_ms": 367.6,
+        "p95_ms": 580.2,
+        "max_ms": 589.9
+      },
+      "response": {
+        "p50_ms": 329.0,
+        "p95_ms": 489.8,
+        "max_ms": 727.2
+      },
+      "errors": []
+    },
+    {
+      "phase": "batch",
+      "protocol": "h3",
+      "version": "v2",
+      "success": 20,
+      "attempts": 20,
+      "first_byte": {
+        "p50_ms": 721.2,
+        "p95_ms": 1127.3,
+        "max_ms": 1535.8
+      },
+      "entry": {
+        "p50_ms": 107.3,
+        "p95_ms": 319.3,
+        "max_ms": 335.3
+      },
+      "target_tls": {
+        "p50_ms": 466.5,
+        "p95_ms": 688.0,
+        "max_ms": 746.0
+      },
+      "response": {
+        "p50_ms": 155.1,
+        "p95_ms": 353.6,
+        "max_ms": 454.5
+      },
+      "errors": []
+    },
+    {
+      "phase": "batch",
+      "protocol": "h3",
+      "version": "v3",
+      "success": 20,
+      "attempts": 20,
+      "first_byte": {
+        "p50_ms": 684.0,
+        "p95_ms": 878.0,
+        "max_ms": 1266.1
+      },
+      "entry": {
+        "p50_ms": 102.1,
+        "p95_ms": 416.7,
+        "max_ms": 416.8
+      },
+      "target_tls": {
+        "p50_ms": 383.6,
+        "p95_ms": 549.3,
+        "max_ms": 621.6
+      },
+      "response": {
+        "p50_ms": 153.5,
+        "p95_ms": 358.1,
+        "max_ms": 412.1
+      },
+      "errors": []
+    },
+    {
+      "phase": "cold",
+      "protocol": "h2",
+      "version": "v2",
+      "success": 20,
+      "attempts": 20,
+      "first_byte": {
+        "p50_ms": 2019.8,
+        "p95_ms": 4211.9,
+        "max_ms": 7459.6
+      },
+      "entry": {
+        "p50_ms": 1009.2,
+        "p95_ms": 2471.4,
+        "max_ms": 7036.0
+      },
+      "target_tls": {
+        "p50_ms": 389.2,
+        "p95_ms": 2103.9,
+        "max_ms": 3016.7
+      },
+      "response": {
+        "p50_ms": 126.0,
+        "p95_ms": 359.8,
+        "max_ms": 658.5
+      },
+      "errors": []
+    },
+    {
+      "phase": "cold",
+      "protocol": "h2",
+      "version": "v3",
+      "success": 20,
+      "attempts": 20,
+      "first_byte": {
+        "p50_ms": 2595.7,
+        "p95_ms": 5721.7,
+        "max_ms": 6501.5
+      },
+      "entry": {
+        "p50_ms": 1583.2,
+        "p95_ms": 2615.7,
+        "max_ms": 2914.8
+      },
+      "target_tls": {
+        "p50_ms": 632.4,
+        "p95_ms": 3211.5,
+        "max_ms": 4464.0
+      },
+      "response": {
+        "p50_ms": 246.4,
+        "p95_ms": 828.3,
+        "max_ms": 1080.8
+      },
+      "errors": []
+    },
+    {
+      "phase": "cold",
+      "protocol": "h3",
+      "version": "v2",
+      "success": 20,
+      "attempts": 20,
+      "first_byte": {
+        "p50_ms": 1296.5,
+        "p95_ms": 1791.1,
+        "max_ms": 1965.2
+      },
+      "entry": {
+        "p50_ms": 664.9,
+        "p95_ms": 1080.7,
+        "max_ms": 1087.5
+      },
+      "target_tls": {
+        "p50_ms": 337.0,
+        "p95_ms": 716.4,
+        "max_ms": 760.2
+      },
+      "response": {
+        "p50_ms": 121.2,
+        "p95_ms": 508.0,
+        "max_ms": 620.3
+      },
+      "errors": []
+    },
+    {
+      "phase": "cold",
+      "protocol": "h3",
+      "version": "v3",
+      "success": 19,
+      "attempts": 20,
+      "first_byte": {
+        "p50_ms": 1926.4,
+        "p95_ms": 4127.8,
+        "max_ms": 4127.8
+      },
+      "entry": {
+        "p50_ms": 1131.7,
+        "p95_ms": 2285.3,
+        "max_ms": 2285.3
+      },
+      "target_tls": {
+        "p50_ms": 378.5,
+        "p95_ms": 2214.9,
+        "max_ms": 2214.9
+      },
+      "response": {
+        "p50_ms": 118.4,
+        "p95_ms": 621.5,
+        "max_ms": 621.5
+      },
+      "errors": [
+        "timeout: no recent network activity"
+      ]
+    },
+    {
+      "phase": "prime",
+      "protocol": "h2",
+      "version": "v2",
+      "success": 1,
+      "attempts": 1,
+      "first_byte": {
+        "p50_ms": 4155.1,
+        "p95_ms": 4155.1,
+        "max_ms": 4155.1
+      },
+      "entry": {
+        "p50_ms": 667.2,
+        "p95_ms": 667.2,
+        "max_ms": 667.2
+      },
+      "target_tls": {
+        "p50_ms": 3246.0,
+        "p95_ms": 3246.0,
+        "max_ms": 3246.0
+      },
+      "response": {
+        "p50_ms": 241.9,
+        "p95_ms": 241.9,
+        "max_ms": 241.9
+      },
+      "errors": []
+    },
+    {
+      "phase": "prime",
+      "protocol": "h2",
+      "version": "v3",
+      "success": 1,
+      "attempts": 1,
+      "first_byte": {
+        "p50_ms": 1241.8,
+        "p95_ms": 1241.8,
+        "max_ms": 1241.8
+      },
+      "entry": {
+        "p50_ms": 422.2,
+        "p95_ms": 422.2,
+        "max_ms": 422.2
+      },
+      "target_tls": {
+        "p50_ms": 706.3,
+        "p95_ms": 706.3,
+        "max_ms": 706.3
+      },
+      "response": {
+        "p50_ms": 113.3,
+        "p95_ms": 113.3,
+        "max_ms": 113.3
+      },
+      "errors": []
+    },
+    {
+      "phase": "prime",
+      "protocol": "h3",
+      "version": "v2",
+      "success": 1,
+      "attempts": 1,
+      "first_byte": {
+        "p50_ms": 614.7,
+        "p95_ms": 614.7,
+        "max_ms": 614.7
+      },
+      "entry": {
+        "p50_ms": 339.1,
+        "p95_ms": 339.1,
+        "max_ms": 339.1
+      },
+      "target_tls": {
+        "p50_ms": 160.5,
+        "p95_ms": 160.5,
+        "max_ms": 160.5
+      },
+      "response": {
+        "p50_ms": 115.0,
+        "p95_ms": 115.0,
+        "max_ms": 115.0
+      },
+      "errors": []
+    },
+    {
+      "phase": "prime",
+      "protocol": "h3",
+      "version": "v3",
+      "success": 1,
+      "attempts": 1,
+      "first_byte": {
+        "p50_ms": 1272.5,
+        "p95_ms": 1272.5,
+        "max_ms": 1272.5
+      },
+      "entry": {
+        "p50_ms": 101.5,
+        "p95_ms": 101.5,
+        "max_ms": 101.5
+      },
+      "target_tls": {
+        "p50_ms": 1064.9,
+        "p95_ms": 1064.9,
+        "max_ms": 1064.9
+      },
+      "response": {
+        "p50_ms": 106.1,
+        "p95_ms": 106.1,
+        "max_ms": 106.1
+      },
+      "errors": []
+    },
+    {
+      "phase": "warm",
+      "protocol": "h2",
+      "version": "v2",
+      "success": 20,
+      "attempts": 20,
+      "first_byte": {
+        "p50_ms": 1047.5,
+        "p95_ms": 3131.2,
+        "max_ms": 4104.0
+      },
+      "entry": {
+        "p50_ms": 120.6,
+        "p95_ms": 630.7,
+        "max_ms": 1554.5
+      },
+      "target_tls": {
+        "p50_ms": 451.1,
+        "p95_ms": 2033.4,
+        "max_ms": 3729.6
+      },
+      "response": {
+        "p50_ms": 145.9,
+        "p95_ms": 654.6,
+        "max_ms": 2745.9
+      },
+      "errors": []
+    },
+    {
+      "phase": "warm",
+      "protocol": "h2",
+      "version": "v3",
+      "success": 20,
+      "attempts": 20,
+      "first_byte": {
+        "p50_ms": 730.8,
+        "p95_ms": 1728.4,
+        "max_ms": 2488.2
+      },
+      "entry": {
+        "p50_ms": 107.7,
+        "p95_ms": 464.8,
+        "max_ms": 899.0
+      },
+      "target_tls": {
+        "p50_ms": 301.5,
+        "p95_ms": 1476.3,
+        "max_ms": 1491.6
+      },
+      "response": {
+        "p50_ms": 114.3,
+        "p95_ms": 574.3,
+        "max_ms": 746.0
+      },
+      "errors": []
+    },
+    {
+      "phase": "warm",
+      "protocol": "h3",
+      "version": "v2",
+      "success": 20,
+      "attempts": 20,
+      "first_byte": {
+        "p50_ms": 498.1,
+        "p95_ms": 816.5,
+        "max_ms": 1049.9
+      },
+      "entry": {
+        "p50_ms": 108.2,
+        "p95_ms": 317.1,
+        "max_ms": 345.0
+      },
+      "target_tls": {
+        "p50_ms": 154.5,
+        "p95_ms": 365.4,
+        "max_ms": 367.9
+      },
+      "response": {
+        "p50_ms": 113.8,
+        "p95_ms": 316.3,
+        "max_ms": 576.7
+      },
+      "errors": []
+    },
+    {
+      "phase": "warm",
+      "protocol": "h3",
+      "version": "v3",
+      "success": 20,
+      "attempts": 20,
+      "first_byte": {
+        "p50_ms": 592.6,
+        "p95_ms": 841.5,
+        "max_ms": 1049.1
+      },
+      "entry": {
+        "p50_ms": 109.0,
+        "p95_ms": 255.6,
+        "max_ms": 351.4
+      },
+      "target_tls": {
+        "p50_ms": 260.6,
+        "p95_ms": 630.5,
+        "max_ms": 666.3
+      },
+      "response": {
+        "p50_ms": 117.4,
+        "p95_ms": 293.9,
+        "max_ms": 386.2
+      },
+      "errors": []
+    }
+  ]
+}

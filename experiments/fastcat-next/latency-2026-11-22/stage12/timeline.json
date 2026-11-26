@@ -1,0 +1,380 @@
+[
+  {
+    "name": "mixed-b1-p1-next-opt",
+    "metric": "mixed",
+    "block": 1,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795340259.596142,
+    "end": 1795340271.214655
+  },
+  {
+    "name": "mixed-b1-p2-next-latency",
+    "metric": "mixed",
+    "block": 1,
+    "position": 2,
+    "version": "next-latency",
+    "start": 1795340276.877909,
+    "end": 1795340286.63059
+  },
+  {
+    "name": "mixed-b2-p1-next-latency",
+    "metric": "mixed",
+    "block": 2,
+    "position": 1,
+    "version": "next-latency",
+    "start": 1795340291.917703,
+    "end": 1795340302.011049
+  },
+  {
+    "name": "mixed-b2-p2-next-opt",
+    "metric": "mixed",
+    "block": 2,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795340309.902399,
+    "end": 1795340331.2271512
+  },
+  {
+    "name": "mixed-b3-p1-next-opt",
+    "metric": "mixed",
+    "block": 3,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795340336.542403,
+    "end": 1795340347.621708
+  },
+  {
+    "name": "mixed-b3-p2-next-latency",
+    "metric": "mixed",
+    "block": 3,
+    "position": 2,
+    "version": "next-latency",
+    "start": 1795340352.9199412,
+    "end": 1795340374.0169542
+  },
+  {
+    "name": "mixed-b4-p1-next-latency",
+    "metric": "mixed",
+    "block": 4,
+    "position": 1,
+    "version": "next-latency",
+    "start": 1795340379.317027,
+    "end": 1795340414.123636
+  },
+  {
+    "name": "mixed-b4-p2-next-opt",
+    "metric": "mixed",
+    "block": 4,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795340419.73317,
+    "end": 1795340453.979796
+  },
+  {
+    "name": "mixed-b5-p1-next-opt",
+    "metric": "mixed",
+    "block": 5,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795340459.275307,
+    "end": 1795340494.052782
+  },
+  {
+    "name": "mixed-b5-p2-next-latency",
+    "metric": "mixed",
+    "block": 5,
+    "position": 2,
+    "version": "next-latency",
+    "start": 1795340499.349977,
+    "end": 1795340511.861957
+  },
+  {
+    "name": "mixed-b6-p1-next-latency",
+    "metric": "mixed",
+    "block": 6,
+    "position": 1,
+    "version": "next-latency",
+    "start": 1795340517.569088,
+    "end": 1795340541.877837
+  },
+  {
+    "name": "mixed-b6-p2-next-opt",
+    "metric": "mixed",
+    "block": 6,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795340547.285135,
+    "end": 1795340578.237935
+  },
+  {
+    "name": "parallel-b1-p1-next-opt",
+    "metric": "parallel",
+    "block": 1,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795340583.53145,
+    "end": 1795340608.989418
+  },
+  {
+    "name": "parallel-b1-p2-next-latency",
+    "metric": "parallel",
+    "block": 1,
+    "position": 2,
+    "version": "next-latency",
+    "start": 1795340614.719627,
+    "end": 1795340645.735423
+  },
+  {
+    "name": "parallel-b2-p1-next-latency",
+    "metric": "parallel",
+    "block": 2,
+    "position": 1,
+    "version": "next-latency",
+    "start": 1795340651.03454,
+    "end": 1795340664.5883222
+  },
+  {
+    "name": "parallel-b2-p2-next-opt",
+    "metric": "parallel",
+    "block": 2,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795340669.979497,
+    "end": 1795340676.109591
+  },
+  {
+    "name": "parallel-b3-p1-next-opt",
+    "metric": "parallel",
+    "block": 3,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795340681.517994,
+    "end": 1795340701.118602
+  },
+  {
+    "name": "parallel-b3-p2-next-latency",
+    "metric": "parallel",
+    "block": 3,
+    "position": 2,
+    "version": "next-latency",
+    "start": 1795340706.41726,
+    "end": 1795340729.2643578
+  },
+  {
+    "name": "parallel-b4-p1-next-latency",
+    "metric": "parallel",
+    "block": 4,
+    "position": 1,
+    "version": "next-latency",
+    "start": 1795340734.926985,
+    "end": 1795340749.2699578
+  },
+  {
+    "name": "parallel-b4-p2-next-opt",
+    "metric": "parallel",
+    "block": 4,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795340755.010307,
+    "end": 1795340769.08278
+  },
+  {
+    "name": "parallel-b5-p1-next-opt",
+    "metric": "parallel",
+    "block": 5,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795340774.3769119,
+    "end": 1795340789.803491
+  },
+  {
+    "name": "parallel-b5-p2-next-latency",
+    "metric": "parallel",
+    "block": 5,
+    "position": 2,
+    "version": "next-latency",
+    "start": 1795340802.252227,
+    "end": 1795340815.7562082
+  },
+  {
+    "name": "parallel-b6-p1-next-latency",
+    "metric": "parallel",
+    "block": 6,
+    "position": 1,
+    "version": "next-latency",
+    "start": 1795340821.144026,
+    "end": 1795340836.411171
+  },
+  {
+    "name": "parallel-b6-p2-next-opt",
+    "metric": "parallel",
+    "block": 6,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795340841.703969,
+    "end": 1795340854.907392
+  },
+  {
+    "name": "rolling-b1-p1-next-opt",
+    "metric": "rolling",
+    "block": 1,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795340860.193814,
+    "end": 1795340887.721996
+  },
+  {
+    "name": "rolling-b1-p2-next-latency",
+    "metric": "rolling",
+    "block": 1,
+    "position": 2,
+    "version": "next-latency",
+    "start": 1795340894.3075771,
+    "end": 1795340918.2933571
+  },
+  {
+    "name": "rolling-b2-p1-next-latency",
+    "metric": "rolling",
+    "block": 2,
+    "position": 1,
+    "version": "next-latency",
+    "start": 1795340923.593324,
+    "end": 1795340940.1800818
+  },
+  {
+    "name": "rolling-b2-p2-next-opt",
+    "metric": "rolling",
+    "block": 2,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795340945.4716532,
+    "end": 1795340982.4033332
+  },
+  {
+    "name": "rolling-b3-p1-next-opt",
+    "metric": "rolling",
+    "block": 3,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795340988.139945,
+    "end": 1795341019.155027
+  },
+  {
+    "name": "rolling-b3-p2-next-latency",
+    "metric": "rolling",
+    "block": 3,
+    "position": 2,
+    "version": "next-latency",
+    "start": 1795341024.4555662,
+    "end": 1795341053.1353972
+  },
+  {
+    "name": "rolling-b4-p1-next-latency",
+    "metric": "rolling",
+    "block": 4,
+    "position": 1,
+    "version": "next-latency",
+    "start": 1795341058.430182,
+    "end": 1795341076.235209
+  },
+  {
+    "name": "rolling-b4-p2-next-opt",
+    "metric": "rolling",
+    "block": 4,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795341081.865162,
+    "end": 1795341095.374871
+  },
+  {
+    "name": "rolling-b5-p1-next-opt",
+    "metric": "rolling",
+    "block": 5,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795341100.774914,
+    "end": 1795341115.6748219
+  },
+  {
+    "name": "rolling-b5-p2-next-latency",
+    "metric": "rolling",
+    "block": 5,
+    "position": 2,
+    "version": "next-latency",
+    "start": 1795341121.113125,
+    "end": 1795341151.327806
+  },
+  {
+    "name": "rolling-b6-p1-next-latency",
+    "metric": "rolling",
+    "block": 6,
+    "position": 1,
+    "version": "next-latency",
+    "start": 1795341156.726275,
+    "end": 1795341178.097856
+  },
+  {
+    "name": "rolling-b6-p2-next-opt",
+    "metric": "rolling",
+    "block": 6,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795341183.3939168,
+    "end": 1795341198.3575318
+  },
+  {
+    "name": "latency-b1-p1-next-opt",
+    "metric": "latency",
+    "block": 1,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795341204.7053802,
+    "end": 1795341222.8089359
+  },
+  {
+    "name": "latency-b1-p2-next-latency",
+    "metric": "latency",
+    "block": 1,
+    "position": 2,
+    "version": "next-latency",
+    "start": 1795341228.448098,
+    "end": 1795341250.6506162
+  },
+  {
+    "name": "latency-b2-p1-next-latency",
+    "metric": "latency",
+    "block": 2,
+    "position": 1,
+    "version": "next-latency",
+    "start": 1795341256.3185139,
+    "end": 1795341273.5653088
+  },
+  {
+    "name": "latency-b2-p2-next-opt",
+    "metric": "latency",
+    "block": 2,
+    "position": 2,
+    "version": "next-opt",
+    "start": 1795341279.504458,
+    "end": 1795341296.360397
+  },
+  {
+    "name": "latency-b3-p1-next-opt",
+    "metric": "latency",
+    "block": 3,
+    "position": 1,
+    "version": "next-opt",
+    "start": 1795341302.015063,
+    "end": 1795341330.3354828
+  },
+  {
+    "name": "latency-b3-p2-next-latency",
+    "metric": "latency",
+    "block": 3,
+    "position": 2,
+    "version": "next-latency",
+    "start": 1795341335.629465,
+    "end": 1795341353.906016
+  }
+]

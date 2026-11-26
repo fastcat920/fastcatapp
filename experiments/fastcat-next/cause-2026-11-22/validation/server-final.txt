@@ -1,0 +1,49 @@
+Ip: Forwarding DefaultTTL InReceives InHdrErrors InAddrErrors ForwDatagrams InUnknownProtos InDiscards InDelivers OutRequests OutDiscards OutNoRoutes ReasmTimeout ReasmReqds ReasmOKs ReasmFails FragOKs FragFails FragCreates OutTransmits
+Ip: 2 64 65013538 0 22 0 43 0 65013437 60155517 2218 40 3 35 0 3 0 0 0 60155517
+Icmp: InMsgs InErrors InCsumErrors InDestUnreachs InTimeExcds InParmProbs InSrcQuenchs InRedirects InEchos InEchoReps InTimestamps InTimestampReps InAddrMasks InAddrMaskReps OutMsgs OutErrors OutRateLimitGlobal OutRateLimitHost OutDestUnreachs OutTimeExcds OutParmProbs OutSrcQuenchs OutRedirects OutEchos OutEchoReps OutTimestamps OutTimestampReps OutAddrMasks OutAddrMaskReps
+Icmp: 3328 0 0 47 1 0 0 0 3280 0 0 0 0 0 9274 0 0 345 5994 0 0 0 0 0 3280 0 0 0 0
+IcmpMsg: InType3 InType8 InType11 OutType0 OutType3
+IcmpMsg: 47 3280 1 3280 5994
+Tcp: RtoAlgorithm RtoMin RtoMax MaxConn ActiveOpens PassiveOpens AttemptFails EstabResets CurrEstab InSegs OutSegs RetransSegs InErrs OutRsts InCsumErrors
+Tcp: 1 200 120000 -1 194271 1599238 102095 32057 95 56112885 89552241 4789300 1909 627308 597
+Udp: InDatagrams NoPorts InErrors OutDatagrams RcvbufErrors SndbufErrors InCsumErrors IgnoredMulti MemErrors
+Udp: 9390776 6296 27 11733595 27 2218 0 0 0
+UdpLite: InDatagrams NoPorts InErrors OutDatagrams RcvbufErrors SndbufErrors InCsumErrors IgnoredMulti MemErrors
+UdpLite: 0 0 0 0 0 0 0 0 0
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN mode DEFAULT group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    RX:   bytes packets errors dropped  missed   mcast           
+    24678989502 2761612      0       0       0       0 
+    TX:   bytes packets errors dropped carrier collsns           
+    24678989502 2761612      0       0       0       0 
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc mq state UP mode DEFAULT group default qlen 1000
+    link/ether bc:24:11:9b:f7:25 brd ff:ff:ff:ff:ff:ff
+    RX:    bytes  packets errors dropped  missed   mcast           
+    101457776305 63139794      0       0       0       0 
+    TX:    bytes  packets errors dropped carrier collsns           
+    124230062275 66665448      0       0       0       0 
+qdisc noqueue 0: dev lo root refcnt 2 
+ Sent 0 bytes 0 pkt (dropped 0, overlimits 0 requeues 0) 
+ backlog 0b 0p requeues 0
+qdisc mq 0: dev eth0 root 
+ Sent 127038114873 bytes 111894335 pkt (dropped 3794, overlimits 0 requeues 0) 
+ backlog 16100b 12p requeues 0
+qdisc fq 0: dev eth0 parent :1 limit 10000p flow_limit 100p buckets 1024 orphan_mask 1023 bands 3 priomap 1 2 2 2 1 2 0 0 1 1 1 1 1 1 1 1 weights 589824 196608 65536 quantum 3028b initial_quantum 15140b low_rate_threshold 550Kbit refill_delay 40ms timer_slack 10us horizon 10s horizon_drop 
+ Sent 127038114873 bytes 111894335 pkt (dropped 3794, overlimits 0 requeues 0) 
+ backlog 16100b 12p requeues 0
+  flows 1034 (inactive 1029 throttled 5) band0_pkts 0 band1_pkts 12 band2_pkts 0 next_packet_delay 1.98ms
+  gc 14629 highprio 0 fastpath 36834345 throttled 20487552 latency 38.8us flows_plimit 3783
+ horizon_drops 11
+udp UNCONN 0      0      0.0.0.0:68    0.0.0.0:*
+udp UNCONN 0      0            *:443         *:*
+udp UNCONN 0      0            *:18445       *:*
+udp UNCONN 0      0            *:18446       *:*
+udp UNCONN 0      0            *:18447       *:*
+tcp LISTEN 0      128    0.0.0.0:22    0.0.0.0:*
+tcp LISTEN 0      4096         *:8443        *:*
+tcp LISTEN 0      4096         *:21201       *:*
+tcp LISTEN 0      4096         *:18447       *:*
+tcp LISTEN 0      4096         *:18446       *:*
+tcp LISTEN 0      4096         *:18445       *:*
+tcp LISTEN 0      128       [::]:22       [::]:*
+tcp LISTEN 0      4096         *:443         *:*

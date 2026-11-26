@@ -201,7 +201,7 @@ class NoticeHtmlStyles {
           case 'strong':
           case 'b':
             return {
-              'font-weight': '500',
+              'font-weight': '700',
             };
           case 'em':
           case 'i':

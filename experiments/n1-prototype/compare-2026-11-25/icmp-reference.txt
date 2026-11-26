@@ -1,0 +1,11 @@
+PING 191.223.214.8 (191.223.214.8) 56(84) bytes of data.
+64 bytes from 191.223.214.8: icmp_seq=1 ttl=49 time=176 ms
+64 bytes from 191.223.214.8: icmp_seq=2 ttl=49 time=215 ms
+64 bytes from 191.223.214.8: icmp_seq=4 ttl=49 time=189 ms
+64 bytes from 191.223.214.8: icmp_seq=6 ttl=49 time=214 ms
+64 bytes from 191.223.214.8: icmp_seq=7 ttl=49 time=189 ms
+64 bytes from 191.223.214.8: icmp_seq=8 ttl=49 time=310 ms
+
+--- 191.223.214.8 ping statistics ---
+8 packets transmitted, 6 received, 25% packet loss, time 1412ms
+rtt min/avg/max/mdev = 176.650/216.049/310.968/44.679 ms, pipe 2

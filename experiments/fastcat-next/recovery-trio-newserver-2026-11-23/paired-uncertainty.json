@@ -1,0 +1,215 @@
+{
+  "method": "matched-block bootstrap, 10000 draws; clusters are whole cases; exploratory only, 6 pairs; not a formal significance claim; no multiplicity correction",
+  "results": [
+    {
+      "metric": "single16",
+      "ratio": "next-opt/next-base",
+      "higher_is_better": true,
+      "estimate": 0.9970787535287019,
+      "exploratory_ci95": [
+        0.9796932896978876,
+        1.014477315376973
+      ],
+      "blocks": 6,
+      "wins": 3
+    },
+    {
+      "metric": "parallel4",
+      "ratio": "next-opt/next-base",
+      "higher_is_better": true,
+      "estimate": 1.0013157677422198,
+      "exploratory_ci95": [
+        0.9957495818136946,
+        1.0061031616922853
+      ],
+      "blocks": 6,
+      "wins": 3
+    },
+    {
+      "metric": "parallel8",
+      "ratio": "next-opt/next-base",
+      "higher_is_better": true,
+      "estimate": 1.0138405263793844,
+      "exploratory_ci95": [
+        0.9931108356170341,
+        1.0349930091657604
+      ],
+      "blocks": 6,
+      "wins": 4
+    },
+    {
+      "metric": "rolling-small",
+      "ratio": "next-opt/next-base",
+      "higher_is_better": true,
+      "estimate": 1.0020603527582568,
+      "exploratory_ci95": [
+        0.99622871688397,
+        1.0095471936143747
+      ],
+      "blocks": 6,
+      "wins": 3
+    },
+    {
+      "metric": "latency/p95",
+      "ratio": "next-opt/next-base",
+      "higher_is_better": false,
+      "estimate": 1.0762386861003697,
+      "exploratory_ci95": [
+        0.5939947158582495,
+        1.5702798963879696
+      ],
+      "blocks": 6
+    },
+    {
+      "metric": "mixed/p95",
+      "ratio": "next-opt/next-base",
+      "higher_is_better": false,
+      "estimate": 1.001589246459332,
+      "exploratory_ci95": [
+        0.5161352550051563,
+        1.2935426269157795
+      ],
+      "blocks": 6
+    },
+    {
+      "metric": "single16",
+      "ratio": "next-opt/tuic",
+      "higher_is_better": true,
+      "estimate": 1.0493936365969392,
+      "exploratory_ci95": [
+        0.9800567179365063,
+        1.1708261971075715
+      ],
+      "blocks": 6,
+      "wins": 3
+    },
+    {
+      "metric": "parallel4",
+      "ratio": "next-opt/tuic",
+      "higher_is_better": true,
+      "estimate": 1.0072064434082237,
+      "exploratory_ci95": [
+        0.9997467448454318,
+        1.0158439306992617
+      ],
+      "blocks": 6,
+      "wins": 4
+    },
+    {
+      "metric": "parallel8",
+      "ratio": "next-opt/tuic",
+      "higher_is_better": true,
+      "estimate": 1.024083614354603,
+      "exploratory_ci95": [
+        1.0102892898847686,
+        1.0374296793926483
+      ],
+      "blocks": 6,
+      "wins": 5
+    },
+    {
+      "metric": "rolling-small",
+      "ratio": "next-opt/tuic",
+      "higher_is_better": true,
+      "estimate": 1.0097227488221308,
+      "exploratory_ci95": [
+        0.9920595853404124,
+        1.032163562624814
+      ],
+      "blocks": 6,
+      "wins": 4
+    },
+    {
+      "metric": "latency/p95",
+      "ratio": "next-opt/tuic",
+      "higher_is_better": false,
+      "estimate": 1.2293937582860315,
+      "exploratory_ci95": [
+        0.6348955246825572,
+        1.7947861673103498
+      ],
+      "blocks": 6
+    },
+    {
+      "metric": "mixed/p95",
+      "ratio": "next-opt/tuic",
+      "higher_is_better": false,
+      "estimate": 1.0353201348982055,
+      "exploratory_ci95": [
+        0.6875500810243869,
+        1.511259076397385
+      ],
+      "blocks": 6
+    },
+    {
+      "metric": "single16",
+      "ratio": "next-base/tuic",
+      "higher_is_better": true,
+      "estimate": 1.0524681554822954,
+      "exploratory_ci95": [
+        0.9881535859122552,
+        1.1685187212612218
+      ],
+      "blocks": 6,
+      "wins": 3
+    },
+    {
+      "metric": "parallel4",
+      "ratio": "next-base/tuic",
+      "higher_is_better": true,
+      "estimate": 1.0058829350897833,
+      "exploratory_ci95": [
+        0.9970088195834341,
+        1.016589861751152
+      ],
+      "blocks": 6,
+      "wins": 3
+    },
+    {
+      "metric": "parallel8",
+      "ratio": "next-base/tuic",
+      "higher_is_better": true,
+      "estimate": 1.0101032536268781,
+      "exploratory_ci95": [
+        0.9852436145095513,
+        1.0369117799716987
+      ],
+      "blocks": 6,
+      "wins": 2
+    },
+    {
+      "metric": "rolling-small",
+      "ratio": "next-base/tuic",
+      "higher_is_better": true,
+      "estimate": 1.00764664128541,
+      "exploratory_ci95": [
+        0.9917086586127768,
+        1.0275656394362902
+      ],
+      "blocks": 6,
+      "wins": 3
+    },
+    {
+      "metric": "latency/p95",
+      "ratio": "next-base/tuic",
+      "higher_is_better": false,
+      "estimate": 1.1423058603669063,
+      "exploratory_ci95": [
+        0.8957522985153507,
+        1.5526543673146231
+      ],
+      "blocks": 6
+    },
+    {
+      "metric": "mixed/p95",
+      "ratio": "next-base/tuic",
+      "higher_is_better": false,
+      "estimate": 1.0336773668029227,
+      "exploratory_ci95": [
+        0.7639257558133754,
+        2.2235508531632555
+      ],
+      "blocks": 6
+    }
+  ]
+}

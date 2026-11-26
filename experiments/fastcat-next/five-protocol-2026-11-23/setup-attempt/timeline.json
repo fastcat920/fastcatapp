@@ -1,0 +1,30 @@
+[
+  {
+    "name": "pilot-1795432037-ports1-next-opt",
+    "metric": "pilot",
+    "block": 1,
+    "version": "next-opt",
+    "dest_port": 19458
+  },
+  {
+    "name": "pilot-1795432037-ports1-next-base",
+    "metric": "pilot",
+    "block": 1,
+    "version": "next-base",
+    "dest_port": 19458
+  },
+  {
+    "name": "pilot-1795432037-ports1-tuic",
+    "metric": "pilot",
+    "block": 1,
+    "version": "tuic",
+    "dest_port": 19458
+  },
+  {
+    "name": "pilot-1795432037-ports1-hysteria2",
+    "metric": "pilot",
+    "block": 1,
+    "version": "hysteria2",
+    "dest_port": 19458
+  }
+]

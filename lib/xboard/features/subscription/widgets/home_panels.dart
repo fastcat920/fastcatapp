@@ -418,10 +418,7 @@ class _HomeNoticeCardState extends ConsumerState<_HomeNoticeCard> {
   }
 
   String _plainNoticeContent(String content) {
-    final normalized = content
-        .replaceAll(RegExp(r'<[^>]*>'), ' ')
-        .replaceAll(RegExp(r'\s+'), ' ')
-        .trim();
+    final normalized = noticePreviewText(content);
     return normalized.isEmpty ? '点击查看公告详情' : normalized;
   }
 

@@ -1,0 +1,18 @@
+{
+  "versions": [
+    "v2",
+    "v3-light-fast"
+  ],
+  "pools": 3,
+  "samples": 20,
+  "batches": 5,
+  "workers": 4,
+  "client_go": "1.26.2",
+  "server_go": "1.27.3",
+  "device": "A3GMVB2110006859",
+  "sha256": {
+    "v2": "c6d471e58d4fb162b54af40d56cfd8a88a803be22b33ffda05bbf212cb676668",
+    "v3": "2d8c68cc035fb883eb67458f78255c7f18ee65b30e992b75babf52d38e573f10",
+    "compare": "00b9154673e0246ce54ac49b9dbfedbcc349a50eca83c0c2c84d21d12c6e654d"
+  }
+}

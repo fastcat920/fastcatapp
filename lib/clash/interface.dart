@@ -40,6 +40,7 @@ mixin ClashInterface {
     Map<String, String> headers = const {},
     bool followRedirects = true,
     bool phaseTiming = false,
+    bool downloadSpeed = false,
     Duration timeout = const Duration(seconds: 8),
     int maxBodySize = 256 * 1024,
   });
@@ -523,6 +524,7 @@ abstract class ClashHandlerInterface with ClashInterface {
             name: proxyName,
             value: -1,
             url: url,
+            failureKind: DelayFailureKind.timeout,
           ),
         );
       },
@@ -564,6 +566,7 @@ abstract class ClashHandlerInterface with ClashInterface {
     Map<String, String> headers = const {},
     bool followRedirects = true,
     bool phaseTiming = false,
+    bool downloadSpeed = false,
     Duration timeout = const Duration(seconds: 8),
     int maxBodySize = 256 * 1024,
   }) {
@@ -578,6 +581,7 @@ abstract class ClashHandlerInterface with ClashInterface {
       'headers': headers,
       'no-redirect': !followRedirects,
       if (phaseTiming) 'phase-timing': true,
+      if (downloadSpeed) 'download-speed': true,
     };
     return invoke<String>(
       method: ActionMethod.streamingProbe,

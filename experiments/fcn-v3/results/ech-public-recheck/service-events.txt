@@ -1,0 +1,36 @@
+Started fastcat-fcn3-p2-ech.service - [systemd-run] /opt/fastcat-fcn3-phase2/fcn-server -listen :18534 -cert /opt/fastcat-fcn3-phase2/tls.pem -key /opt/fastcat-fcn3-phase2/tls.key -credentials-file /opt/fastcat-fcn3-phase2/credentials.json -ech-keys-file /opt/fastcat-fcn3-phase2/entry.pem -target 127.0.0.1:18476.
+Started fastcat-fcn3-p2-doh.service - [systemd-run] /usr/bin/python3 /opt/fastcat-fcn3-phase2/ech_doh_fixture.py --cert /opt/fastcat-fcn3-phase2/tls.pem --key /opt/fastcat-fcn3-phase2/tls.key --state /opt/fastcat-fcn3-phase2/doh-state.json --inner zlhk.fastcat.lol --answer-ip 191.223.214.8.
+2026/11/25 14:20:10 FCN v3 listening on [::]:18534 with credential revision 1
+2026/11/25 14:20:10 ECH required for FCN v3 CONNECT
+epoch=initial https_answer=1
+fastcat-fcn3-p2-ech.service: Sent signal SIGHUP to main process 789110 (fcn-server) on client request.
+2026/11/25 14:26:45 reloaded ECH keys
+fastcat-fcn3-p2-ech.service: Sent signal SIGHUP to main process 789110 (fcn-server) on client request.
+2026/11/25 14:26:54 reloaded ECH keys
+epoch=retired-stale https_answer=1
+epoch=retired-stale https_answer=2
+epoch=refresh-after-reject https_answer=1
+epoch=refresh-after-reject https_answer=2
+epoch=malformed-config https_answer=1
+epoch=same-inner-outer https_answer=1
+fastcat-fcn3-p2-ech.service: Sent signal SIGHUP to main process 789110 (fcn-server) on client request.
+2026/11/25 14:27:42 ECH key reload rejected: invalid ECH KEYS PEM
+epoch=invalid-key-reload https_answer=1
+fastcat-fcn3-p2-ech.service: Sent signal SIGHUP to main process 789110 (fcn-server) on client request.
+epoch=final-recovery https_answer=1
+Stopping fastcat-fcn3-p2-doh.service - [systemd-run] /usr/bin/python3 /opt/fastcat-fcn3-phase2/ech_doh_fixture.py --cert /opt/fastcat-fcn3-phase2/tls.pem --key /opt/fastcat-fcn3-phase2/tls.key --state /opt/fastcat-fcn3-phase2/doh-state.json --inner zlhk.fastcat.lol --answer-ip 191.223.214.8...
+fastcat-fcn3-p2-doh.service: Deactivated successfully.
+Stopped fastcat-fcn3-p2-doh.service - [systemd-run] /usr/bin/python3 /opt/fastcat-fcn3-phase2/ech_doh_fixture.py --cert /opt/fastcat-fcn3-phase2/tls.pem --key /opt/fastcat-fcn3-phase2/tls.key --state /opt/fastcat-fcn3-phase2/doh-state.json --inner zlhk.fastcat.lol --answer-ip 191.223.214.8.
+Started fastcat-fcn3-p2-doh.service - [systemd-run] /usr/bin/python3 /opt/fastcat-fcn3-phase2/ech_doh_fixture.py --cert /opt/fastcat-fcn3-phase2/tls.pem --key /opt/fastcat-fcn3-phase2/tls.key --state /opt/fastcat-fcn3-phase2/doh-state.json --inner zlhk.fastcat.lol --answer-ip 191.223.214.8.
+fastcat-fcn3-p2-ech.service: Sent signal SIGHUP to main process 789110 (fcn-server) on client request.
+2026/11/25 14:32:25 reloaded ECH keys
+epoch=recheck-initial https_answer=1
+fastcat-fcn3-p2-ech.service: Sent signal SIGHUP to main process 789110 (fcn-server) on client request.
+2026/11/25 14:32:33 reloaded ECH keys
+epoch=recheck-overlap https_answer=1
+fastcat-fcn3-p2-ech.service: Sent signal SIGHUP to main process 789110 (fcn-server) on client request.
+2026/11/25 14:32:41 reloaded ECH keys
+epoch=recheck-retired https_answer=1
+epoch=recheck-retired https_answer=2
+epoch=recheck-refresh https_answer=1
+epoch=recheck-refresh https_answer=2

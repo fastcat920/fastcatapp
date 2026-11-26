@@ -1,0 +1,21 @@
+{
+  "date": "2026-11-21",
+  "device": "A3GMVB2110006859",
+  "network_before": 171,
+  "network_after": 171,
+  "versions": [
+    "v2",
+    "v3-light",
+    "v3-sealed"
+  ],
+  "samples_per_phase": 20,
+  "concurrent_workers": 4,
+  "batches": 5,
+  "client_toolchain": "Go 1.26.2",
+  "server_toolchain": "Go 1.27.3",
+  "detailed_trace": false,
+  "sha256": {
+    "compare": "b261a83527106caba2228756ac4f4993e26aed8ddb52ab63091f3230167b11c9",
+    "server": "039c398a0d37519122aea0215b285d72698a68fc1a3a9ac7555ff8fcdfd48ef1"
+  }
+}

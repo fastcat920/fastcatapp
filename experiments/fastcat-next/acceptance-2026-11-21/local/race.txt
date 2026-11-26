@@ -1,0 +1,3 @@
+ok  	core/fastcatnext	9.787s
+?   	core/tools/fastcat-next	[no test files]
+?   	core/tools/fastcat-next-check	[no test files]

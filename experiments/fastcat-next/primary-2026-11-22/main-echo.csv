@@ -1,0 +1,41 @@
+alloc_bytes,download_mbps,elapsed_ms,errors,goroutines,heap_live_bytes,lane_usage,phase,protocol,received_bytes,round,seconds,sent_bytes,setup_ms,success,test,version,workers
+10203944,2.686616241129706,10001,[],4,10323784,"{'tcp_assignments': [1, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,3358720,1,10,23707648,845,1,final-echo-3,next-primary,1
+12509976,7.981741795720244,10000,[],3,7533720,,timed_bulk,quic,9977856,1,10,30883840,741,1,final-echo-3,tuic,1
+15330432,12.621876982749917,10000,[],4,16143400,"{'tcp_assignments': [1, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,15777792,1,10,32636928,346,1,final-echo-3,next-base,1
+18986976,13.288987950449494,10001,[],5,15645416,"{'tcp_assignments': [1, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,16613376,1,10,35422208,1179,1,final-echo-3,next-opt,1
+18605536,12.700464815972065,10000,[],3,14354856,,timed_bulk,quic,15876096,2,10,32210944,560,1,final-echo-3,tuic,1
+7342904,5.3866207700076405,10000,[],5,6575976,"{'tcp_assignments': [1, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,6733824,2,10,22167552,1017,1,final-echo-3,next-base,1
+14979248,10.288787934325581,10000,[],4,14504000,"{'tcp_assignments': [1, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,12861440,2,10,34832384,1349,1,final-echo-3,next-opt,1
+5555928,2.2411629919769163,10000,[],4,8334376,"{'tcp_assignments': [1, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,2801664,2,10,16891904,809,1,final-echo-3,next-primary,1
+5321856,3.014563336844871,10000,[],4,5517544,"{'tcp_assignments': [1, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,3768320,3,10,16433152,915,1,final-echo-3,next-base,1
+14861896,12.621926304057816,10000,[],4,13160688,"{'tcp_assignments': [1, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,15777792,3,10,32358400,953,1,final-echo-3,next-opt,1
+15012680,12.83076955348111,10000,[],4,10902488,"{'tcp_assignments': [1, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,16039936,3,10,34471936,508,1,final-echo-3,next-primary,1
+9408280,4.377472010569846,10000,[],8,8618024,,timed_bulk,quic,5472256,3,10,27754496,1000,1,final-echo-3,tuic,1
+14236136,7.90301835532767,10000,[],6,14843016,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,9879552,1,10,46809088,1018,4,final-echo-3,next-primary,4
+17464048,9.017276932313715,10000,[],8,13492032,,timed_bulk,quic,11272192,1,10,45121536,660,4,final-echo-3,tuic,4
+6276520,1.7955478941287688,10000,[],4,6097360,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,2244608,1,10,10715136,1038,4,final-echo-3,next-base,4
+19914088,5.910442992651902,10001,[],4,15759080,"{'tcp_assignments': [2, 2], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,7389184,1,10,50233344,1081,4,final-echo-3,next-opt,4
+21054008,11.140807371119875,10000,[],7,9848296,,timed_bulk,quic,13926400,2,10,46956544,879,4,final-echo-3,tuic,4
+9713088,2.830872003811047,10001,[],5,7063544,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,3538944,2,10,31621120,2661,4,final-echo-3,next-base,4
+15569792,7.98118836828553,10001,[],4,15449200,"{'tcp_assignments': [2, 2], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,9977856,2,10,38797312,856,4,final-echo-3,next-opt,4
+10952864,1.8873540466969978,10000,[],5,15938544,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,2359296,2,10,45481984,3191,4,final-echo-3,next-primary,4
+14299504,2.673422728991319,10001,[],4,13088928,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,3342336,3,10,49643520,2131,4,final-echo-3,next-base,4
+10868480,3.132502222574117,10000,[],5,7198728,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,3915776,3,10,39337984,1771,4,final-echo-3,next-opt,4
+16129288,8.96484449052673,10000,[],4,16057400,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,11206656,3,10,48300032,905,4,final-echo-3,next-primary,4
+15071568,3.197944825506419,10000,[],7,10777712,,timed_bulk,quic,3997696,3,10,41091072,1198,4,final-echo-3,tuic,4
+7955776,2.529525297466781,10000,[],4,9212552,"{'tcp_assignments': [1, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,3162112,1,10,17989632,1509,1,final-echo-repeat-2,next-opt,1
+8679128,5.229614141351372,10000,[],4,11997080,"{'tcp_assignments': [1, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,6537216,1,10,22724608,388,1,final-echo-repeat-2,next-base,1
+14212368,11.166931702575715,10000,[],4,10690816,,timed_bulk,quic,13959168,1,10,30310400,966,1,final-echo-repeat-2,tuic,1
+4865016,1.5596662072562513,10000,[],5,15954736,"{'tcp_assignments': [1, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,1949696,1,10,16433152,347,1,final-echo-repeat-2,next-primary,1
+7180048,5.189968732202704,10000,[],4,11051200,"{'tcp_assignments': [1, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,6488064,2,10,20004864,531,1,final-echo-repeat-2,next-base,1
+11211464,5.674901489274177,10000,[],4,6295504,,timed_bulk,quic,7094272,2,10,29310976,1145,1,final-echo-repeat-2,tuic,1
+14418280,10.14459885385489,10000,[],4,13394224,"{'tcp_assignments': [1, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,12681216,2,10,35880960,1074,1,final-echo-repeat-2,next-primary,1
+9198616,3.7613091402807326,10001,[],4,11447840,"{'tcp_assignments': [1, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,4702208,2,10,24821760,1140,1,final-echo-repeat-2,next-opt,1
+15994592,6.550228194054463,10005,[],4,11731672,"{'tcp_assignments': [2, 2], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,8192000,1,10,50249728,761,4,final-echo-repeat-2,next-opt,4
+12884312,1.5597114364167564,10000,[],4,14461928,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,1949696,1,10,51675136,843,4,final-echo-repeat-2,next-base,4
+20155848,9.069298352911384,10000,[],8,9175816,,timed_bulk,quic,11337728,1,10,49233920,701,4,final-echo-repeat-2,tuic,4
+14086608,3.7616045058083167,10000,[],3,11017304,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,4702208,1,10,55083008,619,4,final-echo-repeat-2,next-primary,4
+18546104,7.955381035207313,10000,[],4,11877104,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,9945088,2,10,53477376,808,4,final-echo-repeat-2,next-base,4
+15680560,3.591080762180069,10000,[],4,8064744,,timed_bulk,quic,4489216,2,10,42057728,1702,4,final-echo-repeat-2,tuic,4
+15496232,8.230386880723227,10001,[],4,15220672,"{'tcp_assignments': [4, 0], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,10289152,2,10,49790976,660,4,final-echo-repeat-2,next-primary,4
+18081576,3.5387189374755765,10000,[],4,15296312,"{'tcp_assignments': [2, 2], 'trial_assignments': 0, 'proven_spill_assignments': 0}",timed_bulk,quic,4423680,2,10,55033856,1584,4,final-echo-repeat-2,next-opt,4
