@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestFastCatHTTPSAppleProbeAndTunnelConfiguration(t *testing.T) {
+func TestRetiredFastCatHTTPSRemovedFromAppleConfigurations(t *testing.T) {
 	oldHome := C.Path.HomeDir()
 	C.SetHomeDir(t.TempDir())
 	defer C.SetHomeDir(oldHome)
@@ -19,9 +19,8 @@ func TestFastCatHTTPSAppleProbeAndTunnelConfiguration(t *testing.T) {
 		if e != nil {
 			t.Fatal(e)
 		}
-		node, ok := parsed.Proxies["FastCat v1"]
-		if !ok || node.Type() != C.FastCatHTTPS || node.SupportUDP() {
-			t.Fatal("new TCP protocol lost in Apple configuration path")
+		if _, ok := parsed.Proxies["FastCat v1"]; ok {
+			t.Fatal("retired FastCat transport loaded in Apple configuration")
 		}
 	}
 	if raw.ProxyGroup[0]["proxies"].([]string)[0] != "DIRECT" {

@@ -57,10 +57,15 @@ func TestFastCatH2PlatformDialAndInterfaceChange(t *testing.T) {
 		t.Fatal(err)
 	}
 	entry := &fastCatEntryDialer{addr: server.Listener.Addr().String()}
-	p, err := ParseProxy(map[string]any{"name": "h2-test", "type": "fastcat-h2", "server": "test-gateway.invalid", "port": 8443, "sni": "example.com", "token": token, "ca-file": file}, WithDialerForAPI(entry))
+	gateway, err := outbound.NewFastCatH2(outbound.FastCatHTTPSOption{
+		BasicOption: outbound.BasicOption{DialerForAPI: entry},
+		Name:        "h2-test", Server: "test-gateway.invalid", Port: 8443,
+		SNI: "example.com", Token: token, CAFile: file,
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
+	p := NewProxy(gateway)
 	defer p.Close()
 	if p.SupportUDP() || p.Type() != C.FastCatH2 {
 		t.Fatal("incorrect advertised type/capabilities")
@@ -113,14 +118,20 @@ func TestFastCatH2PlatformDialAndInterfaceChange(t *testing.T) {
 }
 
 func TestFastCatH2RejectsInvalidOptions(t *testing.T) {
-	for _, overrides := range []map[string]any{{"udp": true}, {"skip-cert-verify": true}, {"port": 0}, {"port": 65536}, {"token": "bad"}, {"server": ""}} {
-		t.Run(fmt.Sprint(overrides), func(t *testing.T) {
-			m := map[string]any{"name": "test", "type": "fastcat-h2", "server": "example.net", "port": 443, "token": strings.Repeat("t", 24)}
-			for key, value := range overrides {
-				m[key] = value
-			}
-			if _, err := ParseProxy(m); err == nil {
-				t.Fatalf("invalid options accepted")
+	base := outbound.FastCatHTTPSOption{Name: "test", Server: "example.net", Port: 443, Token: strings.Repeat("t", 24)}
+	for name, update := range map[string]func(*outbound.FastCatHTTPSOption){
+		"udp":            func(o *outbound.FastCatHTTPSOption) { o.UDP = true },
+		"certificate":    func(o *outbound.FastCatHTTPSOption) { o.SkipCertVerify = true },
+		"missing port":   func(o *outbound.FastCatHTTPSOption) { o.Port = 0 },
+		"invalid port":   func(o *outbound.FastCatHTTPSOption) { o.Port = 65536 },
+		"short token":    func(o *outbound.FastCatHTTPSOption) { o.Token = "bad" },
+		"missing server": func(o *outbound.FastCatHTTPSOption) { o.Server = "" },
+	} {
+		t.Run(name, func(t *testing.T) {
+			option := base
+			update(&option)
+			if _, err := outbound.NewFastCatH2(option); err == nil {
+				t.Fatal("invalid options accepted")
 			}
 		})
 	}

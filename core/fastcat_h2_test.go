@@ -15,6 +15,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/metacubex/mihomo/adapter"
+	"github.com/metacubex/mihomo/adapter/outbound"
 	"github.com/metacubex/mihomo/config"
 	C "github.com/metacubex/mihomo/constant"
 	"github.com/metacubex/mihomo/tunnel"
@@ -66,11 +68,7 @@ func TestFastCatH2AppleConfigurationsReuseGatewayBetweenURLTests(t *testing.T) {
 	}
 	addr := gateway.Listener.Addr().(*net.TCPAddr)
 	raw := config.DefaultRawConfig()
-	raw.Proxy = []map[string]any{{
-		"name": nodeName, "type": "fastcat-h2", "server": addr.IP.String(),
-		"port": addr.Port, "sni": "example.com", "ca-file": caFile, "token": token,
-	}}
-	raw.ProxyGroup = []map[string]any{{"name": "test-select", "type": "select", "proxies": []string{nodeName, "DIRECT"}}}
+	raw.ProxyGroup = []map[string]any{{"name": "test-select", "type": "select", "proxies": []string{"DIRECT"}}}
 	raw.Rule = []string{"MATCH,test-select"}
 
 	for _, tc := range []struct {
@@ -82,11 +80,17 @@ func TestFastCatH2AppleConfigurationsReuseGatewayBetweenURLTests(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			node := parsed.Proxies[nodeName]
-			if node == nil || node.SupportUDP() {
-				t.Fatal("missing TCP-only HTTP/2 node")
+			// Inject the transport fixture without enabling it in public configs.
+			gatewayProxy, err := outbound.NewFastCatH2(outbound.FastCatHTTPSOption{
+				Name: nodeName, Server: addr.IP.String(), Port: addr.Port,
+				SNI: "example.com", CAFile: caFile, Token: token,
+			})
+			if err != nil {
+				t.Fatal(err)
 			}
+			node := adapter.NewProxy(gatewayProxy)
 			defer node.Close()
+			parsed.Proxies[nodeName] = node
 			var peer string
 			// Exercise the actual Apple IPC handler on a cold node, then on the
 			// existing session. The origin intentionally speaks HTTP, which
