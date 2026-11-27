@@ -159,8 +159,9 @@ class AppController {
   late final AppExitService _exitService;
   late final AppProfileController _profileController;
 
-  AppController(this.context, WidgetRef ref) : _ref = ref {
-    if (system.isDesktop) {
+  AppController(this.context, WidgetRef ref, {bool observeDesktopCore = true})
+      : _ref = ref {
+    if (observeDesktopCore && system.isDesktop) {
       clashService?.unexpectedDisconnects.listen((_) {
         unawaited(_handleDesktopCoreDisconnected());
       });

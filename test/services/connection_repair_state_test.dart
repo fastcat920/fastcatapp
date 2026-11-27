@@ -9,14 +9,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _NoIpCheckController extends AppController {
-  _NoIpCheckController(super.context, super.ref);
+  _NoIpCheckController(BuildContext context, WidgetRef ref)
+      : super(context, ref, observeDesktopCore: false);
 
   @override
   void addCheckIpNumDebounce() {}
 }
 
 class _SessionExitController extends AppController {
-  _SessionExitController(super.context, super.ref);
+  _SessionExitController(BuildContext context, WidgetRef ref)
+      : super(context, ref, observeDesktopCore: false);
 
   final stops = <bool>[];
   bool stopSucceeds = true;
@@ -83,7 +85,7 @@ void main() {
     late AppController controller;
     await tester.pumpWidget(ProviderScope(child: MaterialApp(home: Consumer(
       builder: (context, ref, child) {
-        controller = AppController(context, ref);
+        controller = AppController(context, ref, observeDesktopCore: false);
         return const SizedBox();
       },
     ))));
@@ -123,7 +125,7 @@ void main() {
       late AppController controller;
       await tester.pumpWidget(ProviderScope(child: MaterialApp(home: Consumer(
         builder: (context, ref, child) {
-          controller = AppController(context, ref);
+          controller = AppController(context, ref, observeDesktopCore: false);
           return const SizedBox();
         },
       ))));
