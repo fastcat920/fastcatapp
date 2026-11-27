@@ -37,7 +37,7 @@ class LocalNotifier {
       }
 
       if (call.method == 'onLocalNotificationShow') {
-        listener.onLocalNotificationShow(localNotification!);
+        listener.onLocalNotificationShow(localNotification);
       } else if (call.method == 'onLocalNotificationClose') {
         LocalNotificationCloseReason closeReason =
             LocalNotificationCloseReason.values.firstWhere(
@@ -45,15 +45,15 @@ class LocalNotifier {
           orElse: () => LocalNotificationCloseReason.unknown,
         );
         listener.onLocalNotificationClose(
-          localNotification!,
+          localNotification,
           closeReason,
         );
       } else if (call.method == 'onLocalNotificationClick') {
-        listener.onLocalNotificationClick(localNotification!);
+        listener.onLocalNotificationClick(localNotification);
       } else if (call.method == 'onLocalNotificationClickAction') {
         int actionIndex = call.arguments['actionIndex'] as int;
         listener.onLocalNotificationClickAction(
-          localNotification!,
+          localNotification,
           actionIndex,
         );
       } else {
