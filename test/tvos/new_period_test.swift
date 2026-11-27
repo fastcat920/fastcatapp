@@ -27,6 +27,8 @@ enum FastCatSubscriptionDecoder {
 actor TVRemoteConfigManager {
   static let shared = TVRemoteConfigManager()
   func apiBaseURL() throws -> URL { URL(string: "https://fastcat-test.invalid/api/v1")! }
+  func connectivityBaseURLs() -> [URL] { [] }
+  func useHealthyGateway(_ url: URL) {}
 }
 
 final class MockPaymentFreeAPI: URLProtocol {

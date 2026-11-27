@@ -317,15 +317,45 @@ struct GatewayClient {
       build_number: bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1",
       os_version: ProcessInfo.processInfo.operatingSystemVersionString
     )
-    let result: TVLoginCredentials = try await send(
-      path: "/passport/auth/login",
-      method: "POST",
-      body: request
-    )
-    guard result.authData?.isEmpty == false || result.token?.isEmpty == false else {
-      throw GatewayError.server("邮箱或密码错误")
+    let config = TVRemoteConfigManager.shared
+    let backups = await config.connectivityBaseURLs().filter { $0 != baseURL }
+    let gateways = [baseURL] + backups
+    for (index, url) in gateways.enumerated() {
+      try Task.checkCancellation()
+      let client = url == baseURL ? self : GatewayClient(baseURL: url)
+      do {
+        let result: TVLoginCredentials = try await client.sendRequest(
+          path: "/passport/auth/login",
+          method: "POST",
+          body: AnyEncodable(request),
+          timeout: 10
+        )
+        guard result.authData?.isEmpty == false || result.token?.isEmpty == false else {
+          throw GatewayError.server("邮箱或密码错误")
+        }
+        if url != baseURL {
+          await config.useHealthyGateway(url)
+        }
+        return result
+      } catch where index < gateways.count - 1 && Self.isRetryableLoginFailure(error) {
+        continue
+      }
     }
-    return result
+    throw GatewayError.invalidResponse
+  }
+
+  private static func isRetryableLoginFailure(_ error: Error) -> Bool {
+    if let gatewayError = error as? GatewayError,
+       case .temporarilyUnavailable(let status) = gatewayError {
+      return [408, 502, 503, 504].contains(status)
+    }
+    guard let networkError = error as? URLError else { return false }
+    switch networkError.code {
+    case .timedOut, .cannotFindHost, .cannotConnectToHost, .dnsLookupFailed, .networkConnectionLost:
+      return true
+    default:
+      return false
+    }
   }
 
   /// Returns a locally cached subscription after authenticating and decrypting

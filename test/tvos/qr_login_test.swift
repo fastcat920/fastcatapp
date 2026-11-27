@@ -21,6 +21,11 @@ enum FastCatSubscriptionDecoder {
 actor TVRemoteConfigManager {
   static let shared = TVRemoteConfigManager()
   func apiBaseURL() throws -> URL { URL(string: "https://qr-test.invalid/api/v1")! }
+  private(set) var selectedGateway: URL?
+  func connectivityBaseURLs() -> [URL] {
+    [URL(string: "https://qr-test.invalid/api/v1")!, URL(string: "https://backup-test.invalid/api/v1")!]
+  }
+  func useHealthyGateway(_ url: URL) { selectedGateway = url }
 }
 
 @MainActor
@@ -36,12 +41,16 @@ final class Pending<T> {
 final class QRMockAPI: URLProtocol {
   static var requests: [URLRequest] = []
   static var body = "{}"
+  static var primaryLoginStatus = 200
   override class func canInit(with request: URLRequest) -> Bool { true }
   override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
   override func startLoading() {
-    precondition(request.url?.host == "qr-test.invalid", "No external requests")
+    let host = request.url?.host
+    precondition(host == "qr-test.invalid" || host == "backup-test.invalid", "No external requests")
     Self.requests.append(request)
-    let response = HTTPURLResponse(url: request.url!, statusCode: 200, httpVersion: nil, headerFields: nil)!
+    let isPrimaryLogin = host == "qr-test.invalid" && request.url?.path.hasSuffix("/passport/auth/login") == true
+    let status = isPrimaryLogin ? Self.primaryLoginStatus : 200
+    let response = HTTPURLResponse(url: request.url!, statusCode: status, httpVersion: nil, headerFields: nil)!
     client?.urlProtocol(self, didReceive: response, cacheStoragePolicy: .notAllowed)
     client?.urlProtocol(self, didLoad: Data(Self.body.utf8))
     client?.urlProtocolDidFinishLoading(self)
@@ -175,6 +184,21 @@ struct TVQRLoginTests {
     let requestCount = QRMockAPI.requests.count
     try await api.acknowledgeQRSession(fromOldServer, deliveryID: "ignored")
     precondition(QRMockAPI.requests.count == requestCount)
+    QRMockAPI.body = #"{"data":{"token":"test-token"}}"#
+    QRMockAPI.primaryLoginStatus = 503
+    let login = try await api.login(email: "test@example.invalid", password: "test")
+    precondition(login.token == "test-token")
+    precondition(QRMockAPI.requests.suffix(2).map { $0.url?.host } == ["qr-test.invalid", "backup-test.invalid"])
+    let selected = await TVRemoteConfigManager.shared.selectedGateway
+    precondition(selected?.host == "backup-test.invalid")
+
+    QRMockAPI.primaryLoginStatus = 401
+    let beforeRejectedLogin = QRMockAPI.requests.count
+    do {
+      _ = try await api.login(email: "test@example.invalid", password: "test")
+      preconditionFailure("Expected login rejection")
+    } catch GatewayClient.GatewayError.unauthorized {}
+    precondition(QRMockAPI.requests.count == beforeRejectedLogin + 1)
     print("PASS: QR legacy negotiation, generation isolation, expired refresh, failed cancel, sequential retry, ACK ordering and bounded HTTP bridge")
   }
 }
