@@ -605,6 +605,34 @@ class Build {
     var hasPatchedRpmConfig = false;
     for (final patchFile in patchFiles) {
       var content = patchFile.readAsStringSync();
+      const rpmBuildDirectory = 'cd "%{_topdir}/BUILD"';
+      if (!content.contains(rpmBuildDirectory)) {
+        const installStart = "'%install': [";
+        if (!content.contains(installStart)) {
+          throw StateError('Unsupported RPM install template: ${patchFile.path}');
+        }
+        const installPrelude = r'''cd "%{_topdir}/BUILD"
+app_file="%{name}"
+if [ ! -f "$app_file.desktop" ]; then
+  set -- ./*.desktop
+  [ "$#" -eq 1 ] && [ -f "$1" ] || exit 1
+  app_file="${1#./}"
+  app_file="${app_file%.desktop}"
+fi
+runner="%{name}"
+if [ ! -x "%{name}/$runner" ]; then runner="$app_file"; fi
+test -x "%{name}/$runner"''';
+        final prelude = jsonEncode(installPrelude).replaceAll(r'$', r'\$');
+        content = content
+            .replaceFirst(installStart, '$installStart\n            $prelude,')
+            .replaceFirst('%{_datadir}/%{name}/%{name} %{buildroot}',
+                r'%{_datadir}/%{name}/\$runner %{buildroot}')
+            .replaceFirst('cp -r %{name}.desktop %{buildroot}%{_datadir}/applications',
+                r'cp -r "\$app_file.desktop" %{buildroot}%{_datadir}/applications/%{name}.desktop')
+            .replaceFirst('cp -r %{name}.png %{buildroot}%{_datadir}/pixmaps',
+                r'cp -r "\$app_file.png" %{buildroot}%{_datadir}/pixmaps/%{name}.png');
+        patchFile.writeAsStringSync(content);
+      }
       if (content.contains("preinstallScripts:")) {
         hasPatchedRpmConfig = true;
         print(
