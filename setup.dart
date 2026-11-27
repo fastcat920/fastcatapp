@@ -1601,11 +1601,11 @@ end tell
         [
           'bash',
           signingScript,
-          'sign-app',
+          'prepare-app',
           stagedApp,
           join(current, 'macos', 'Runner', 'Release.entitlements'),
         ],
-        name: 'sign macOS Release app',
+        name: 'sign and notarize macOS Release app',
         runInShell: false,
       );
     }
@@ -1703,7 +1703,13 @@ end tell
     if (signRelease) {
       try {
         await Build.exec(
-          ['bash', signingScript, 'notarize-dmg', dmgFile.path],
+          [
+            'bash',
+            signingScript,
+            'notarize-dmg',
+            dmgFile.path,
+            '$installedAppName.app',
+          ],
           name: 'notarize macOS DMG',
           runInShell: false,
         );
